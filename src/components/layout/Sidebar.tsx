@@ -8,6 +8,7 @@ import {
   Grid2X2,
   Settings, 
   Building2,
+  Bot,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
@@ -37,6 +38,12 @@ const menuItems = [
     icon: Grid2X2,
     href: '/kanban',
     color: 'text-orange-400'
+  },
+  {
+    title: 'ChatBot',
+    icon: Bot,
+    href: '/chatbot',
+    color: 'text-indigo-400'
   },
   {
     title: 'Painel',
