@@ -1,40 +1,118 @@
 
-import { MessageSquare, Clock, User, Send } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { useState } from 'react';
+import { MessageSquare } from 'lucide-react';
+import { FilterBar } from '@/components/atendimento/FilterBar';
+import { KanbanColumns } from '@/components/atendimento/KanbanColumns';
+import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
+import { ClienteInfo } from '@/components/atendimento/ClienteInfo';
 
-const conversas = [
+// Dados de exemplo
+const dadosAtendimentos = [
   {
     id: 1,
     cliente: 'João Silva',
     telefone: '+55 11 99999-9999',
-    status: 'Em Atendimento',
-    ultimaMensagem: 'Preciso de ajuda com meu pedido',
+    ultimaMensagem: 'Preciso de ajuda com meu pedido #12345, não chegou ainda',
     tempo: '5 min',
-    agente: 'Ana Silva'
+    setor: 'Suporte',
+    agente: 'Ana Silva',
+    tags: ['Pedido', 'Urgente'],
+    status: 'em-atendimento' as const
   },
   {
     id: 2,
     cliente: 'Maria Santos',
     telefone: '+55 11 88888-8888',
-    status: 'Aguardando',
-    ultimaMensagem: 'Olá, gostaria de mais informações',
+    ultimaMensagem: 'Olá, gostaria de mais informações sobre o plano premium',
     tempo: '12 min',
-    agente: null
+    setor: 'Vendas',
+    tags: ['Novo Cliente'],
+    status: 'novos' as const
+  },
+  {
+    id: 3,
+    cliente: 'Pedro Almeida',
+    telefone: '+55 11 77777-7777',
+    ultimaMensagem: 'Quando vocês vão lançar o novo produto?',
+    tempo: '30 min',
+    setor: 'Marketing',
+    agente: 'Carlos Oliveira',
+    status: 'pendentes' as const
+  },
+  {
+    id: 4,
+    cliente: 'Ana Pereira',
+    telefone: '+55 11 66666-6666',
+    ultimaMensagem: 'O problema foi resolvido, muito obrigado!',
+    tempo: '1 hora',
+    setor: 'Suporte',
+    agente: 'Marcos Silva',
+    status: 'finalizados' as const
+  },
+  {
+    id: 5,
+    cliente: 'Roberto Gomes',
+    telefone: '+55 11 55555-5555',
+    ultimaMensagem: 'Preciso trocar o produto que comprei ontem',
+    tempo: '2 min',
+    setor: 'Suporte',
+    tags: ['Troca', 'Urgente'],
+    status: 'novos' as const
+  },
+  {
+    id: 6,
+    cliente: 'Fernanda Lima',
+    telefone: '+55 11 44444-4444',
+    ultimaMensagem: 'Obrigado pelo atendimento, foi muito útil!',
+    tempo: '3 horas',
+    setor: 'Vendas',
+    agente: 'Ana Silva',
+    status: 'finalizados' as const
   }
 ];
 
-const mensagens = [
-  { id: 1, texto: 'Olá! Preciso de ajuda com meu pedido #12345', autor: 'cliente', tempo: '14:30' },
-  { id: 2, texto: 'Olá João! Claro, vou verificar seu pedido. Um momento por favor.', autor: 'agente', tempo: '14:31' },
-  { id: 3, texto: 'Seu pedido está sendo preparado e será enviado hoje.', autor: 'agente', tempo: '14:32' },
-  { id: 4, texto: 'Perfeito! Muito obrigado pelo atendimento.', autor: 'cliente', tempo: '14:33' }
+const mensagensExemplo = [
+  { id: 1, texto: 'Olá! Preciso de ajuda com meu pedido #12345', autor: 'cliente' as const, tempo: '14:30' },
+  { id: 2, texto: 'Olá João! Claro, vou verificar seu pedido. Um momento por favor.', autor: 'agente' as const, tempo: '14:31', status: 'lido' as const },
+  { id: 3, texto: 'Estou vendo aqui no sistema que seu pedido está em separação no estoque e deve ser enviado hoje ainda.', autor: 'agente' as const, tempo: '14:32', status: 'lido' as const },
+  { id: 4, texto: 'Perfeito! Muito obrigado pelo atendimento rápido.', autor: 'cliente' as const, tempo: '14:33' },
+  { id: 5, texto: 'Você consegue me passar o código de rastreamento?', autor: 'cliente' as const, tempo: '14:34' },
+  { id: 6, texto: 'Claro! Assim que o pedido for despachado, o código de rastreamento será enviado automaticamente para o seu email e também para o seu WhatsApp.', autor: 'agente' as const, tempo: '14:35', status: 'lido' as const }
 ];
 
+const clienteExemplo = {
+  id: 1,
+  nome: 'João Silva',
+  telefone: '+55 11 99999-9999',
+  email: 'joao.silva@email.com',
+  dataCadastro: '15/03/2023',
+  tags: ['Cliente Fiel', 'Premium'],
+  historico: [
+    { id: 1, data: '10/05/2023', assunto: 'Problema com entrega', status: 'Resolvido' },
+    { id: 2, data: '23/06/2023', assunto: 'Troca de produto', status: 'Resolvido' },
+    { id: 3, data: '05/09/2023', assunto: 'Dúvida sobre garantia', status: 'Resolvido' }
+  ]
+};
+
 export default function Atendimento() {
+  const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'chat'>('list');
+
+  // Em dispositivos móveis, trocar entre lista e chat
+  const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
+    setSelectedAtendimento(atendimento);
+    if (window.innerWidth < 1024) { // Breakpoint lg
+      setViewMode('chat');
+    }
+  };
+
+  const handleReturnToList = () => {
+    setViewMode('list');
+  };
+
   return (
     <div className="p-6 h-[calc(100vh-8rem)]">
+      {/* Cabeçalho da página */}
       <div className="flex items-center space-x-3 mb-6">
         <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg">
           <MessageSquare className="w-6 h-6 text-white" />
@@ -45,101 +123,79 @@ export default function Atendimento() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-        {/* Lista de Conversas */}
-        <div className="bg-white rounded-xl shadow-amplie overflow-hidden">
-          <div className="p-4 border-b border-gray-200">
-            <h3 className="font-semibold text-gray-900">Minhas Conversas</h3>
-          </div>
-          <div className="overflow-y-auto h-full">
-            {conversas.map((conversa) => (
-              <div key={conversa.id} className="p-4 border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <p className="font-medium text-gray-900">{conversa.cliente}</p>
-                    <p className="text-sm text-gray-500">{conversa.telefone}</p>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Badge 
-                      variant={conversa.status === 'Em Atendimento' ? 'default' : 'secondary'}
-                      className={conversa.status === 'Em Atendimento' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}
-                    >
-                      {conversa.status}
-                    </Badge>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 mb-2 line-clamp-2">{conversa.ultimaMensagem}</p>
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <div className="flex items-center space-x-1">
-                    <Clock className="w-3 h-3" />
-                    <span>{conversa.tempo}</span>
-                  </div>
-                  {conversa.agente && (
-                    <div className="flex items-center space-x-1">
-                      <User className="w-3 h-3" />
-                      <span>{conversa.agente}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Barra de filtros e pesquisa */}
+      <FilterBar />
+
+      {/* Conteúdo principal - Lista em dispositivos móveis ou layout completo em desktop */}
+      {viewMode === 'list' ? (
+        <div className="lg:hidden">
+          <KanbanColumns 
+            atendimentos={dadosAtendimentos} 
+            onSelectAtendimento={handleSelectAtendimento} 
+          />
+        </div>
+      ) : (
+        <div className="lg:hidden h-[calc(100vh-16rem)]">
+          <ChatWhatsApp 
+            cliente={{
+              id: selectedAtendimento?.id || 1,
+              nome: selectedAtendimento?.cliente || 'Cliente',
+              telefone: selectedAtendimento?.telefone || '',
+              status: 'online'
+            }}
+            mensagens={mensagensExemplo}
+            onReturnToList={handleReturnToList}
+          />
+        </div>
+      )}
+
+      {/* Layout desktop - sempre visível em telas grandes */}
+      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-6 h-[calc(100vh-18rem)]">
+        {/* Colunas Kanban - 7 colunas */}
+        <div className="col-span-7 overflow-auto">
+          <KanbanColumns 
+            atendimentos={dadosAtendimentos} 
+            onSelectAtendimento={handleSelectAtendimento} 
+          />
         </div>
 
-        {/* Chat Interface */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-amplie flex flex-col">
-          {/* Header do Chat */}
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">João Silva</p>
-                  <p className="text-sm text-gray-500">+55 11 99999-9999</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button variant="outline" size="sm">
-                  Transferir
-                </Button>
-                <Button variant="outline" size="sm">
-                  Finalizar
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Mensagens */}
-          <div className="flex-1 p-4 overflow-y-auto space-y-4">
-            {mensagens.map((mensagem) => (
-              <div key={mensagem.id} className={`flex ${mensagem.autor === 'agente' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                  mensagem.autor === 'agente' 
-                    ? 'bg-amplie-primary text-white' 
-                    : 'bg-gray-100 text-gray-900'
-                }`}>
-                  <p className="text-sm">{mensagem.texto}</p>
-                  <p className={`text-xs mt-1 ${mensagem.autor === 'agente' ? 'text-blue-100' : 'text-gray-500'}`}>
-                    {mensagem.tempo}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Input de Mensagem */}
-          <div className="p-4 border-t border-gray-200">
-            <div className="flex space-x-2">
-              <Input
-                placeholder="Digite sua mensagem..."
-                className="flex-1"
+        {/* Área de chat e informações do cliente - 5 colunas */}
+        <div className="col-span-5 grid grid-rows-3 gap-4 h-full">
+          {/* Chat do WhatsApp - ocupa 2/3 da altura */}
+          <div className="row-span-2">
+            {selectedAtendimento ? (
+              <ChatWhatsApp 
+                cliente={{
+                  id: selectedAtendimento.id,
+                  nome: selectedAtendimento.cliente,
+                  telefone: selectedAtendimento.telefone,
+                  status: 'online'
+                }}
+                mensagens={mensagensExemplo}
               />
-              <Button className="bg-amplie-primary hover:bg-amplie-primary-light">
-                <Send className="w-4 h-4" />
-              </Button>
-            </div>
+            ) : (
+              <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
+                <div className="text-center p-6">
+                  <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-600 mb-1">Selecione uma conversa</h3>
+                  <p className="text-sm text-gray-500">Clique em uma conversa para iniciar o atendimento</p>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Informações do cliente - ocupa 1/3 da altura */}
+          <div className="row-span-1">
+            {selectedAtendimento ? (
+              <ClienteInfo cliente={clienteExemplo} />
+            ) : (
+              <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
+                <div className="text-center">
+                  <User className="w-10 h-10 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">Dados do cliente</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
