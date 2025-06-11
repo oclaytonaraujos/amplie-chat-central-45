@@ -27,12 +27,16 @@ export function Header({
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
+      const scrolled = window.scrollY > 0;
+      console.log('Header scroll state:', scrolled, 'scrollY:', window.scrollY);
+      setIsScrolled(scrolled);
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  console.log('Header render - isScrolled:', isScrolled, 'title:', title);
 
   return (
     <header 

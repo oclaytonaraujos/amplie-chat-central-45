@@ -133,7 +133,7 @@ export default function Atendimento() {
   // Layout mobile: mostra lista ou chat baseado no estado
   if (isMobile) {
     return (
-      <div className="h-[calc(100vh-12rem)]">
+      <div className="min-h-screen">
         {!showChat ? (
           // Mostra lista de atendimentos
           <div className="flex flex-col h-full space-y-4">
@@ -171,7 +171,7 @@ export default function Atendimento() {
 
   // Layout desktop: duas colunas
   return (
-    <div className="h-[calc(100vh-12rem)]">
+    <div className="min-h-screen">
       <div className="grid grid-cols-12 gap-6 h-full">
         {/* Primeira Coluna - Pesquisa, Filtros e Atendimentos */}
         <div className="col-span-5 flex flex-col">
