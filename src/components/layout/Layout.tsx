@@ -1,6 +1,5 @@
 
 import { useState } from 'react';
-import { LucideIcon } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -8,12 +7,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
-  description?: string;
-  icon?: LucideIcon;
-  iconColor?: string;
 }
 
-export function Layout({ children, title, description, icon, iconColor }: LayoutProps) {
+export function Layout({ children, title }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
@@ -60,10 +56,7 @@ export function Layout({ children, title, description, icon, iconColor }: Layout
       >
         {/* Fixed Header with dynamic left positioning */}
         <Header 
-          title={title}
-          description={description}
-          icon={icon}
-          iconColor={iconColor}
+          title={title} 
           onMenuClick={() => setSidebarOpen(true)}
           showMenuButton={isMobile}
           sidebarWidth={getSidebarWidth()}
