@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, User } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
 import { KanbanColumns } from '@/components/atendimento/KanbanColumns';
 import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
