@@ -1,49 +1,30 @@
 
-import { useState } from 'react';
 import { Monitor, Sun, Moon, Palette, Eye, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/hooks/use-toast';
 
 export default function Aparencia() {
-  const [themeSettings, setThemeSettings] = useState({
-    theme: 'system', // 'light', 'dark', 'system'
-    colorScheme: 'blue', // 'blue', 'green', 'purple', 'orange'
-    fontSize: 'medium', // 'small', 'medium', 'large'
-    compactMode: false,
-    animations: true,
-    autoTheme: true
-  });
+  const {
+    themeSettings,
+    layoutSettings,
+    accessibilitySettings,
+    updateThemeSettings,
+    updateLayoutSettings,
+    updateAccessibilitySettings
+  } = useTheme();
 
-  const [layoutSettings, setLayoutSettings] = useState({
-    sidebarCollapsed: false,
-    showAvatars: true,
-    showTimestamps: true,
-    densityMode: 'comfortable' // 'compact', 'comfortable', 'spacious'
-  });
-
-  const [accessibilitySettings, setAccessibilitySettings] = useState({
-    highContrast: false,
-    reducedMotion: false,
-    screenReader: false,
-    keyboardNavigation: true
-  });
-
-  const handleThemeChange = (field: string, value: string | boolean) => {
-    setThemeSettings(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleLayoutChange = (field: string, value: string | boolean) => {
-    setLayoutSettings(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleAccessibilityChange = (field: string, value: boolean) => {
-    setAccessibilitySettings(prev => ({ ...prev, [field]: value }));
-  };
+  const { toast } = useToast();
 
   const handleSave = () => {
-    console.log('Salvando configurações de aparência...');
+    toast({
+      title: "Configurações salvas",
+      description: "Suas preferências de aparência foram salvas com sucesso.",
+    });
+    console.log('Configurações de aparência salvas');
   };
 
   const themes = [
@@ -99,7 +80,7 @@ export default function Aparencia() {
               return (
                 <button
                   key={theme.id}
-                  onClick={() => handleThemeChange('theme', theme.id)}
+                  onClick={() => updateThemeSettings({ theme: theme.id as any })}
                   className={`p-4 rounded-lg border-2 transition-all ${
                     themeSettings.theme === theme.id
                       ? 'border-amplie-primary bg-amplie-primary/10'
@@ -119,7 +100,7 @@ export default function Aparencia() {
             </div>
             <Switch
               checked={themeSettings.autoTheme}
-              onCheckedChange={(checked) => handleThemeChange('autoTheme', checked)}
+              onCheckedChange={(checked) => updateThemeSettings({ autoTheme: checked })}
             />
           </div>
         </Card>
@@ -134,7 +115,7 @@ export default function Aparencia() {
             {colorSchemes.map((scheme) => (
               <button
                 key={scheme.id}
-                onClick={() => handleThemeChange('colorScheme', scheme.id)}
+                onClick={() => updateThemeSettings({ colorScheme: scheme.id as any })}
                 className={`p-3 rounded-lg border-2 transition-all flex items-center space-x-3 ${
                   themeSettings.colorScheme === scheme.id
                     ? 'border-amplie-primary bg-amplie-primary/10'
@@ -159,7 +140,7 @@ export default function Aparencia() {
             {fontSizes.map((size) => (
               <button
                 key={size.id}
-                onClick={() => handleThemeChange('fontSize', size.id)}
+                onClick={() => updateThemeSettings({ fontSize: size.id as any })}
                 className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
                   themeSettings.fontSize === size.id
                     ? 'border-amplie-primary bg-amplie-primary/10'
@@ -190,7 +171,7 @@ export default function Aparencia() {
                 {densityModes.map((mode) => (
                   <button
                     key={mode.id}
-                    onClick={() => handleLayoutChange('densityMode', mode.id)}
+                    onClick={() => updateLayoutSettings({ densityMode: mode.id as any })}
                     className={`w-full p-2 text-left rounded border transition-all ${
                       layoutSettings.densityMode === mode.id
                         ? 'border-amplie-primary bg-amplie-primary/10'
@@ -209,7 +190,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={themeSettings.compactMode}
-                onCheckedChange={(checked) => handleThemeChange('compactMode', checked)}
+                onCheckedChange={(checked) => updateThemeSettings({ compactMode: checked })}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -219,7 +200,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={layoutSettings.showAvatars}
-                onCheckedChange={(checked) => handleLayoutChange('showAvatars', checked)}
+                onCheckedChange={(checked) => updateLayoutSettings({ showAvatars: checked })}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -229,7 +210,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={layoutSettings.showTimestamps}
-                onCheckedChange={(checked) => handleLayoutChange('showTimestamps', checked)}
+                onCheckedChange={(checked) => updateLayoutSettings({ showTimestamps: checked })}
               />
             </div>
           </div>
@@ -249,7 +230,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={themeSettings.animations}
-                onCheckedChange={(checked) => handleThemeChange('animations', checked)}
+                onCheckedChange={(checked) => updateThemeSettings({ animations: checked })}
               />
             </div>
           </div>
@@ -269,7 +250,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={accessibilitySettings.highContrast}
-                onCheckedChange={(checked) => handleAccessibilityChange('highContrast', checked)}
+                onCheckedChange={(checked) => updateAccessibilitySettings({ highContrast: checked })}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -279,7 +260,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={accessibilitySettings.reducedMotion}
-                onCheckedChange={(checked) => handleAccessibilityChange('reducedMotion', checked)}
+                onCheckedChange={(checked) => updateAccessibilitySettings({ reducedMotion: checked })}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -289,7 +270,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={accessibilitySettings.screenReader}
-                onCheckedChange={(checked) => handleAccessibilityChange('screenReader', checked)}
+                onCheckedChange={(checked) => updateAccessibilitySettings({ screenReader: checked })}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -299,7 +280,7 @@ export default function Aparencia() {
               </div>
               <Switch
                 checked={accessibilitySettings.keyboardNavigation}
-                onCheckedChange={(checked) => handleAccessibilityChange('keyboardNavigation', checked)}
+                onCheckedChange={(checked) => updateAccessibilitySettings({ keyboardNavigation: checked })}
               />
             </div>
           </div>

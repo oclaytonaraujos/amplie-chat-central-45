@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -37,20 +38,17 @@
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Amplie brand colors */
+    --amplie-primary: 222.2 47.4% 11.2%;
+    --amplie-primary-light: 222.2 47.4% 21.2%;
   }
 
   .dark {
@@ -90,6 +88,83 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
+
+  /* Color scheme variations */
+  [data-color-scheme="blue"] {
+    --amplie-primary: 217 91% 60%;
+    --amplie-primary-light: 217 91% 70%;
+  }
+
+  [data-color-scheme="green"] {
+    --amplie-primary: 142 76% 36%;
+    --amplie-primary-light: 142 76% 46%;
+  }
+
+  [data-color-scheme="purple"] {
+    --amplie-primary: 262 83% 58%;
+    --amplie-primary-light: 262 83% 68%;
+  }
+
+  [data-color-scheme="orange"] {
+    --amplie-primary: 25 95% 53%;
+    --amplie-primary-light: 25 95% 63%;
+  }
+
+  /* Font size variations */
+  [data-font-size="small"] {
+    font-size: 14px;
+  }
+
+  [data-font-size="medium"] {
+    font-size: 16px;
+  }
+
+  [data-font-size="large"] {
+    font-size: 18px;
+  }
+
+  /* Density variations */
+  [data-density="compact"] {
+    --spacing-unit: 0.5rem;
+  }
+
+  [data-density="comfortable"] {
+    --spacing-unit: 1rem;
+  }
+
+  [data-density="spacious"] {
+    --spacing-unit: 1.5rem;
+  }
+
+  /* Compact mode */
+  .compact-mode {
+    --spacing-unit: 0.75rem;
+  }
+
+  /* High contrast mode */
+  .high-contrast {
+    --border: 0 0% 0%;
+    --input: 0 0% 0%;
+    filter: contrast(1.5);
+  }
+
+  /* Reduced motion */
+  .reduced-motion *,
+  .reduced-motion *::before,
+  .reduced-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* No animations */
+  .no-animations *,
+  .no-animations *::before,
+  .no-animations *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 @layer base {
@@ -99,5 +174,33 @@
 
   body {
     @apply bg-background text-foreground;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Utility classes for theming */
+@layer utilities {
+  .amplie-primary {
+    color: hsl(var(--amplie-primary));
+  }
+
+  .bg-amplie-primary {
+    background-color: hsl(var(--amplie-primary));
+  }
+
+  .bg-amplie-primary-light {
+    background-color: hsl(var(--amplie-primary-light));
+  }
+
+  .border-amplie-primary {
+    border-color: hsl(var(--amplie-primary));
+  }
+
+  .text-amplie-primary {
+    color: hsl(var(--amplie-primary));
+  }
+
+  .hover\:bg-amplie-primary-light:hover {
+    background-color: hsl(var(--amplie-primary-light));
   }
 }
