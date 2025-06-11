@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { MessageSquare, User } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
@@ -115,17 +114,6 @@ export default function Atendimento() {
 
   return (
     <div className="p-6 h-[calc(100vh-8rem)]">
-      {/* Cabeçalho da página */}
-      <div className="flex items-center space-x-3 mb-6">
-        <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg">
-          <MessageSquare className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Central de Atendimento</h2>
-          <p className="text-gray-600">Gerencie as conversas em tempo real</p>
-        </div>
-      </div>
-
       {/* Barra de filtros e pesquisa */}
       <FilterBar />
 

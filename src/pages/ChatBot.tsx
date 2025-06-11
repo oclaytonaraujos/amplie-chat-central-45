@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Bot, Plus, Edit, Trash2, Power, PowerOff, MessageCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -109,17 +108,8 @@ export default function ChatBot() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-lg">
-            <Bot className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">ChatBot</h2>
-            <p className="text-gray-600">Crie e gerencie fluxos de automação de mensagens</p>
-          </div>
-        </div>
+      {/* Header com botão de ação */}
+      <div className="flex items-center justify-end">
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-amplie-primary hover:bg-amplie-primary-light">

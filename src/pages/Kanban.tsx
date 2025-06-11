@@ -1,4 +1,3 @@
-
 import { Grid2X2, Plus, Clock, User } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,17 +52,8 @@ export default function Kanban() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-gradient-to-r from-orange-500 to-orange-600 rounded-lg">
-            <Grid2X2 className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Kanban de Atendimento</h2>
-            <p className="text-gray-600">Visualize o fluxo dos tickets em tempo real</p>
-          </div>
-        </div>
+      {/* Header com botão de ação */}
+      <div className="flex items-center justify-end">
         <Button className="bg-amplie-primary hover:bg-amplie-primary-light">
           <Plus className="w-4 h-4 mr-2" />
           Novo Ticket

@@ -1,4 +1,3 @@
-
 import { Settings, MessageSquare, Clock, Globe, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,17 +6,6 @@ import { Switch } from '@/components/ui/switch';
 export default function Painel() {
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center space-x-3">
-        <div className="p-3 bg-gradient-to-r from-red-500 to-red-600 rounded-lg">
-          <Settings className="w-6 h-6 text-white" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Painel de Configurações</h2>
-          <p className="text-gray-600">Configure as definições gerais do sistema</p>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Integração WhatsApp */}
         <div className="bg-white rounded-xl shadow-amplie p-6">

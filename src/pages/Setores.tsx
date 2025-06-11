@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Building2, Plus, Edit, Trash2, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -45,17 +44,8 @@ export default function Setores() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-gradient-to-r from-teal-500 to-teal-600 rounded-lg">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Gestão de Setores</h2>
-            <p className="text-gray-600">Organize sua equipe por departamentos</p>
-          </div>
-        </div>
+      {/* Header com botão de ação */}
+      <div className="flex items-center justify-end">
         <Button className="bg-amplie-primary hover:bg-amplie-primary-light">
           <Plus className="w-4 h-4 mr-2" />
           Novo Setor
