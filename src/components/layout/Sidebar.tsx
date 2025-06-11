@@ -14,6 +14,7 @@ import {
   X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const menuItems = [
   {
@@ -81,12 +82,12 @@ export function Sidebar({ isMobile = false, isOpen = false, onClose }: SidebarPr
 
   return (
     <div className={cn(
-      "flex flex-col min-h-screen",
-      isMobile ? "w-64 p-4" : "p-4"
+      "h-full flex flex-col",
+      isMobile ? "w-64 p-4" : "w-64 p-4"
     )}>
       <div className={cn(
-        "bg-amplie-sidebar flex-1 transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-lg min-h-0",
-        isMobile ? "w-full" : (isCollapsed ? "w-16" : "w-64")
+        "bg-amplie-sidebar flex-1 transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-lg h-full",
+        isMobile ? "w-full" : (isCollapsed ? "w-16" : "w-full")
       )}>
         {/* Header */}
         <div className="p-6 border-b border-gray-700/30 flex-shrink-0 relative">
@@ -136,46 +137,48 @@ export function Sidebar({ isMobile = false, isOpen = false, onClose }: SidebarPr
           )}
         </div>
 
-        {/* Navigation Menu */}
-        <nav className="flex-1 py-6 px-3 space-y-1 min-h-0 overflow-y-auto">
-          {menuItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            
-            return (
-              <Link
-                key={item.href}
-                to={item.href}
-                onClick={handleLinkClick}
-                className={cn(
-                  "flex items-center rounded-lg transition-all duration-200 group",
-                  isCollapsed 
-                    ? "justify-center px-0 py-3 w-full" 
-                    : "space-x-3 px-3 py-3",
-                  isActive 
-                    ? isCollapsed
-                      ? "bg-amplie-sidebar-active text-white shadow-lg w-full"
-                      : "bg-amplie-sidebar-active text-white shadow-lg"
-                    : "text-gray-300 hover:bg-amplie-sidebar-hover hover:text-white"
-                )}
-              >
-                <div className={cn(
-                  "p-2 rounded-lg transition-colors",
-                  isCollapsed && isActive 
-                    ? "bg-transparent" 
-                    : isActive 
-                      ? "bg-white/20" 
-                      : "bg-gray-700/30 group-hover:bg-gray-600/50"
-                )}>
-                  <Icon className={cn("w-5 h-5", isActive ? "text-white" : item.color)} />
-                </div>
-                {!isCollapsed && (
-                  <span className="font-medium text-sm">{item.title}</span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Navigation Menu with ScrollArea */}
+        <ScrollArea className="flex-1 px-3 py-6">
+          <nav className="space-y-1">
+            {menuItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+              
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={handleLinkClick}
+                  className={cn(
+                    "flex items-center rounded-lg transition-all duration-200 group",
+                    isCollapsed 
+                      ? "justify-center px-0 py-3 w-full" 
+                      : "space-x-3 px-3 py-3",
+                    isActive 
+                      ? isCollapsed
+                        ? "bg-amplie-sidebar-active text-white shadow-lg w-full"
+                        : "bg-amplie-sidebar-active text-white shadow-lg"
+                      : "text-gray-300 hover:bg-amplie-sidebar-hover hover:text-white"
+                  )}
+                >
+                  <div className={cn(
+                    "p-2 rounded-lg transition-colors",
+                    isCollapsed && isActive 
+                      ? "bg-transparent" 
+                      : isActive 
+                        ? "bg-white/20" 
+                        : "bg-gray-700/30 group-hover:bg-gray-600/50"
+                  )}>
+                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : item.color)} />
+                  </div>
+                  {!isCollapsed && (
+                    <span className="font-medium text-sm">{item.title}</span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </ScrollArea>
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-700/30 flex-shrink-0">

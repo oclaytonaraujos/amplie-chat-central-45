@@ -23,11 +23,11 @@ export function Layout({ children, title }: LayoutProps) {
         />
       )}
       
-      {/* Sidebar - Push layout on desktop, overlay on mobile */}
+      {/* Fixed Sidebar - Always visible on desktop */}
       <div className={`
         ${isMobile 
           ? `fixed inset-y-0 left-0 z-50 ${!sidebarOpen ? '-translate-x-full' : 'translate-x-0'} transition-transform duration-300 ease-in-out`
-          : 'relative z-10'
+          : 'fixed inset-y-0 left-0 z-30'
         }
       `}>
         <Sidebar 
@@ -37,9 +37,9 @@ export function Layout({ children, title }: LayoutProps) {
         />
       </div>
       
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Fixed Header */}
+      {/* Main content - Push to the right on desktop to account for fixed sidebar */}
+      <div className={`flex-1 flex flex-col min-w-0 ${!isMobile ? 'ml-64' : ''}`}>
+        {/* Fixed Header with margin from sidebar */}
         <Header 
           title={title} 
           onMenuClick={() => setSidebarOpen(true)}

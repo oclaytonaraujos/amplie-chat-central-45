@@ -31,7 +31,9 @@ export function Header({ title, showMenuButton = false, onMenuClick }: HeaderPro
 
   return (
     <header className={`
-      fixed top-0 right-0 left-0 md:left-64 z-40 transition-all duration-300 ease-in-out m-4
+      fixed top-0 right-0 z-40 transition-all duration-300 ease-in-out
+      ${showMenuButton ? 'left-0 mx-4' : 'left-64 ml-4 mr-4'}
+      mt-4
       ${isScrolled 
         ? 'bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50' 
         : 'bg-transparent border-transparent'
