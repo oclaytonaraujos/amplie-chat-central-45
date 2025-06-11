@@ -23,9 +23,9 @@ export function Layout({ children, title }: LayoutProps) {
         />
       )}
       
-      {/* Sidebar */}
+      {/* Sidebar - Fixed */}
       <div className={`
-        ${isMobile ? 'fixed inset-y-0 left-0 z-50' : 'relative'}
+        fixed inset-y-0 left-0 z-50
         ${isMobile && !sidebarOpen ? '-translate-x-full' : 'translate-x-0'}
         transition-transform duration-300 ease-in-out
       `}>
@@ -36,14 +36,24 @@ export function Layout({ children, title }: LayoutProps) {
         />
       </div>
       
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <Header 
-          title={title} 
-          onMenuClick={() => setSidebarOpen(true)}
-          showMenuButton={isMobile}
-        />
-        <main className="flex-1 p-4 md:p-6">
+      {/* Main content with proper margin for fixed sidebar */}
+      <div className={`
+        flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out
+        ${isMobile ? 'ml-0' : 'ml-20'}
+      `}>
+        {/* Header - Fixed */}
+        <div className="fixed top-0 right-0 left-0 z-30" style={{
+          left: isMobile ? '0' : '5rem'
+        }}>
+          <Header 
+            title={title} 
+            onMenuClick={() => setSidebarOpen(true)}
+            showMenuButton={isMobile}
+          />
+        </div>
+        
+        {/* Main content with top padding for fixed header */}
+        <main className="flex-1 p-4 md:p-6 pt-20 md:pt-24 overflow-y-auto">
           {children}
         </main>
       </div>
