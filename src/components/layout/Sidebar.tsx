@@ -64,13 +64,13 @@ export function Sidebar() {
   const location = useLocation();
 
   return (
-    <div className="p-4 h-screen">
+    <div className="p-4 min-h-screen flex flex-col">
       <div className={cn(
-        "bg-amplie-sidebar h-full transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-lg",
+        "bg-amplie-sidebar flex-1 transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-lg min-h-0",
         collapsed ? "w-16" : "w-64"
       )}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-700/30">
+        <div className="p-6 border-b border-gray-700/30 flex-shrink-0">
           <div className="flex items-center justify-between">
             {!collapsed && (
               <div className="flex items-center space-x-2">
@@ -97,7 +97,7 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 py-6 px-3 space-y-1">
+        <nav className="flex-1 py-6 px-3 space-y-1 min-h-0 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = location.pathname === item.href;
@@ -129,7 +129,7 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-700/30">
+        <div className="p-4 border-t border-gray-700/30 flex-shrink-0">
           {!collapsed ? (
             <div className="flex items-center space-x-3 text-gray-400 text-sm">
               <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
