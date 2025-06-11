@@ -82,8 +82,10 @@ export function Sidebar() {
             )}
             {collapsed && (
               <div className="w-full flex justify-center">
-                <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-lg flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-white" />
+                <div className="p-2 rounded-lg bg-gray-700/30">
+                  <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-lg flex items-center justify-center">
+                    <MessageSquare className="w-5 h-5 text-white" />
+                  </div>
                 </div>
               </div>
             )}
