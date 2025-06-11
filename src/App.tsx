@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Usuarios from "./pages/Usuarios";
 import Atendimento from "./pages/Atendimento";
 import Kanban from "./pages/Kanban";
+import ChatBot from "./pages/ChatBot";
 import Painel from "./pages/Painel";
 import Setores from "./pages/Setores";
 import NotFound from "./pages/NotFound";
@@ -40,6 +41,11 @@ const App = () => (
           <Route path="/kanban" element={
             <Layout title="Kanban">
               <Kanban />
+            </Layout>
+          } />
+          <Route path="/chatbot" element={
+            <Layout title="ChatBot">
+              <ChatBot />
             </Layout>
           } />
           <Route path="/painel" element={
