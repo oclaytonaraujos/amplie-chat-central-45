@@ -18,25 +18,8 @@ interface HeaderProps {
 }
 
 export function Header({ title, showMenuButton = false, onMenuClick }: HeaderProps) {
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 0);
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <header className={`
-      transition-all duration-200 ease-in-out border-b px-4 md:px-6 py-4
-      ${isScrolled 
-        ? 'bg-white/80 backdrop-blur-md shadow-sm border-gray-200/50' 
-        : 'bg-transparent border-transparent'
-      }
-    `}>
+    <header className="bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-200/50 px-4 md:px-6 py-4">
       <div className="flex items-center justify-between">
         {/* Left side - Menu button (mobile) + Title */}
         <div className="flex items-center space-x-4">
