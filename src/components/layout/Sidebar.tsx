@@ -128,7 +128,7 @@ export function Sidebar({ isMobile = false, isOpen = false, onClose, onCollapsed
                 <img 
                   src="/lovable-uploads/a2e5cd13-e36f-4dee-b922-d556b4ba1516.png" 
                   alt="Logo Icon" 
-                  className="h-8 w-8 object-contain"
+                  className="h-10 w-10 object-contain"
                 />
               </div>
             )}
