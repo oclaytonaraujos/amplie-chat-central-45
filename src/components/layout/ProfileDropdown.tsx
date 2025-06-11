@@ -1,5 +1,6 @@
 
 import { User, Settings, HelpCircle, LogOut, CreditCard, Users } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu,
@@ -11,11 +12,17 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function ProfileDropdown() {
+  const navigate = useNavigate();
+  
   const userInfo = {
     name: 'João Silva',
     email: 'joao.silva@amplie.com',
     role: 'Administrador',
     avatar: null
+  };
+
+  const handleNavigateToProfile = () => {
+    navigate('/meu-perfil');
   };
 
   return (
@@ -43,7 +50,7 @@ export function ProfileDropdown() {
         
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleNavigateToProfile} className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
           Meu Perfil
         </DropdownMenuItem>

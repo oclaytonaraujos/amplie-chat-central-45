@@ -12,6 +12,7 @@ import Kanban from "./pages/Kanban";
 import ChatBot from "./pages/ChatBot";
 import Painel from "./pages/Painel";
 import Setores from "./pages/Setores";
+import MeuPerfil from "./pages/MeuPerfil";
 import NotFound from "./pages/NotFound";
 import { 
   BarChart3, 
@@ -20,7 +21,8 @@ import {
   Trello, 
   Bot, 
   Monitor, 
-  Building2 
+  Building2,
+  User
 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -93,6 +95,15 @@ const App = () => (
               icon={<Building2 className="w-6 h-6 text-teal-400" />}
             >
               <Setores />
+            </Layout>
+          } />
+          <Route path="/meu-perfil" element={
+            <Layout 
+              title="Meu Perfil" 
+              description="Gerencie suas informações pessoais"
+              icon={<User className="w-6 h-6 text-gray-400" />}
+            >
+              <MeuPerfil />
             </Layout>
           } />
           <Route path="*" element={<NotFound />} />
