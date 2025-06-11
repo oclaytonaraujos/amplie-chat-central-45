@@ -125,13 +125,11 @@ export function Sidebar({ isMobile = false, isOpen = false, onClose, onCollapsed
             )}
             {isCollapsed && (
               <div className="w-full flex justify-center">
-                <div className="p-2 rounded-lg bg-gray-700/30">
-                  <img 
-                    src="/lovable-uploads/5b035ca2-6a1b-45db-b6e2-f291736cf358.png" 
-                    alt="Logo" 
-                    className="h-6 w-auto"
-                  />
-                </div>
+                <img 
+                  src="/lovable-uploads/a2e5cd13-e36f-4dee-b922-d556b4ba1516.png" 
+                  alt="Logo Icon" 
+                  className="h-8 w-8 object-contain"
+                />
               </div>
             )}
           </div>
