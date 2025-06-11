@@ -31,11 +31,12 @@ export function Header({ title, showMenuButton = false, onMenuClick }: HeaderPro
 
   return (
     <header className={`
-      transition-all duration-200 ease-in-out border-b px-4 md:px-6 py-4
+      fixed top-0 right-0 left-0 md:left-64 z-40 transition-all duration-300 ease-in-out m-4
       ${isScrolled 
-        ? 'bg-white/80 backdrop-blur-md shadow-sm border-gray-200/50' 
+        ? 'bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50' 
         : 'bg-transparent border-transparent'
       }
+      rounded-xl px-4 md:px-6 py-4
     `}>
       <div className="flex items-center justify-between">
         {/* Left side - Menu button (mobile) + Title */}

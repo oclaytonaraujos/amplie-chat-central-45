@@ -39,17 +39,15 @@ export function Layout({ children, title }: LayoutProps) {
       
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
-        {/* Header */}
-        <div className="relative z-30">
-          <Header 
-            title={title} 
-            onMenuClick={() => setSidebarOpen(true)}
-            showMenuButton={isMobile}
-          />
-        </div>
+        {/* Fixed Header */}
+        <Header 
+          title={title} 
+          onMenuClick={() => setSidebarOpen(true)}
+          showMenuButton={isMobile}
+        />
         
-        {/* Main content */}
-        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+        {/* Main content with top padding to account for fixed header */}
+        <main className="flex-1 p-4 md:p-6 pt-24 md:pt-28 overflow-y-auto">
           {children}
         </main>
       </div>
