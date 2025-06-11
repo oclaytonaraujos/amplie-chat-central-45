@@ -10,7 +10,8 @@ import {
   Building2,
   Bot,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -59,20 +60,48 @@ const menuItems = [
   }
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isMobile?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export function Sidebar({ isMobile = false, isOpen = false, onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
+  // On mobile, sidebar is always expanded when open
+  const isCollapsed = isMobile ? false : collapsed;
+
+  const handleLinkClick = () => {
+    if (isMobile && onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <div className="p-4 min-h-screen flex flex-col">
+    <div className={cn(
+      "flex flex-col min-h-screen",
+      isMobile ? "w-64 p-4" : "p-4"
+    )}>
       <div className={cn(
         "bg-amplie-sidebar flex-1 transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-lg min-h-0",
-        collapsed ? "w-16" : "w-64"
+        isMobile ? "w-full" : (isCollapsed ? "w-16" : "w-64")
       )}>
         {/* Header */}
         <div className="p-6 border-b border-gray-700/30 flex-shrink-0 relative">
           <div className="flex items-center justify-between">
-            {!collapsed && (
+            {/* Mobile close button */}
+            {isMobile && (
+              <button
+                onClick={onClose}
+                className="absolute right-4 top-4 p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors z-10"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+
+            {!isCollapsed && (
               <div className="flex items-center space-x-2">
                 <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-lg flex items-center justify-center">
                   <MessageSquare className="w-5 h-5 text-white" />
@@ -80,7 +109,7 @@ export function Sidebar() {
                 <span className="text-white font-bold text-lg">Amplie Chat</span>
               </div>
             )}
-            {collapsed && (
+            {isCollapsed && (
               <div className="w-full flex justify-center">
                 <div className="p-2 rounded-lg bg-gray-700/30">
                   <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-lg flex items-center justify-center">
@@ -90,18 +119,21 @@ export function Sidebar() {
               </div>
             )}
           </div>
-          {/* Toggle button positioned outside when collapsed */}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className={cn(
-              "p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors",
-              collapsed 
-                ? "absolute -right-3 top-1/2 -translate-y-1/2 bg-amplie-sidebar border border-gray-700/30 shadow-lg z-10" 
-                : "absolute right-6 top-1/2 -translate-y-1/2"
-            )}
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
+          
+          {/* Toggle button - only show on desktop */}
+          {!isMobile && (
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className={cn(
+                "p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors",
+                isCollapsed 
+                  ? "absolute -right-3 top-1/2 -translate-y-1/2 bg-amplie-sidebar border border-gray-700/30 shadow-lg z-10" 
+                  : "absolute right-6 top-1/2 -translate-y-1/2"
+              )}
+            >
+              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
+          )}
         </div>
 
         {/* Navigation Menu */}
@@ -114,13 +146,14 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 to={item.href}
+                onClick={handleLinkClick}
                 className={cn(
                   "flex items-center rounded-lg transition-all duration-200 group",
-                  collapsed 
+                  isCollapsed 
                     ? "justify-center px-0 py-3 w-full" 
                     : "space-x-3 px-3 py-3",
                   isActive 
-                    ? collapsed
+                    ? isCollapsed
                       ? "bg-amplie-sidebar-active text-white shadow-lg w-full"
                       : "bg-amplie-sidebar-active text-white shadow-lg"
                     : "text-gray-300 hover:bg-amplie-sidebar-hover hover:text-white"
@@ -128,7 +161,7 @@ export function Sidebar() {
               >
                 <div className={cn(
                   "p-2 rounded-lg transition-colors",
-                  collapsed && isActive 
+                  isCollapsed && isActive 
                     ? "bg-transparent" 
                     : isActive 
                       ? "bg-white/20" 
@@ -136,7 +169,7 @@ export function Sidebar() {
                 )}>
                   <Icon className={cn("w-5 h-5", isActive ? "text-white" : item.color)} />
                 </div>
-                {!collapsed && (
+                {!isCollapsed && (
                   <span className="font-medium text-sm">{item.title}</span>
                 )}
               </Link>
@@ -146,7 +179,7 @@ export function Sidebar() {
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-700/30 flex-shrink-0">
-          {!collapsed ? (
+          {!isCollapsed ? (
             <div className="flex items-center space-x-3 text-gray-400 text-sm">
               <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
                 <Users className="w-4 h-4" />
