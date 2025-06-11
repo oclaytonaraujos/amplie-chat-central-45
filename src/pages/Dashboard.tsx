@@ -7,10 +7,7 @@ import {
   Users,
   TrendingUp,
   Building2,
-  Activity,
-  BarChart3,
-  Wallet,
-  UserPlus
+  Activity
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { ChartCard } from '@/components/dashboard/ChartCard';
@@ -22,166 +19,123 @@ import {
   CartesianGrid, 
   Tooltip, 
   ResponsiveContainer,
-  LineChart,
-  Line
+  PieChart,
+  Pie,
+  Cell
 } from 'recharts';
 
-const weeklyData = [
-  { day: 'M', value: 45 },
-  { day: 'T', value: 15 },
-  { day: 'W', value: 10 },
-  { day: 'T', value: 20 },
-  { day: 'F', value: 50 },
-  { day: 'S', value: 5 },
-  { day: 'S', value: 35 }
+const atendimentosData = [
+  { nome: 'Seg', atendimentos: 45 },
+  { nome: 'Ter', atendimentos: 38 },
+  { nome: 'Qua', atendimentos: 52 },
+  { nome: 'Qui', atendimentos: 41 },
+  { nome: 'Sex', atendimentos: 67 },
+  { nome: 'Sáb', atendimentos: 23 },
+  { nome: 'Dom', atendimentos: 18 }
 ];
 
-const salesData = [
-  { month: 'Apr', value: 50 },
-  { month: 'May', value: 100 },
-  { month: 'Jun', value: 250 },
-  { month: 'Jul', value: 300 },
-  { month: 'Aug', value: 500 },
-  { month: 'Sep', value: 250 },
-  { month: 'Oct', value: 150 },
-  { month: 'Nov', value: 400 },
-  { month: 'Dec', value: 500 }
+const setoresData = [
+  { nome: 'Vendas', valor: 45, cor: '#344ccf' },
+  { nome: 'Suporte', valor: 32, cor: '#00d25b' },
+  { nome: 'Financeiro', valor: 18, cor: '#ffab00' },
+  { nome: 'RH', valor: 5, cor: '#ea5455' }
 ];
 
-const tasksData = [
-  { month: 'Apr', value: 100 },
-  { month: 'May', value: 50 },
-  { month: 'Jun', value: 250 },
-  { month: 'Jul', value: 200 },
-  { month: 'Aug', value: 500 },
-  { month: 'Sep', value: 300 },
-  { month: 'Oct', value: 250 },
-  { month: 'Nov', value: 350 },
-  { month: 'Dec', value: 500 }
+const topAgentes = [
+  { nome: 'Ana Silva', atendimentos: 23, setor: 'Vendas' },
+  { nome: 'Carlos Santos', atendimentos: 19, setor: 'Suporte' },
+  { nome: 'Maria Oliveira', atendimentos: 17, setor: 'Vendas' },
+  { nome: 'João Costa', atendimentos: 15, setor: 'Financeiro' }
 ];
 
 export default function Dashboard() {
   return (
-    <div className="p-6 space-y-6 bg-gray-50 min-h-screen">
+    <div className="p-6 space-y-6">
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
-          title="Bookings"
-          value="281"
+          title="Atendimentos em Aberto"
+          value={42}
+          subtitle="Aguardando resposta"
           icon={<MessageSquare className="w-6 h-6 text-white" />}
-          iconColor="bg-gray-700"
-          trend={{ value: 55, isPositive: true, period: "than last week" }}
+          iconColor="bg-gradient-to-r from-blue-500 to-blue-600"
+          trend={{ value: 12, isPositive: true }}
         />
         
         <MetricCard
-          title="Today's Users"
-          value="2,300"
-          icon={<BarChart3 className="w-6 h-6 text-white" />}
-          iconColor="bg-blue-500"
-          trend={{ value: 3, isPositive: true, period: "than last month" }}
+          title="Finalizados Hoje"
+          value={18}
+          subtitle="Meta: 25 atendimentos"
+          icon={<CheckCircle className="w-6 h-6 text-white" />}
+          iconColor="bg-gradient-to-r from-green-500 to-green-600"
+          trend={{ value: 8, isPositive: true }}
         />
         
         <MetricCard
-          title="Revenue"
-          value="34k"
-          icon={<Wallet className="w-6 h-6 text-white" />}
-          iconColor="bg-green-500"
-          trend={{ value: 1, isPositive: true, period: "than yesterday" }}
+          title="Tempo Médio de Espera"
+          value="2m 34s"
+          subtitle="Meta: < 3 minutos"
+          icon={<Clock className="w-6 h-6 text-white" />}
+          iconColor="bg-gradient-to-r from-orange-500 to-orange-600"
+          trend={{ value: 5, isPositive: false }}
         />
         
         <MetricCard
-          title="Followers"
-          value="+91"
-          icon={<UserPlus className="w-6 h-6 text-white" />}
-          iconColor="bg-pink-500"
-          trend={{ value: 0, isPositive: true, period: "Just updated" }}
+          title="Tempo Médio de Atendimento"
+          value="8m 12s"
+          subtitle="Meta: < 10 minutos"
+          icon={<Timer className="w-6 h-6 text-white" />}
+          iconColor="bg-gradient-to-r from-purple-500 to-purple-600"
+          trend={{ value: 15, isPositive: false }}
         />
       </div>
 
-      {/* Gráficos */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Website Views */}
+      {/* Gráficos e Listas */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Gráfico de Atendimentos por Dia */}
         <ChartCard
-          title="Website Views"
-          subtitle="Last Campaign Performance"
-          chartBackground="bg-blue-500"
-          timestamp="campaign sent 2 days ago"
+          title="Atendimentos por Dia"
+          icon={<TrendingUp className="w-5 h-5 text-white" />}
+          iconColor="bg-gradient-to-r from-indigo-500 to-indigo-600"
         >
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={weeklyData}>
-              <Bar 
-                dataKey="value" 
-                fill="rgba(255,255,255,0.8)" 
-                radius={[4, 4, 0, 0]}
-                barSize={20}
-              />
-              <XAxis 
-                dataKey="day" 
-                axisLine={false} 
-                tickLine={false}
-                tick={{ fill: 'white', fontSize: 12 }}
-              />
-              <YAxis hide />
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={atendimentosData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="nome" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="atendimentos" fill="#344ccf" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Daily Sales */}
+        {/* Gráfico de Atendimentos por Setor */}
         <ChartCard
-          title="Daily Sales"
-          subtitle="(+15%) increase in today sales."
-          chartBackground="bg-green-500"
-          timestamp="updated 4 min ago"
+          title="Atendimentos por Setor"
+          icon={<Building2 className="w-5 h-5 text-white" />}
+          iconColor="bg-gradient-to-r from-teal-500 to-teal-600"
         >
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={salesData}>
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke="white" 
-                strokeWidth={3}
-                dot={{ fill: 'white', r: 4 }}
-              />
-              <XAxis 
-                dataKey="month" 
-                axisLine={false} 
-                tickLine={false}
-                tick={{ fill: 'white', fontSize: 10 }}
-              />
-              <YAxis hide />
-            </LineChart>
-          </ResponsiveContainer>
-        </ChartCard>
-
-        {/* Completed Tasks */}
-        <ChartCard
-          title="Completed Tasks"
-          subtitle="Last Campaign Performance"
-          chartBackground="bg-gray-800"
-          timestamp="just updated"
-        >
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={tasksData}>
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke="white" 
-                strokeWidth={3}
-                dot={{ fill: 'white', r: 4 }}
-              />
-              <XAxis 
-                dataKey="month" 
-                axisLine={false} 
-                tickLine={false}
-                tick={{ fill: 'white', fontSize: 10 }}
-              />
-              <YAxis hide />
-            </LineChart>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={setoresData}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                dataKey="valor"
+                label={({ nome, valor }) => `${nome} (${valor})`}
+              >
+                {setoresData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.cor} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
           </ResponsiveContainer>
         </ChartCard>
       </div>
 
-      {/* Status do Kanban e Top Agentes - mantendo design original do Amplie Chat */}
+      {/* Status do Kanban e Top Agentes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Mini Kanban */}
         <div className="bg-white rounded-xl shadow-amplie p-6 hover:shadow-amplie-hover transition-all duration-300">
@@ -220,12 +174,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="space-y-4">
-            {[
-              { nome: 'Ana Silva', atendimentos: 23, setor: 'Vendas' },
-              { nome: 'Carlos Santos', atendimentos: 19, setor: 'Suporte' },
-              { nome: 'Maria Oliveira', atendimentos: 17, setor: 'Vendas' },
-              { nome: 'João Costa', atendimentos: 15, setor: 'Financeiro' }
-            ].map((agente, index) => (
+            {topAgentes.map((agente, index) => (
               <div key={agente.nome} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
