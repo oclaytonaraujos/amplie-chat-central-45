@@ -49,7 +49,7 @@ export function KanbanColumns({ atendimentos, onSelectAtendimento, usuarioLogado
   ];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="space-y-6">
       {colunas.map(coluna => (
         <div key={coluna.id} className="bg-gray-50 rounded-xl p-4">
           {/* Header da Coluna */}
@@ -64,7 +64,7 @@ export function KanbanColumns({ atendimentos, onSelectAtendimento, usuarioLogado
           </div>
 
           {/* Cards da Coluna */}
-          <div className="space-y-3 max-h-[600px] overflow-y-auto">
+          <div className="space-y-3 max-h-[300px] overflow-y-auto">
             {coluna.atendimentos.map(atendimento => (
               <AtendimentoCard
                 key={atendimento.id}
