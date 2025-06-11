@@ -65,7 +65,7 @@ export function Header({
           )}
           <div className="flex items-center space-x-3">
             {icon && (
-              <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-lg">
+              <div className="p-3 bg-gray-100 rounded-lg">
                 {icon}
               </div>
             )}

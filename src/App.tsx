@@ -36,16 +36,16 @@ const App = () => (
             <Layout 
               title="Dashboard" 
               description="Visão geral do sistema"
-              icon={<BarChart3 className="w-6 h-6 text-white" />}
+              icon={<BarChart3 className="w-6 h-6 text-blue-400" />}
             >
               <Dashboard />
             </Layout>
           } />
           <Route path="/usuarios" element={
             <Layout 
-              title="Gestão de Usuários" 
+              title="Usuários" 
               description="Gerencie os usuários e suas permissões"
-              icon={<Users className="w-6 h-6 text-white" />}
+              icon={<Users className="w-6 h-6 text-green-400" />}
             >
               <Usuarios />
             </Layout>
@@ -54,7 +54,7 @@ const App = () => (
             <Layout 
               title="Atendimento" 
               description="Gerencie conversas e atendimentos"
-              icon={<MessageCircle className="w-6 h-6 text-white" />}
+              icon={<MessageCircle className="w-6 h-6 text-purple-400" />}
             >
               <Atendimento />
             </Layout>
@@ -63,7 +63,7 @@ const App = () => (
             <Layout 
               title="Kanban" 
               description="Visualização em kanban dos atendimentos"
-              icon={<Trello className="w-6 h-6 text-white" />}
+              icon={<Trello className="w-6 h-6 text-orange-400" />}
             >
               <Kanban />
             </Layout>
@@ -72,7 +72,7 @@ const App = () => (
             <Layout 
               title="ChatBot" 
               description="Configure e gerencie o bot de atendimento"
-              icon={<Bot className="w-6 h-6 text-white" />}
+              icon={<Bot className="w-6 h-6 text-indigo-400" />}
             >
               <ChatBot />
             </Layout>
@@ -81,7 +81,7 @@ const App = () => (
             <Layout 
               title="Painel" 
               description="Painel de controle e monitoramento"
-              icon={<Monitor className="w-6 h-6 text-white" />}
+              icon={<Monitor className="w-6 h-6 text-red-400" />}
             >
               <Painel />
             </Layout>
@@ -90,7 +90,7 @@ const App = () => (
             <Layout 
               title="Setores" 
               description="Gerencie os setores da empresa"
-              icon={<Building2 className="w-6 h-6 text-white" />}
+              icon={<Building2 className="w-6 h-6 text-teal-400" />}
             >
               <Setores />
             </Layout>
