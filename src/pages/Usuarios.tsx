@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Users, Plus, Search, Edit, Trash2, Shield } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -42,17 +42,8 @@ export default function Usuarios() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-lg">
-            <Users className="w-6 h-6 text-white" />
-          </div>
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Gestão de Usuários</h2>
-            <p className="text-gray-600">Gerencie os usuários e suas permissões</p>
-          </div>
-        </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
         <Button className="bg-amplie-primary hover:bg-amplie-primary-light">
           <Plus className="w-4 h-4 mr-2" />
           Novo Usuário

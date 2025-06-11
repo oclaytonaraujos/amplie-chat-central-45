@@ -7,9 +7,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface LayoutProps {
   children: React.ReactNode;
   title: string;
+  description?: string;
+  icon?: React.ReactNode;
 }
 
-export function Layout({ children, title }: LayoutProps) {
+export function Layout({ children, title, description, icon }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
@@ -56,7 +58,9 @@ export function Layout({ children, title }: LayoutProps) {
       >
         {/* Fixed Header with dynamic left positioning */}
         <Header 
-          title={title} 
+          title={title}
+          description={description}
+          icon={icon}
           onMenuClick={() => setSidebarOpen(true)}
           showMenuButton={isMobile}
           sidebarWidth={getSidebarWidth()}

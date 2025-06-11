@@ -13,6 +13,15 @@ import ChatBot from "./pages/ChatBot";
 import Painel from "./pages/Painel";
 import Setores from "./pages/Setores";
 import NotFound from "./pages/NotFound";
+import { 
+  BarChart3, 
+  Users, 
+  MessageCircle, 
+  Trello, 
+  Bot, 
+  Monitor, 
+  Building2 
+} from "lucide-react";
 
 const queryClient = new QueryClient();
 
@@ -24,37 +33,65 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={
-            <Layout title="Dashboard">
+            <Layout 
+              title="Dashboard" 
+              description="Visão geral do sistema"
+              icon={<BarChart3 className="w-6 h-6 text-white" />}
+            >
               <Dashboard />
             </Layout>
           } />
           <Route path="/usuarios" element={
-            <Layout title="Usuários">
+            <Layout 
+              title="Gestão de Usuários" 
+              description="Gerencie os usuários e suas permissões"
+              icon={<Users className="w-6 h-6 text-white" />}
+            >
               <Usuarios />
             </Layout>
           } />
           <Route path="/atendimento" element={
-            <Layout title="Atendimento">
+            <Layout 
+              title="Atendimento" 
+              description="Gerencie conversas e atendimentos"
+              icon={<MessageCircle className="w-6 h-6 text-white" />}
+            >
               <Atendimento />
             </Layout>
           } />
           <Route path="/kanban" element={
-            <Layout title="Kanban">
+            <Layout 
+              title="Kanban" 
+              description="Visualização em kanban dos atendimentos"
+              icon={<Trello className="w-6 h-6 text-white" />}
+            >
               <Kanban />
             </Layout>
           } />
           <Route path="/chatbot" element={
-            <Layout title="ChatBot">
+            <Layout 
+              title="ChatBot" 
+              description="Configure e gerencie o bot de atendimento"
+              icon={<Bot className="w-6 h-6 text-white" />}
+            >
               <ChatBot />
             </Layout>
           } />
           <Route path="/painel" element={
-            <Layout title="Painel">
+            <Layout 
+              title="Painel" 
+              description="Painel de controle e monitoramento"
+              icon={<Monitor className="w-6 h-6 text-white" />}
+            >
               <Painel />
             </Layout>
           } />
           <Route path="/setores" element={
-            <Layout title="Setores">
+            <Layout 
+              title="Setores" 
+              description="Gerencie os setores da empresa"
+              icon={<Building2 className="w-6 h-6 text-white" />}
+            >
               <Setores />
             </Layout>
           } />
