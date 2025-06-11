@@ -97,6 +97,9 @@ const clienteExemplo = {
 export default function Atendimento() {
   const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'chat'>('list');
+  
+  // Usuário logado (em um app real, isso viria do contexto de autenticação)
+  const usuarioLogado = 'Ana Silva';
 
   // Em dispositivos móveis, trocar entre lista e chat
   const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
@@ -131,7 +134,8 @@ export default function Atendimento() {
         <div className="lg:hidden">
           <KanbanColumns 
             atendimentos={dadosAtendimentos} 
-            onSelectAtendimento={handleSelectAtendimento} 
+            onSelectAtendimento={handleSelectAtendimento}
+            usuarioLogado={usuarioLogado}
           />
         </div>
       ) : (
@@ -155,7 +159,8 @@ export default function Atendimento() {
         <div className="col-span-7 overflow-auto">
           <KanbanColumns 
             atendimentos={dadosAtendimentos} 
-            onSelectAtendimento={handleSelectAtendimento} 
+            onSelectAtendimento={handleSelectAtendimento}
+            usuarioLogado={usuarioLogado}
           />
         </div>
 
