@@ -70,7 +70,7 @@ export function Sidebar() {
         collapsed ? "w-16" : "w-64"
       )}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-700/30 flex-shrink-0">
+        <div className="p-6 border-b border-gray-700/30 flex-shrink-0 relative">
           <div className="flex items-center justify-between">
             {!collapsed && (
               <div className="flex items-center space-x-2">
@@ -87,13 +87,19 @@ export function Sidebar() {
                 </div>
               </div>
             )}
-            <button
-              onClick={() => setCollapsed(!collapsed)}
-              className="p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors"
-            >
-              {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            </button>
           </div>
+          {/* Toggle button positioned outside when collapsed */}
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className={cn(
+              "p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors",
+              collapsed 
+                ? "absolute -right-3 top-1/2 -translate-y-1/2 bg-amplie-sidebar border border-gray-700/30 shadow-lg z-10" 
+                : "absolute right-6 top-1/2 -translate-y-1/2"
+            )}
+          >
+            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+          </button>
         </div>
 
         {/* Navigation Menu */}
@@ -108,15 +114,23 @@ export function Sidebar() {
                 to={item.href}
                 className={cn(
                   "flex items-center rounded-lg transition-all duration-200 group",
-                  collapsed ? "justify-center px-2 py-3" : "space-x-3 px-3 py-3",
+                  collapsed 
+                    ? "justify-center px-0 py-3 w-full" 
+                    : "space-x-3 px-3 py-3",
                   isActive 
-                    ? "bg-amplie-sidebar-active text-white shadow-lg" 
+                    ? collapsed
+                      ? "bg-amplie-sidebar-active text-white shadow-lg w-full"
+                      : "bg-amplie-sidebar-active text-white shadow-lg"
                     : "text-gray-300 hover:bg-amplie-sidebar-hover hover:text-white"
                 )}
               >
                 <div className={cn(
                   "p-2 rounded-lg transition-colors",
-                  isActive ? "bg-white/20" : "bg-gray-700/30 group-hover:bg-gray-600/50"
+                  collapsed && isActive 
+                    ? "bg-transparent" 
+                    : isActive 
+                      ? "bg-white/20" 
+                      : "bg-gray-700/30 group-hover:bg-gray-600/50"
                 )}>
                   <Icon className={cn("w-5 h-5", isActive ? "text-white" : item.color)} />
                 </div>
