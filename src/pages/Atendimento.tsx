@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { MessageSquare, User } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
-import { KanbanColumns } from '@/components/atendimento/KanbanColumns';
+import { AtendimentosList } from '@/components/atendimento/AtendimentosList';
 import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
 import { ClienteInfo } from '@/components/atendimento/ClienteInfo';
 
@@ -95,65 +95,31 @@ const clienteExemplo = {
 
 export default function Atendimento() {
   const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'chat'>('list');
   
-  // Usuário logado (em um app real, isso viria do contexto de autenticação)
-  const usuarioLogado = 'Ana Silva';
-
-  // Em dispositivos móveis, trocar entre lista e chat
   const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
     setSelectedAtendimento(atendimento);
-    if (window.innerWidth < 1024) { // Breakpoint lg
-      setViewMode('chat');
-    }
-  };
-
-  const handleReturnToList = () => {
-    setViewMode('list');
   };
 
   return (
     <div className="p-6 h-[calc(100vh-8rem)]">
-      {/* Barra de filtros e pesquisa */}
-      <FilterBar />
-
-      {/* Conteúdo principal - Lista em dispositivos móveis ou layout completo em desktop */}
-      {viewMode === 'list' ? (
-        <div className="lg:hidden">
-          <KanbanColumns 
-            atendimentos={dadosAtendimentos} 
-            onSelectAtendimento={handleSelectAtendimento}
-            usuarioLogado={usuarioLogado}
-          />
-        </div>
-      ) : (
-        <div className="lg:hidden h-[calc(100vh-16rem)]">
-          <ChatWhatsApp 
-            cliente={{
-              id: selectedAtendimento?.id || 1,
-              nome: selectedAtendimento?.cliente || 'Cliente',
-              telefone: selectedAtendimento?.telefone || '',
-              status: 'online'
-            }}
-            mensagens={mensagensExemplo}
-            onReturnToList={handleReturnToList}
-          />
-        </div>
-      )}
-
-      {/* Layout desktop - sempre visível em telas grandes */}
-      <div className="hidden lg:grid lg:grid-cols-12 lg:gap-6 h-[calc(100vh-18rem)]">
-        {/* Colunas Kanban - 7 colunas */}
-        <div className="col-span-7 overflow-auto">
-          <KanbanColumns 
-            atendimentos={dadosAtendimentos} 
-            onSelectAtendimento={handleSelectAtendimento}
-            usuarioLogado={usuarioLogado}
-          />
+      <div className="grid grid-cols-12 gap-6 h-full">
+        {/* Primeira Coluna - Pesquisa, Filtros e Atendimentos */}
+        <div className="col-span-5 flex flex-col">
+          {/* Barra de filtros e pesquisa */}
+          <FilterBar />
+          
+          {/* Lista de atendimentos */}
+          <div className="flex-1">
+            <AtendimentosList 
+              atendimentos={dadosAtendimentos} 
+              onSelectAtendimento={handleSelectAtendimento}
+              selectedAtendimento={selectedAtendimento}
+            />
+          </div>
         </div>
 
-        {/* Área de chat e informações do cliente - 5 colunas */}
-        <div className="col-span-5 grid grid-rows-3 gap-4 h-full">
+        {/* Segunda Coluna - Chat e Informações do Cliente */}
+        <div className="col-span-7 grid grid-rows-3 gap-4 h-full">
           {/* Chat do WhatsApp - ocupa 2/3 da altura */}
           <div className="row-span-2">
             {selectedAtendimento ? (
