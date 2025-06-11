@@ -13,6 +13,12 @@ import ChatBot from "./pages/ChatBot";
 import Painel from "./pages/Painel";
 import Setores from "./pages/Setores";
 import MeuPerfil from "./pages/MeuPerfil";
+import ConfiguracoesGerais from "./pages/configuracoes/ConfiguracoesGerais";
+import PrivacidadeSeguranca from "./pages/configuracoes/PrivacidadeSeguranca";
+import PreferenciasNotificacao from "./pages/configuracoes/PreferenciasNotificacao";
+import Aparencia from "./pages/configuracoes/Aparencia";
+import Idioma from "./pages/configuracoes/Idioma";
+import ConfiguracoesAvancadas from "./pages/configuracoes/ConfiguracoesAvancadas";
 import NotFound from "./pages/NotFound";
 import { 
   BarChart3, 
@@ -22,7 +28,11 @@ import {
   Bot, 
   Monitor, 
   Building2,
-  User
+  User,
+  Shield,
+  Bell,
+  Globe,
+  Settings
 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -104,6 +114,60 @@ const App = () => (
               icon={<User className="w-6 h-6 text-gray-400" />}
             >
               <MeuPerfil />
+            </Layout>
+          } />
+          <Route path="/configuracoes/conta" element={
+            <Layout 
+              title="Configurações da Conta" 
+              description="Gerencie suas informações de conta"
+              icon={<User className="w-6 h-6 text-blue-400" />}
+            >
+              <ConfiguracoesGerais />
+            </Layout>
+          } />
+          <Route path="/configuracoes/privacidade" element={
+            <Layout 
+              title="Privacidade e Segurança" 
+              description="Configure suas preferências de privacidade"
+              icon={<Shield className="w-6 h-6 text-green-400" />}
+            >
+              <PrivacidadeSeguranca />
+            </Layout>
+          } />
+          <Route path="/configuracoes/notificacoes" element={
+            <Layout 
+              title="Preferências de Notificação" 
+              description="Configure como receber notificações"
+              icon={<Bell className="w-6 h-6 text-purple-400" />}
+            >
+              <PreferenciasNotificacao />
+            </Layout>
+          } />
+          <Route path="/configuracoes/aparencia" element={
+            <Layout 
+              title="Aparência" 
+              description="Personalize a aparência da interface"
+              icon={<Monitor className="w-6 h-6 text-orange-400" />}
+            >
+              <Aparencia />
+            </Layout>
+          } />
+          <Route path="/configuracoes/idioma" element={
+            <Layout 
+              title="Idioma e Região" 
+              description="Configure preferências de idioma e localização"
+              icon={<Globe className="w-6 h-6 text-indigo-400" />}
+            >
+              <Idioma />
+            </Layout>
+          } />
+          <Route path="/configuracoes/avancadas" element={
+            <Layout 
+              title="Configurações Avançadas" 
+              description="Configurações técnicas e avançadas"
+              icon={<Settings className="w-6 h-6 text-red-400" />}
+            >
+              <ConfiguracoesAvancadas />
             </Layout>
           } />
           <Route path="*" element={<NotFound />} />

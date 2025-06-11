@@ -1,5 +1,6 @@
 
 import { Settings, User, Shield, Bell, Monitor, Moon, Sun, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu,
@@ -14,6 +15,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export function SettingsDropdown() {
+  const navigate = useNavigate();
+
+  const handleNavigateTo = (path: string) => {
+    navigate(path);
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -25,17 +32,17 @@ export function SettingsDropdown() {
         <DropdownMenuLabel>Configurações</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/conta')} className="cursor-pointer">
           <User className="mr-2 h-4 w-4" />
           Configurações da Conta
         </DropdownMenuItem>
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/privacidade')} className="cursor-pointer">
           <Shield className="mr-2 h-4 w-4" />
           Privacidade e Segurança
         </DropdownMenuItem>
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/notificacoes')} className="cursor-pointer">
           <Bell className="mr-2 h-4 w-4" />
           Preferências de Notificação
         </DropdownMenuItem>
@@ -48,17 +55,9 @@ export function SettingsDropdown() {
             Aparência
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="bg-white">
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/aparencia')} className="cursor-pointer">
               <Sun className="mr-2 h-4 w-4" />
-              Claro
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Moon className="mr-2 h-4 w-4" />
-              Escuro
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Monitor className="mr-2 h-4 w-4" />
-              Sistema
+              Configurar Aparência
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
@@ -69,21 +68,15 @@ export function SettingsDropdown() {
             Idioma
           </DropdownMenuSubTrigger>
           <DropdownMenuSubContent className="bg-white">
-            <DropdownMenuItem>
-              🇧🇷 Português
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              🇺🇸 English
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              🇪🇸 Español
+            <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/idioma')} className="cursor-pointer">
+              🇧🇷 Configurar Idioma
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/avancadas')} className="cursor-pointer">
           <Settings className="mr-2 h-4 w-4" />
           Configurações Avançadas
         </DropdownMenuItem>
