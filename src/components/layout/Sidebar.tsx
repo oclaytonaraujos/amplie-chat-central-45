@@ -116,18 +116,21 @@ export function Sidebar({ isMobile = false, isOpen = false, onClose, onCollapsed
 
             {!isCollapsed && (
               <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-lg flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-white font-bold text-lg">Amplie Chat</span>
+                <img 
+                  src="/lovable-uploads/5b035ca2-6a1b-45db-b6e2-f291736cf358.png" 
+                  alt="Logo" 
+                  className="h-8 w-auto"
+                />
               </div>
             )}
             {isCollapsed && (
               <div className="w-full flex justify-center">
                 <div className="p-2 rounded-lg bg-gray-700/30">
-                  <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-lg flex items-center justify-center">
-                    <MessageSquare className="w-5 h-5 text-white" />
-                  </div>
+                  <img 
+                    src="/lovable-uploads/5b035ca2-6a1b-45db-b6e2-f291736cf358.png" 
+                    alt="Logo" 
+                    className="h-6 w-auto"
+                  />
                 </div>
               </div>
             )}
