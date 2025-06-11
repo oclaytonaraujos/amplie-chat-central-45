@@ -5,6 +5,15 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Layout } from "./components/layout/Layout";
+import { 
+  LayoutDashboard, 
+  Users, 
+  MessageSquare, 
+  Grid2X2,
+  Settings, 
+  Building2,
+  Bot
+} from 'lucide-react';
 import Dashboard from "./pages/Dashboard";
 import Usuarios from "./pages/Usuarios";
 import Atendimento from "./pages/Atendimento";
@@ -24,37 +33,65 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={
-            <Layout title="Dashboard">
+            <Layout 
+              title="Dashboard" 
+              description="Bem-vindo ao painel de controle do Amplie Chat"
+              icon={LayoutDashboard}
+            >
               <Dashboard />
             </Layout>
           } />
           <Route path="/usuarios" element={
-            <Layout title="Usuários">
+            <Layout 
+              title="Gestão de Usuários" 
+              description="Gerencie os usuários e suas permissões"
+              icon={Users}
+            >
               <Usuarios />
             </Layout>
           } />
           <Route path="/atendimento" element={
-            <Layout title="Atendimento">
+            <Layout 
+              title="Atendimento" 
+              description="Gerencie os atendimentos e conversas"
+              icon={MessageSquare}
+            >
               <Atendimento />
             </Layout>
           } />
           <Route path="/kanban" element={
-            <Layout title="Kanban">
+            <Layout 
+              title="Kanban" 
+              description="Visualize e organize os atendimentos"
+              icon={Grid2X2}
+            >
               <Kanban />
             </Layout>
           } />
           <Route path="/chatbot" element={
-            <Layout title="ChatBot">
+            <Layout 
+              title="ChatBot" 
+              description="Configure e gerencie o chatbot"
+              icon={Bot}
+            >
               <ChatBot />
             </Layout>
           } />
           <Route path="/painel" element={
-            <Layout title="Painel">
+            <Layout 
+              title="Painel" 
+              description="Configurações gerais do sistema"
+              icon={Settings}
+            >
               <Painel />
             </Layout>
           } />
           <Route path="/setores" element={
-            <Layout title="Setores">
+            <Layout 
+              title="Setores" 
+              description="Gerencie os setores da empresa"
+              icon={Building2}
+            >
               <Setores />
             </Layout>
           } />

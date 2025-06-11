@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Menu } from 'lucide-react';
+import { Menu, LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { NotificationDropdown } from './NotificationDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
@@ -8,12 +8,23 @@ import { ProfileDropdown } from './ProfileDropdown';
 
 interface HeaderProps {
   title: string;
+  description?: string;
+  icon?: LucideIcon;
+  iconColor?: string;
   showMenuButton?: boolean;
   onMenuClick?: () => void;
   sidebarWidth?: number;
 }
 
-export function Header({ title, showMenuButton = false, onMenuClick, sidebarWidth = 0 }: HeaderProps) {
+export function Header({ 
+  title, 
+  description, 
+  icon: Icon, 
+  iconColor = 'text-blue-400',
+  showMenuButton = false, 
+  onMenuClick, 
+  sidebarWidth = 0 
+}: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -42,7 +53,7 @@ export function Header({ title, showMenuButton = false, onMenuClick, sidebarWidt
       }}
     >
       <div className="flex items-center justify-between">
-        {/* Left side - Menu button (mobile) + Title */}
+        {/* Left side - Menu button (mobile) + Title with Icon */}
         <div className="flex items-center space-x-4">
           {showMenuButton && (
             <Button 
@@ -54,11 +65,20 @@ export function Header({ title, showMenuButton = false, onMenuClick, sidebarWidt
               <Menu className="w-5 h-5 text-gray-600" />
             </Button>
           )}
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
-            <p className="text-xs md:text-sm text-gray-500 mt-1 hidden sm:block">
-              Bem-vindo ao painel de controle do Amplie Chat
-            </p>
+          <div className="flex items-center space-x-3">
+            {Icon && (
+              <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-lg">
+                <Icon className={`w-6 h-6 text-white`} />
+              </div>
+            )}
+            <div>
+              <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
+              {description && (
+                <p className="text-xs md:text-sm text-gray-500 mt-1 hidden sm:block">
+                  {description}
+                </p>
+              )}
+            </div>
           </div>
         </div>
 
