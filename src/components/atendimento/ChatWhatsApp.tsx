@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft } from 'lucide-react';
+import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +32,7 @@ interface ChatWhatsAppProps {
   cliente: ClienteInfo;
   mensagens: Message[];
   onReturnToList?: () => void;
+  onSairConversa?: () => void;
   onTransferir?: () => void;
   onFinalizar?: () => void;
 }
@@ -40,6 +41,7 @@ export function ChatWhatsApp({
   cliente, 
   mensagens: initialMensagens, 
   onReturnToList,
+  onSairConversa,
   onTransferir,
   onFinalizar
 }: ChatWhatsAppProps) {
@@ -47,7 +49,6 @@ export function ChatWhatsApp({
   const [novaMensagem, setNovaMensagem] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   
-  // Botão voltar só aparece em telas menores
   const handleEnviarMensagem = () => {
     if (!novaMensagem.trim()) return;
     
@@ -121,7 +122,7 @@ export function ChatWhatsApp({
         </div>
         
         <div className="flex items-center space-x-2">
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" className="hidden sm:flex">
             <Phone className="w-5 h-5 text-gray-600" />
           </Button>
           <Button variant="ghost" size="icon">
@@ -134,11 +135,26 @@ export function ChatWhatsApp({
       <div className="flex flex-col flex-grow">
         {/* Ações do atendimento */}
         <div className="bg-gray-50 p-3 border-b border-gray-200 flex justify-end space-x-2">
-          <Button variant="outline" size="sm" onClick={onTransferir}>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onSairConversa}
+            className="bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100"
+          >
+            <LogOut className="w-4 h-4 mr-1" />
+            <span className="hidden sm:inline">Sair</span>
+          </Button>
+          <Button variant="outline" size="sm" onClick={onTransferir} className="hidden sm:flex">
             Transferir
           </Button>
-          <Button variant="outline" size="sm" className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100" onClick={onFinalizar}>
-            Finalizar
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100" 
+            onClick={onFinalizar}
+          >
+            <span className="hidden sm:inline">Finalizar</span>
+            <span className="sm:hidden">Fim</span>
           </Button>
         </div>
         
@@ -150,7 +166,7 @@ export function ChatWhatsApp({
                 className={`flex ${mensagem.autor === 'agente' ? 'justify-end' : 'justify-start'}`}
               >
                 <div 
-                  className={`max-w-[80%] md:max-w-[70%] px-4 py-2 rounded-lg ${
+                  className={`max-w-[85%] sm:max-w-[80%] md:max-w-[70%] px-3 sm:px-4 py-2 rounded-lg ${
                     mensagem.autor === 'agente' 
                       ? 'bg-green-50 border border-green-100 text-gray-800' 
                       : 'bg-white border border-gray-200 text-gray-800'
@@ -191,13 +207,13 @@ export function ChatWhatsApp({
         {/* Input de mensagem */}
         <div className="bg-white p-3 border-t border-gray-200">
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="hidden sm:flex">
               <Paperclip className="w-5 h-5 text-gray-500" />
             </Button>
             
             <Input 
               placeholder="Digite uma mensagem..." 
-              className="flex-grow"
+              className="flex-grow text-sm"
               value={novaMensagem}
               onChange={(e) => setNovaMensagem(e.target.value)}
               onKeyDown={(e) => {
@@ -208,7 +224,7 @@ export function ChatWhatsApp({
               }}
             />
             
-            <Button variant="ghost" size="icon">
+            <Button variant="ghost" size="icon" className="hidden sm:flex">
               <Mic className="w-5 h-5 text-gray-500" />
             </Button>
             
@@ -218,7 +234,7 @@ export function ChatWhatsApp({
               disabled={!novaMensagem.trim()}
               onClick={handleEnviarMensagem}
             >
-              <Send className="w-5 h-5" />
+              <Send className="w-4 h-4" />
             </Button>
           </div>
         </div>

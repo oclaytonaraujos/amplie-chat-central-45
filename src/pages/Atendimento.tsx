@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { MessageSquare, User } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
 import { AtendimentosList } from '@/components/atendimento/AtendimentosList';
 import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
 import { ClienteInfo } from '@/components/atendimento/ClienteInfo';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Dados de exemplo
 const dadosAtendimentos = [
@@ -95,21 +97,89 @@ const clienteExemplo = {
 
 export default function Atendimento() {
   const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
+  const [showChat, setShowChat] = useState(false);
+  const isMobile = useIsMobile();
   
   const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
     setSelectedAtendimento(atendimento);
+    if (isMobile) {
+      setShowChat(true);
+    }
   };
 
+  const handleReturnToList = () => {
+    setShowChat(false);
+  };
+
+  const handleSairConversa = () => {
+    setSelectedAtendimento(null);
+    if (isMobile) {
+      setShowChat(false);
+    }
+  };
+
+  const handleTransferir = () => {
+    console.log('Transferir atendimento');
+  };
+
+  const handleFinalizar = () => {
+    console.log('Finalizar atendimento');
+    setSelectedAtendimento(null);
+    if (isMobile) {
+      setShowChat(false);
+    }
+  };
+
+  // Layout mobile: mostra lista ou chat baseado no estado
+  if (isMobile) {
+    return (
+      <div className="h-[calc(100vh-8rem)] p-4">
+        {!showChat ? (
+          // Mostra lista de atendimentos
+          <div className="flex flex-col h-full space-y-4">
+            <FilterBar />
+            <div className="flex-1 overflow-hidden">
+              <AtendimentosList 
+                atendimentos={dadosAtendimentos} 
+                onSelectAtendimento={handleSelectAtendimento}
+                selectedAtendimento={selectedAtendimento}
+                isMobile={isMobile}
+              />
+            </div>
+          </div>
+        ) : selectedAtendimento ? (
+          // Mostra chat em tela cheia
+          <div className="h-full">
+            <ChatWhatsApp 
+              cliente={{
+                id: selectedAtendimento.id,
+                nome: selectedAtendimento.cliente,
+                telefone: selectedAtendimento.telefone,
+                status: 'online'
+              }}
+              mensagens={mensagensExemplo}
+              onReturnToList={handleReturnToList}
+              onSairConversa={handleSairConversa}
+              onTransferir={handleTransferir}
+              onFinalizar={handleFinalizar}
+            />
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  // Layout desktop: duas colunas
   return (
-    <div className="p-6 h-[calc(100vh-8rem)]">
-      <div className="grid grid-cols-12 gap-6 h-full">
+    <div className="h-[calc(100vh-8rem)]">
+      <div className="grid grid-cols-12 gap-6 h-full p-6">
         {/* Primeira Coluna - Pesquisa, Filtros e Atendimentos */}
         <div className="col-span-5 flex flex-col">
           {/* Barra de filtros e pesquisa */}
           <FilterBar />
           
           {/* Lista de atendimentos */}
-          <div className="flex-1">
+          <div className="flex-1 mt-4">
             <AtendimentosList 
               atendimentos={dadosAtendimentos} 
               onSelectAtendimento={handleSelectAtendimento}
@@ -131,6 +201,9 @@ export default function Atendimento() {
                   status: 'online'
                 }}
                 mensagens={mensagensExemplo}
+                onSairConversa={handleSairConversa}
+                onTransferir={handleTransferir}
+                onFinalizar={handleFinalizar}
               />
             ) : (
               <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">

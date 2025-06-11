@@ -20,15 +20,21 @@ interface AtendimentosListProps {
   atendimentos: Atendimento[];
   onSelectAtendimento: (atendimento: Atendimento) => void;
   selectedAtendimento?: Atendimento | null;
+  isMobile?: boolean;
 }
 
 export function AtendimentosList({ 
   atendimentos, 
   onSelectAtendimento, 
-  selectedAtendimento 
+  selectedAtendimento,
+  isMobile = false
 }: AtendimentosListProps) {
   const atendimentosAbertos = atendimentos.filter(a => a.status === 'novos' || a.status === 'em-atendimento');
   const atendimentosPendentes = atendimentos.filter(a => a.status === 'pendentes');
+
+  const handleSelectAtendimento = (atendimento: Atendimento) => {
+    onSelectAtendimento(atendimento);
+  };
 
   return (
     <div className="space-y-6">
@@ -57,7 +63,7 @@ export function AtendimentosList({
                       ? 'ring-2 ring-blue-500 ring-opacity-50' 
                       : ''
                   }`}
-                  onClick={() => onSelectAtendimento(atendimento)}
+                  onClick={() => handleSelectAtendimento(atendimento)}
                 >
                   <AtendimentoCard {...atendimento} onClick={() => {}} />
                 </div>
@@ -97,7 +103,7 @@ export function AtendimentosList({
                       ? 'ring-2 ring-orange-500 ring-opacity-50' 
                       : ''
                   }`}
-                  onClick={() => onSelectAtendimento(atendimento)}
+                  onClick={() => handleSelectAtendimento(atendimento)}
                 >
                   <AtendimentoCard {...atendimento} onClick={() => {}} />
                 </div>
