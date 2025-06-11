@@ -1,8 +1,7 @@
 
 import { useState, useEffect } from 'react';
-import { Search, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { NotificationDropdown } from './NotificationDropdown';
 import { SettingsDropdown } from './SettingsDropdown';
 import { ProfileDropdown } from './ProfileDropdown';
@@ -63,26 +62,12 @@ export function Header({ title, showMenuButton = false, onMenuClick, sidebarWidt
           </div>
         </div>
 
-        {/* Right side - Search and Actions */}
+        {/* Right side - Actions */}
         <div className="flex items-center space-x-2 md:space-x-4">
-          {/* Search - Hidden on mobile */}
-          <div className="relative hidden md:block">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-            <Input
-              placeholder="Pesquisar..."
-              className="pl-10 w-64 lg:w-80 bg-gray-50 border-gray-200 focus:bg-white"
-            />
-          </div>
-
-          {/* Mobile search button */}
-          <Button variant="ghost" size="icon" className="md:hidden">
-            <Search className="w-5 h-5 text-gray-600" />
-          </Button>
-
           {/* Notifications */}
           <NotificationDropdown />
 
-          {/* Settings - Hidden on small mobile */}
+          {/* Settings */}
           <SettingsDropdown />
 
           {/* User Menu */}
