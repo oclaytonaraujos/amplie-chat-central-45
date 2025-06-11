@@ -23,11 +23,12 @@ export function Layout({ children, title }: LayoutProps) {
         />
       )}
       
-      {/* Sidebar - Fixed */}
+      {/* Sidebar - Push layout on desktop, overlay on mobile */}
       <div className={`
-        fixed inset-y-0 left-0 z-50
-        ${isMobile && !sidebarOpen ? '-translate-x-full' : 'translate-x-0'}
-        transition-transform duration-300 ease-in-out
+        ${isMobile 
+          ? `fixed inset-y-0 left-0 z-50 ${!sidebarOpen ? '-translate-x-full' : 'translate-x-0'} transition-transform duration-300 ease-in-out`
+          : 'relative z-10'
+        }
       `}>
         <Sidebar 
           isMobile={isMobile}
@@ -36,15 +37,10 @@ export function Layout({ children, title }: LayoutProps) {
         />
       </div>
       
-      {/* Main content with proper margin for fixed sidebar */}
-      <div className={`
-        flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out
-        ${isMobile ? 'ml-0' : 'ml-20'}
-      `}>
-        {/* Header - Fixed */}
-        <div className="fixed top-0 right-0 left-0 z-30" style={{
-          left: isMobile ? '0' : '5rem'
-        }}>
+      {/* Main content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Header */}
+        <div className="relative z-30">
           <Header 
             title={title} 
             onMenuClick={() => setSidebarOpen(true)}
@@ -52,8 +48,8 @@ export function Layout({ children, title }: LayoutProps) {
           />
         </div>
         
-        {/* Main content with top padding for fixed header */}
-        <main className="flex-1 p-4 md:p-6 pt-20 md:pt-24 overflow-y-auto">
+        {/* Main content */}
+        <main className="flex-1 p-4 md:p-6 overflow-y-auto">
           {children}
         </main>
       </div>
