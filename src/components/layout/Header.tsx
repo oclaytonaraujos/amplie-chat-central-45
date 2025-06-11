@@ -1,15 +1,11 @@
 
 import { useState, useEffect } from 'react';
-import { Search, Bell, Settings, User, Menu } from 'lucide-react';
+import { Search, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger 
-} from '@/components/ui/dropdown-menu';
+import { NotificationDropdown } from './NotificationDropdown';
+import { SettingsDropdown } from './SettingsDropdown';
+import { ProfileDropdown } from './ProfileDropdown';
 
 interface HeaderProps {
   title: string;
@@ -84,42 +80,13 @@ export function Header({ title, showMenuButton = false, onMenuClick, sidebarWidt
           </Button>
 
           {/* Notifications */}
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="w-5 h-5 text-gray-600" />
-            <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              3
-            </span>
-          </Button>
+          <NotificationDropdown />
 
           {/* Settings - Hidden on small mobile */}
-          <Button variant="ghost" size="icon" className="hidden sm:flex">
-            <Settings className="w-5 h-5 text-gray-600" />
-          </Button>
+          <SettingsDropdown />
 
           {/* User Menu */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuItem>
-                <User className="mr-2 h-4 w-4" />
-                Perfil
-              </DropdownMenuItem>
-              <DropdownMenuItem className="sm:hidden">
-                <Settings className="mr-2 h-4 w-4" />
-                Configurações
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="text-red-600">
-                Sair
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ProfileDropdown />
         </div>
       </div>
     </header>
