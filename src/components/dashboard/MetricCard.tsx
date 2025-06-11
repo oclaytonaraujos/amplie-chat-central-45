@@ -11,6 +11,7 @@ interface MetricCardProps {
   trend?: {
     value: number;
     isPositive: boolean;
+    period: string;
   };
   className?: string;
 }
@@ -26,43 +27,44 @@ export function MetricCard({
 }: MetricCardProps) {
   return (
     <div className={cn(
-      "bg-white rounded-xl shadow-amplie p-6 hover:shadow-amplie-hover transition-all duration-300 animate-fade-in",
+      "bg-white rounded-2xl shadow-sm p-6 border border-gray-100",
       className
     )}>
-      <div className="flex items-center justify-between">
+      <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600 uppercase tracking-wide">
+          <div className={cn(
+            "w-12 h-12 rounded-2xl flex items-center justify-center mb-4",
+            iconColor
+          )}>
+            {icon}
+          </div>
+          <p className="text-gray-500 text-sm font-medium mb-1">
             {title}
           </p>
-          <p className="text-2xl font-bold text-gray-900 mt-2">
+          <p className="text-3xl font-bold text-gray-900 mb-1">
             {value}
           </p>
           {subtitle && (
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-gray-400 text-xs">
               {subtitle}
             </p>
           )}
-          {trend && (
-            <div className="flex items-center mt-3">
-              <span className={cn(
-                "text-sm font-medium",
-                trend.isPositive ? "text-green-600" : "text-red-600"
-              )}>
-                {trend.isPositive ? '+' : '-'}{Math.abs(trend.value)}%
-              </span>
-              <span className="text-sm text-gray-500 ml-2">
-                vs mês anterior
-              </span>
-            </div>
-          )}
-        </div>
-        <div className={cn(
-          "p-3 rounded-xl",
-          iconColor
-        )}>
-          {icon}
         </div>
       </div>
+      
+      {trend && (
+        <div className="flex items-center text-sm">
+          <span className={cn(
+            "font-semibold",
+            trend.isPositive ? "text-green-500" : "text-red-500"
+          )}>
+            {trend.isPositive ? '+' : ''}{trend.value}%
+          </span>
+          <span className="text-gray-400 ml-1">
+            {trend.period}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
