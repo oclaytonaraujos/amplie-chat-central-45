@@ -15,9 +15,10 @@ interface HeaderProps {
   title: string;
   showMenuButton?: boolean;
   onMenuClick?: () => void;
+  sidebarWidth?: number;
 }
 
-export function Header({ title, showMenuButton = false, onMenuClick }: HeaderProps) {
+export function Header({ title, showMenuButton = false, onMenuClick, sidebarWidth = 0 }: HeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
@@ -30,16 +31,21 @@ export function Header({ title, showMenuButton = false, onMenuClick }: HeaderPro
   }, []);
 
   return (
-    <header className={`
-      fixed top-0 right-0 z-40 transition-all duration-300 ease-in-out
-      ${showMenuButton ? 'left-0 mx-4' : 'left-64 ml-4 mr-4'}
-      mt-4
-      ${isScrolled 
-        ? 'bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50' 
-        : 'bg-transparent border-transparent'
-      }
-      rounded-xl px-4 md:px-6 py-4
-    `}>
+    <header 
+      className={`
+        fixed top-0 right-0 z-40 transition-all duration-300 ease-in-out
+        ${showMenuButton ? 'left-0 mx-4' : 'ml-4 mr-4'}
+        mt-4
+        ${isScrolled 
+          ? 'bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50' 
+          : 'bg-transparent border-transparent'
+        }
+        rounded-xl px-4 md:px-6 py-4
+      `}
+      style={{
+        left: showMenuButton ? '16px' : `${sidebarWidth + 16}px`
+      }}
+    >
       <div className="flex items-center justify-between">
         {/* Left side - Menu button (mobile) + Title */}
         <div className="flex items-center space-x-4">

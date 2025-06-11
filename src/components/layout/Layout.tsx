@@ -11,7 +11,14 @@ interface LayoutProps {
 
 export function Layout({ children, title }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const isMobile = useIsMobile();
+
+  const getSidebarWidth = () => {
+    if (isMobile) return 0;
+    if (sidebarCollapsed) return 80; // Width when collapsed (64px + padding)
+    return 256; // Width when expanded (240px + padding)
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -34,16 +41,25 @@ export function Layout({ children, title }: LayoutProps) {
           isMobile={isMobile}
           isOpen={sidebarOpen}
           onClose={() => setSidebarOpen(false)}
+          onCollapsedChange={setSidebarCollapsed}
         />
       </div>
       
-      {/* Main content - Push to the right on desktop to account for fixed sidebar */}
-      <div className={`flex-1 flex flex-col min-w-0 ${!isMobile ? 'ml-64' : ''}`}>
-        {/* Fixed Header with margin from sidebar */}
+      {/* Main content - Adjust margin based on sidebar state */}
+      <div 
+        className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ease-in-out ${
+          !isMobile ? `ml-[${getSidebarWidth()}px]` : ''
+        }`}
+        style={{
+          marginLeft: !isMobile ? `${getSidebarWidth()}px` : '0'
+        }}
+      >
+        {/* Fixed Header with dynamic left positioning */}
         <Header 
           title={title} 
           onMenuClick={() => setSidebarOpen(true)}
           showMenuButton={isMobile}
+          sidebarWidth={getSidebarWidth()}
         />
         
         {/* Main content with top padding to account for fixed header */}

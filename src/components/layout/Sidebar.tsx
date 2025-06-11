@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -65,14 +65,26 @@ interface SidebarProps {
   isMobile?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-export function Sidebar({ isMobile = false, isOpen = false, onClose }: SidebarProps) {
+export function Sidebar({ isMobile = false, isOpen = false, onClose, onCollapsedChange }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
 
   // On mobile, sidebar is always expanded when open
   const isCollapsed = isMobile ? false : collapsed;
+
+  // Notify parent component about collapse state changes
+  useEffect(() => {
+    if (onCollapsedChange && !isMobile) {
+      onCollapsedChange(collapsed);
+    }
+  }, [collapsed, onCollapsedChange, isMobile]);
+
+  const handleToggleCollapse = () => {
+    setCollapsed(!collapsed);
+  };
 
   const handleLinkClick = () => {
     if (isMobile && onClose) {
@@ -124,7 +136,7 @@ export function Sidebar({ isMobile = false, isOpen = false, onClose }: SidebarPr
           {/* Toggle button - only show on desktop */}
           {!isMobile && (
             <button
-              onClick={() => setCollapsed(!collapsed)}
+              onClick={handleToggleCollapse}
               className={cn(
                 "p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors",
                 isCollapsed 
