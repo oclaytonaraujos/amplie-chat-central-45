@@ -1,3 +1,4 @@
+
 import {
   BarChart3,
   Building2,
@@ -28,8 +29,16 @@ interface MenuItem {
   description: string;
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  isMobile?: boolean;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onCollapsedChange?: (collapsed: boolean) => void;
+}
+
+export function Sidebar({ isMobile = false, isOpen = true, onClose, onCollapsedChange }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
     {
@@ -88,6 +97,13 @@ export function Sidebar() {
     }
   ];
 
+  const handleNavigation = (path: string) => {
+    navigate(path);
+    if (isMobile && onClose) {
+      onClose();
+    }
+  };
+
   return (
     <div className="flex flex-col h-full gap-4 py-4 w-64 border-r">
       <div className="px-4">
@@ -105,9 +121,7 @@ export function Sidebar() {
             className={`w-full justify-start px-4 ${
               location.pathname === item.path ? "font-bold" : ""
             }`}
-            onClick={() => {
-              window.location.href = item.path;
-            }}
+            onClick={() => handleNavigation(item.path)}
           >
             <item.icon className="mr-2 h-4 w-4" />
             <span>{item.name}</span>
