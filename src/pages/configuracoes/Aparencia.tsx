@@ -1,5 +1,5 @@
 
-import { Monitor, Sun, Moon, Palette, Eye, Settings } from 'lucide-react';
+import { Monitor, Palette, Eye, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -26,12 +26,6 @@ export default function Aparencia() {
     });
     console.log('Configurações de aparência salvas');
   };
-
-  const themes = [
-    { id: 'light', name: 'Claro', icon: Sun },
-    { id: 'dark', name: 'Escuro', icon: Moon },
-    { id: 'system', name: 'Sistema', icon: Monitor }
-  ];
 
   const colorSchemes = [
     { id: 'blue', name: 'Azul', color: 'bg-blue-500' },
@@ -68,43 +62,6 @@ export default function Aparencia() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Tema */}
-        <Card className="p-6 lg:col-span-2">
-          <h3 className="text-lg font-semibold mb-4 flex items-center">
-            <Monitor className="w-5 h-5 mr-2 text-amplie-primary" />
-            Tema
-          </h3>
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            {themes.map((theme) => {
-              const IconComponent = theme.icon;
-              return (
-                <button
-                  key={theme.id}
-                  onClick={() => updateThemeSettings({ theme: theme.id as any })}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    themeSettings.theme === theme.id
-                      ? 'border-amplie-primary bg-amplie-primary/10'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <IconComponent className="w-6 h-6 mx-auto mb-2" />
-                  <span className="text-sm font-medium">{theme.name}</span>
-                </button>
-              );
-            })}
-          </div>
-          <div className="flex items-center justify-between">
-            <div>
-              <Label className="font-medium">Tema Automático</Label>
-              <p className="text-sm text-gray-500">Alternar automaticamente baseado no horário</p>
-            </div>
-            <Switch
-              checked={themeSettings.autoTheme}
-              onCheckedChange={(checked) => updateThemeSettings({ autoTheme: checked })}
-            />
-          </div>
-        </Card>
-
         {/* Esquema de Cores */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center">

@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
+type Theme = 'light' | 'dark';
 type ColorScheme = 'blue' | 'green' | 'purple' | 'orange';
 type FontSize = 'small' | 'medium' | 'large';
 type DensityMode = 'compact' | 'comfortable' | 'spacious';
@@ -12,7 +12,6 @@ interface ThemeSettings {
   fontSize: FontSize;
   compactMode: boolean;
   animations: boolean;
-  autoTheme: boolean;
 }
 
 interface LayoutSettings {
@@ -42,12 +41,11 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 const defaultThemeSettings: ThemeSettings = {
-  theme: 'system',
+  theme: 'light',
   colorScheme: 'blue',
   fontSize: 'medium',
   compactMode: false,
-  animations: true,
-  autoTheme: true
+  animations: true
 };
 
 const defaultLayoutSettings: LayoutSettings = {
@@ -107,13 +105,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const applyTheme = () => {
     const root = document.documentElement;
     
-    // Apply theme
-    if (themeSettings.theme === 'system') {
-      const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      root.classList.toggle('dark', systemDark);
-    } else {
-      root.classList.toggle('dark', themeSettings.theme === 'dark');
-    }
+    // Apply theme - sempre light
+    root.classList.remove('dark');
 
     // Apply color scheme
     root.setAttribute('data-color-scheme', themeSettings.colorScheme);
@@ -132,21 +125,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.toggle('reduced-motion', accessibilitySettings.reducedMotion);
     root.classList.toggle('no-animations', !themeSettings.animations || accessibilitySettings.reducedMotion);
 
-    console.log('Tema aplicado:', { themeSettings, layoutSettings, accessibilitySettings });
+    console.log('Tema aplicado (sempre claro):', { themeSettings, layoutSettings, accessibilitySettings });
   };
 
   useEffect(() => {
     applyTheme();
   }, [themeSettings, layoutSettings, accessibilitySettings]);
-
-  useEffect(() => {
-    if (themeSettings.theme === 'system') {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      const handleChange = () => applyTheme();
-      mediaQuery.addListener(handleChange);
-      return () => mediaQuery.removeListener(handleChange);
-    }
-  }, [themeSettings.theme]);
 
   return (
     <ThemeContext.Provider value={{
