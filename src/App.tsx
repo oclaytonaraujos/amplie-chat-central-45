@@ -70,8 +70,8 @@ const App = () => (
             } />
             <Route path="/clientes" element={
               <Layout 
-                title="Contatos" 
-                description="Base de dados centralizada de contatos"
+                title="Clientes" 
+                description="Base de dados centralizada de clientes"
                 icon={<UserCheck className="w-6 h-6 text-emerald-400" />}
               >
                 <Clientes />
