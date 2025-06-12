@@ -25,6 +25,14 @@ export function ProfileDropdown() {
     navigate('/meu-perfil');
   };
 
+  const handleNavigateToPlano = () => {
+    navigate('/plano-faturamento');
+  };
+
+  const handleNavigateToEquipe = () => {
+    navigate('/gerenciar-equipe');
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -55,12 +63,12 @@ export function ProfileDropdown() {
           Meu Perfil
         </DropdownMenuItem>
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleNavigateToPlano} className="cursor-pointer">
           <CreditCard className="mr-2 h-4 w-4" />
           Plano e Faturamento
         </DropdownMenuItem>
         
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleNavigateToEquipe} className="cursor-pointer">
           <Users className="mr-2 h-4 w-4" />
           Gerenciar Equipe
         </DropdownMenuItem>

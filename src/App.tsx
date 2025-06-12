@@ -15,6 +15,8 @@ import ChatInterno from "./pages/ChatInterno";
 import Painel from "./pages/Painel";
 import Setores from "./pages/Setores";
 import MeuPerfil from "./pages/MeuPerfil";
+import PlanoFaturamento from "./pages/PlanoFaturamento";
+import GerenciarEquipe from "./pages/GerenciarEquipe";
 import ConfiguracoesGerais from "./pages/configuracoes/ConfiguracoesGerais";
 import PrivacidadeSeguranca from "./pages/configuracoes/PrivacidadeSeguranca";
 import PreferenciasNotificacao from "./pages/configuracoes/PreferenciasNotificacao";
@@ -36,7 +38,8 @@ import {
   Bell,
   Globe,
   Settings,
-  UserCheck
+  UserCheck,
+  CreditCard
 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -137,6 +140,24 @@ const App = () => (
                 icon={<User className="w-6 h-6 text-gray-400" />}
               >
                 <MeuPerfil />
+              </Layout>
+            } />
+            <Route path="/plano-faturamento" element={
+              <Layout 
+                title="Plano e Faturamento" 
+                description="Gerencie seu plano e informações de pagamento"
+                icon={<CreditCard className="w-6 h-6 text-blue-400" />}
+              >
+                <PlanoFaturamento />
+              </Layout>
+            } />
+            <Route path="/gerenciar-equipe" element={
+              <Layout 
+                title="Gerenciar Equipe" 
+                description="Gerencie os membros da sua equipe"
+                icon={<Users className="w-6 h-6 text-green-400" />}
+              >
+                <GerenciarEquipe />
               </Layout>
             } />
             <Route path="/configuracoes/conta" element={
