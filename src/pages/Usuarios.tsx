@@ -1,9 +1,10 @@
 
 import { useState } from 'react';
-import { Plus, Search, Edit, Trash2, Shield, UserPlus } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Shield, UserPlus, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { NovoUsuarioDialog } from '@/components/usuarios/NovoUsuarioDialog';
 import { EditarUsuarioDialog } from '@/components/usuarios/EditarUsuarioDialog';
 import { ExcluirUsuarioDialog } from '@/components/usuarios/ExcluirUsuarioDialog';
@@ -58,6 +59,7 @@ export default function Usuarios() {
   const [editarUsuarioOpen, setEditarUsuarioOpen] = useState(false);
   const [excluirUsuarioOpen, setExcluirUsuarioOpen] = useState(false);
   const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null);
+  const [filtroSheetOpen, setFiltroSheetOpen] = useState(false);
   const { toast } = useToast();
 
   const filteredUsers = usuarios.filter(user => {
@@ -111,6 +113,8 @@ export default function Usuarios() {
     setUsuarioSelecionado(usuario);
     setExcluirUsuarioOpen(true);
   };
+
+  const filtrosAtivos = Object.entries(filtros).filter(([_, valor]) => valor !== '');
 
   return (
     <div className="p-6 space-y-6">
@@ -169,20 +173,51 @@ export default function Usuarios() {
         </Button>
       </div>
 
-      {/* Filtros */}
-      <FiltrosUsuarios onFiltrosChange={setFiltros} />
-
-      {/* Search */}
+      {/* Search with Filter */}
       <div className="bg-white rounded-xl shadow-amplie p-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <Input
-            placeholder="Pesquisar usuários por nome ou e-mail..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex items-center space-x-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <Input
+              placeholder="Pesquisar usuários por nome ou e-mail..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Sheet open={filtroSheetOpen} onOpenChange={setFiltroSheetOpen}>
+            <SheetTrigger asChild>
+              <Button variant="outline" size="icon" className="relative">
+                <Filter className="w-4 h-4" />
+                {filtrosAtivos.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-amplie-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {filtrosAtivos.length}
+                  </span>
+                )}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-96">
+              <SheetHeader>
+                <SheetTitle>Filtros</SheetTitle>
+              </SheetHeader>
+              <FiltrosUsuarios onFiltrosChange={setFiltros} />
+            </SheetContent>
+          </Sheet>
         </div>
+
+        {/* Filtros Ativos */}
+        {filtrosAtivos.length > 0 && (
+          <div className="mt-4 space-y-2">
+            <span className="text-sm font-medium text-gray-700">Filtros ativos:</span>
+            <div className="flex flex-wrap gap-2">
+              {filtrosAtivos.map(([campo, valor]) => (
+                <Badge key={campo} variant="secondary" className="flex items-center space-x-1">
+                  <span>{campo}: {valor}</span>
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Users Table */}
