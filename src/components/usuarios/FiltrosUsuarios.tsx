@@ -21,7 +21,9 @@ export function FiltrosUsuarios({ onFiltrosChange }: FiltrosUsuariosProps) {
   });
 
   const aplicarFiltro = (campo: string, valor: string) => {
-    const novosFiltros = { ...filtros, [campo]: valor };
+    // Convert "all" values back to empty strings for filtering logic
+    const valorFiltro = valor === 'all' ? '' : valor;
+    const novosFiltros = { ...filtros, [campo]: valorFiltro };
     setFiltros(novosFiltros);
     onFiltrosChange(novosFiltros);
   };
@@ -49,12 +51,12 @@ export function FiltrosUsuarios({ onFiltrosChange }: FiltrosUsuariosProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
         <div>
-          <Select value={filtros.setor} onValueChange={(value) => aplicarFiltro('setor', value)}>
+          <Select value={filtros.setor || 'all'} onValueChange={(value) => aplicarFiltro('setor', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por setor" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os setores</SelectItem>
+              <SelectItem value="all">Todos os setores</SelectItem>
               {setoresDisponiveis.map(setor => (
                 <SelectItem key={setor} value={setor}>{setor}</SelectItem>
               ))}
@@ -63,12 +65,12 @@ export function FiltrosUsuarios({ onFiltrosChange }: FiltrosUsuariosProps) {
         </div>
 
         <div>
-          <Select value={filtros.papel} onValueChange={(value) => aplicarFiltro('papel', value)}>
+          <Select value={filtros.papel || 'all'} onValueChange={(value) => aplicarFiltro('papel', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por papel" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os papéis</SelectItem>
+              <SelectItem value="all">Todos os papéis</SelectItem>
               {papeisDisponiveis.map(papel => (
                 <SelectItem key={papel} value={papel}>{papel}</SelectItem>
               ))}
@@ -77,12 +79,12 @@ export function FiltrosUsuarios({ onFiltrosChange }: FiltrosUsuariosProps) {
         </div>
 
         <div>
-          <Select value={filtros.status} onValueChange={(value) => aplicarFiltro('status', value)}>
+          <Select value={filtros.status || 'all'} onValueChange={(value) => aplicarFiltro('status', value)}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Todos os status</SelectItem>
+              <SelectItem value="all">Todos os status</SelectItem>
               {statusDisponiveis.map(status => (
                 <SelectItem key={status} value={status}>{status}</SelectItem>
               ))}
