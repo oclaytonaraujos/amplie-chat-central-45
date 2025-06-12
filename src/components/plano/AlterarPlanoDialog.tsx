@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, CreditCard } from 'lucide-react';
+import { Check, MessageCircle } from 'lucide-react';
 
 interface AlterarPlanoDialogProps {
   children: React.ReactNode;
@@ -62,9 +62,10 @@ export function AlterarPlanoDialog({ children }: AlterarPlanoDialogProps) {
     }
   ];
 
-  const handleChangePlan = () => {
-    console.log(`Alterando para o plano: ${selectedPlan}`);
-    // Aqui seria implementada a lógica de alteração do plano
+  const handleContactSupport = () => {
+    // Abre o WhatsApp ou sistema de suporte em uma nova aba
+    const message = encodeURIComponent(`Olá! Gostaria de alterar meu plano para: ${planos.find(p => p.id === selectedPlan)?.nome}. Poderia me ajudar com isso?`);
+    window.open(`https://wa.me/5511999999999?text=${message}`, '_blank');
   };
 
   return (
@@ -122,9 +123,9 @@ export function AlterarPlanoDialog({ children }: AlterarPlanoDialogProps) {
           <DialogTrigger asChild>
             <Button variant="outline">Cancelar</Button>
           </DialogTrigger>
-          <Button onClick={handleChangePlan} className="bg-amplie-primary">
-            <CreditCard className="w-4 h-4 mr-2" />
-            Confirmar Alteração
+          <Button onClick={handleContactSupport} className="bg-amplie-primary">
+            <MessageCircle className="w-4 h-4 mr-2" />
+            Conversar com Suporte
           </Button>
         </div>
       </DialogContent>
