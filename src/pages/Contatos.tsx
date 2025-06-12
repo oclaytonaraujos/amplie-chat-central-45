@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { ContatoDetalhes } from '@/components/contatos/ContatoDetalhes';
 import { NovoContatoDialog } from '@/components/contatos/NovoContatoDialog';
 import { EditarContatoDialog } from '@/components/contatos/EditarContatoDialog';
 import { ExcluirContatoDialog } from '@/components/contatos/ExcluirContatoDialog';
 import { FiltrosContatos } from '@/components/contatos/FiltrosContatos';
 import { useToast } from '@/hooks/use-toast';
+
 interface Contato {
   id: number;
   nome: string;
@@ -231,29 +233,56 @@ export default function Contatos() {
         </Button>
       </div>
 
-      {/* Filtros */}
-      <FiltrosContatos onFiltrosChange={setFiltros} />
-
       {/* Filtros principais e pesquisa */}
       <Card>
         <CardContent className="p-6">
           <div className="space-y-4">
             {/* Filtro Todos/Meus Contatos */}
             <div className="flex space-x-2">
-              <Button variant={filtroTipo === 'todos' ? 'default' : 'outline'} onClick={() => setFiltroTipo('todos')} className="flex items-center space-x-2">
+              <Button 
+                variant={filtroTipo === 'todos' ? 'default' : 'outline'} 
+                onClick={() => setFiltroTipo('todos')} 
+                className="flex items-center space-x-2"
+              >
                 <UserCheck className="w-4 h-4" />
                 <span>Todos os Contatos</span>
               </Button>
-              <Button variant={filtroTipo === 'meus' ? 'default' : 'outline'} onClick={() => setFiltroTipo('meus')} className="flex items-center space-x-2">
+              <Button 
+                variant={filtroTipo === 'meus' ? 'default' : 'outline'} 
+                onClick={() => setFiltroTipo('meus')} 
+                className="flex items-center space-x-2"
+              >
                 <UserCheck className="w-4 h-4" />
                 <span>Meus Contatos</span>
               </Button>
             </div>
 
-            {/* Barra de pesquisa */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input placeholder="Pesquisar por nome, telefone ou email..." value={pesquisa} onChange={e => setPesquisa(e.target.value)} className="pl-10" />
+            {/* Barra de pesquisa com filtro */}
+            <div className="flex space-x-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  placeholder="Pesquisar por nome, telefone ou email..."
+                  value={pesquisa}
+                  onChange={(e) => setPesquisa(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <Filter className="w-4 h-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Filtros</SheetTitle>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <FiltrosContatos onFiltrosChange={setFiltros} />
+                  </div>
+                </SheetContent>
+              </Sheet>
             </div>
           </div>
         </CardContent>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Filter, X } from 'lucide-react';
+import { X } from 'lucide-react';
 
 interface FiltrosContatosProps {
   onFiltrosChange: (filtros: any) => void;
@@ -13,9 +13,7 @@ const setoresDisponiveis = ['Vendas', 'Suporte', 'Marketing', 'Financeiro', 'RH'
 const statusDisponiveis = ['ativo', 'inativo', 'bloqueado'];
 const tagsDisponiveis = ['VIP', 'Interessado', 'Problema Recorrente', 'Novo Contato'];
 
-export function FiltrosContatos({
-  onFiltrosChange
-}: FiltrosContatosProps) {
+export function FiltrosContatos({ onFiltrosChange }: FiltrosContatosProps) {
   const [filtros, setFiltros] = useState({
     setor: '',
     status: '',
@@ -55,13 +53,9 @@ export function FiltrosContatos({
   const filtrosAtivos = Object.entries(filtros).filter(([_, valor]) => valor !== '');
 
   return (
-    <div className="bg-white rounded-xl shadow-amplie p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center space-x-2">
-          <Filter className="w-5 h-5 text-gray-600" />
-          <h3 className="text-lg font-semibold text-gray-900">Filtros</h3>
-        </div>
-        {filtrosAtivos.length > 0 && (
+    <div className="space-y-6">
+      {filtrosAtivos.length > 0 && (
+        <div className="flex justify-end">
           <Button 
             variant="outline" 
             size="sm" 
@@ -70,10 +64,10 @@ export function FiltrosContatos({
           >
             Limpar Filtros
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      <div className="space-y-4">
         {/* Filtro por Setor */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -146,23 +140,25 @@ export function FiltrosContatos({
 
       {/* Filtros Ativos */}
       {filtrosAtivos.length > 0 && (
-        <div className="flex items-center space-x-2 flex-wrap">
-          <span className="text-sm text-gray-600">Filtros ativos:</span>
-          {filtrosAtivos.map(([campo, valor]) => (
-            <Badge 
-              key={campo} 
-              variant="secondary" 
-              className="flex items-center space-x-1"
-            >
-              <span>{campo}: {valor}</span>
-              <button
-                onClick={() => removerFiltro(campo)}
-                className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+        <div className="space-y-2">
+          <span className="text-sm font-medium text-gray-700">Filtros ativos:</span>
+          <div className="flex flex-wrap gap-2">
+            {filtrosAtivos.map(([campo, valor]) => (
+              <Badge 
+                key={campo} 
+                variant="secondary" 
+                className="flex items-center space-x-1"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          ))}
+                <span>{campo}: {valor}</span>
+                <button
+                  onClick={() => removerFiltro(campo)}
+                  className="ml-1 hover:bg-gray-200 rounded-full p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
         </div>
       )}
     </div>
