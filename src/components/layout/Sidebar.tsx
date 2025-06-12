@@ -32,9 +32,9 @@ const menuItems = [
     color: 'text-green-400'
   },
   {
-    title: 'Clientes',
+    title: 'Contatos',
     icon: UserCheck,
-    href: '/clientes',
+    href: '/contatos',
     color: 'text-emerald-400'
   },
   {

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +7,7 @@ import { ThemeProvider } from "./hooks/useTheme";
 import { Layout } from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Usuarios from "./pages/Usuarios";
-import Clientes from "./pages/Clientes";
+import Contatos from "./pages/Contatos";
 import Atendimento from "./pages/Atendimento";
 import Kanban from "./pages/Kanban";
 import ChatBot from "./pages/ChatBot";
@@ -68,13 +67,13 @@ const App = () => (
                 <Usuarios />
               </Layout>
             } />
-            <Route path="/clientes" element={
+            <Route path="/contatos" element={
               <Layout 
-                title="Clientes" 
-                description="Base de dados centralizada de clientes"
+                title="Contatos" 
+                description="Base de dados centralizada de contatos"
                 icon={<UserCheck className="w-6 h-6 text-emerald-400" />}
               >
-                <Clientes />
+                <Contatos />
               </Layout>
             } />
             <Route path="/atendimento" element={
