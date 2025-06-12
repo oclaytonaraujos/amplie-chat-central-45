@@ -1,18 +1,34 @@
 
 import { useState } from 'react';
-import { Plus, Search, Edit, Trash2, Shield } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Shield, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { NovoUsuarioDialog } from '@/components/usuarios/NovoUsuarioDialog';
+import { EditarUsuarioDialog } from '@/components/usuarios/EditarUsuarioDialog';
+import { ExcluirUsuarioDialog } from '@/components/usuarios/ExcluirUsuarioDialog';
+import { FiltrosUsuarios } from '@/components/usuarios/FiltrosUsuarios';
+import { useToast } from '@/hooks/use-toast';
 
-const usuariosData = [
+interface Usuario {
+  id: number;
+  nome: string;
+  email: string;
+  setor: string;
+  papel: string;
+  status: 'Ativo' | 'Inativo';
+  permissoes?: string[];
+}
+
+const usuariosDataInicial: Usuario[] = [
   {
     id: 1,
     nome: 'Ana Silva',
     email: 'ana.silva@empresa.com',
     setor: 'Vendas',
     papel: 'Agente',
-    status: 'Ativo'
+    status: 'Ativo',
+    permissoes: ['Visualizar Dashboard', 'Atendimento', 'Gerenciar Contatos']
   },
   {
     id: 2,
@@ -20,7 +36,8 @@ const usuariosData = [
     email: 'carlos.santos@empresa.com',
     setor: 'Suporte',
     papel: 'Supervisor',
-    status: 'Ativo'
+    status: 'Ativo',
+    permissoes: ['Visualizar Dashboard', 'Atendimento', 'Gerenciar Contatos', 'Visualizar Relatórios']
   },
   {
     id: 3,
@@ -28,34 +45,139 @@ const usuariosData = [
     email: 'maria.oliveira@empresa.com',
     setor: 'Vendas',
     papel: 'Agente',
-    status: 'Inativo'
+    status: 'Inativo',
+    permissoes: ['Visualizar Dashboard', 'Atendimento']
   }
 ];
 
 export default function Usuarios() {
+  const [usuarios, setUsuarios] = useState<Usuario[]>(usuariosDataInicial);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filtros, setFiltros] = useState({ setor: '', papel: '', status: '' });
+  const [novoUsuarioOpen, setNovoUsuarioOpen] = useState(false);
+  const [editarUsuarioOpen, setEditarUsuarioOpen] = useState(false);
+  const [excluirUsuarioOpen, setExcluirUsuarioOpen] = useState(false);
+  const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null);
+  const { toast } = useToast();
 
-  const filteredUsers = usuariosData.filter(user =>
-    user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = usuarios.filter(user => {
+    const matchesSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesSetor = filtros.setor === '' || user.setor === filtros.setor;
+    const matchesPapel = filtros.papel === '' || user.papel === filtros.papel;
+    const matchesStatus = filtros.status === '' || user.status === filtros.status;
+
+    return matchesSearch && matchesSetor && matchesPapel && matchesStatus;
+  });
+
+  const handleNovoUsuario = (novoUsuario: any) => {
+    const usuario: Usuario = {
+      id: Date.now(),
+      ...novoUsuario
+    };
+    
+    setUsuarios(prev => [...prev, usuario]);
+    toast({
+      title: "Usuário criado",
+      description: `${usuario.nome} foi adicionado com sucesso.`,
+    });
+  };
+
+  const handleEditarUsuario = (usuarioEditado: Usuario) => {
+    setUsuarios(prev => prev.map(u => u.id === usuarioEditado.id ? usuarioEditado : u));
+    toast({
+      title: "Usuário atualizado",
+      description: `As informações de ${usuarioEditado.nome} foram atualizadas.`,
+    });
+  };
+
+  const handleExcluirUsuario = (id: number) => {
+    const usuario = usuarios.find(u => u.id === id);
+    setUsuarios(prev => prev.filter(u => u.id !== id));
+    toast({
+      title: "Usuário excluído",
+      description: `${usuario?.nome} foi removido do sistema.`,
+      variant: "destructive"
+    });
+  };
+
+  const abrirEdicao = (usuario: Usuario) => {
+    setUsuarioSelecionado(usuario);
+    setEditarUsuarioOpen(true);
+  };
+
+  const abrirExclusao = (usuario: Usuario) => {
+    setUsuarioSelecionado(usuario);
+    setExcluirUsuarioOpen(true);
+  };
 
   return (
     <div className="p-6 space-y-6">
+      {/* Header com estatísticas */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl shadow-amplie p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Total de Usuários</p>
+              <p className="text-2xl font-bold text-gray-900">{usuarios.length}</p>
+            </div>
+            <UserPlus className="w-8 h-8 text-blue-500" />
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-amplie p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Usuários Ativos</p>
+              <p className="text-2xl font-bold text-green-600">{usuarios.filter(u => u.status === 'Ativo').length}</p>
+            </div>
+            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-amplie p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Usuários Inativos</p>
+              <p className="text-2xl font-bold text-red-600">{usuarios.filter(u => u.status === 'Inativo').length}</p>
+            </div>
+            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+              <div className="w-3 h-3 bg-red-500 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+        <div className="bg-white rounded-xl shadow-amplie p-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm font-medium text-gray-600">Supervisores</p>
+              <p className="text-2xl font-bold text-purple-600">{usuarios.filter(u => u.papel === 'Supervisor').length}</p>
+            </div>
+            <Shield className="w-8 h-8 text-purple-500" />
+          </div>
+        </div>
+      </div>
+
       {/* Action Button */}
       <div className="flex justify-end">
-        <Button className="bg-amplie-primary hover:bg-amplie-primary-light">
+        <Button 
+          className="bg-amplie-primary hover:bg-amplie-primary-light"
+          onClick={() => setNovoUsuarioOpen(true)}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Novo Usuário
         </Button>
       </div>
+
+      {/* Filtros */}
+      <FiltrosUsuarios onFiltrosChange={setFiltros} />
 
       {/* Search */}
       <div className="bg-white rounded-xl shadow-amplie p-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <Input
-            placeholder="Pesquisar usuários..."
+            placeholder="Pesquisar usuários por nome ou e-mail..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="pl-10"
@@ -73,6 +195,7 @@ export default function Usuarios() {
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Setor</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Papel</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Status</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Permissões</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Ações</th>
               </tr>
             </thead>
@@ -110,11 +233,30 @@ export default function Usuarios() {
                     </Badge>
                   </td>
                   <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1 max-w-xs">
+                      {user.permissoes?.slice(0, 2).map(permissao => (
+                        <Badge key={permissao} variant="outline" className="text-xs">
+                          {permissao}
+                        </Badge>
+                      ))}
+                      {user.permissoes && user.permissoes.length > 2 && (
+                        <Badge variant="outline" className="text-xs">
+                          +{user.permissoes.length - 2}
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">
-                      <Button variant="ghost" size="sm">
+                      <Button variant="ghost" size="sm" onClick={() => abrirEdicao(user)}>
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => abrirExclusao(user)}
+                      >
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -123,8 +265,35 @@ export default function Usuarios() {
               ))}
             </tbody>
           </table>
+
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">Nenhum usuário encontrado com os filtros aplicados.</p>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Dialogs */}
+      <NovoUsuarioDialog
+        open={novoUsuarioOpen}
+        onOpenChange={setNovoUsuarioOpen}
+        onUsuarioAdicionado={handleNovoUsuario}
+      />
+
+      <EditarUsuarioDialog
+        open={editarUsuarioOpen}
+        onOpenChange={setEditarUsuarioOpen}
+        usuario={usuarioSelecionado}
+        onUsuarioEditado={handleEditarUsuario}
+      />
+
+      <ExcluirUsuarioDialog
+        open={excluirUsuarioOpen}
+        onOpenChange={setExcluirUsuarioOpen}
+        usuario={usuarioSelecionado}
+        onUsuarioExcluido={handleExcluirUsuario}
+      />
     </div>
   );
 }
