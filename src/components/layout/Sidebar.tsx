@@ -1,232 +1,142 @@
-
-import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Users, 
-  MessageSquare, 
-  Grid2X2,
-  Settings, 
+import {
+  BarChart3,
   Building2,
   Bot,
+  LayoutDashboard,
   MessageCircle,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  UserCheck
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { ScrollArea } from '@/components/ui/scroll-area';
+  MessageSquare,
+  Monitor,
+  Settings,
+  Trello,
+  User,
+  UserCheck,
+  Users,
+} from "lucide-react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "../ui/button";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "../ui/collapsible";
+import { Separator } from "../ui/separator";
 
-const menuItems = [
-  {
-    title: 'Dashboard',
-    icon: LayoutDashboard,
-    href: '/',
-    color: 'text-blue-400'
-  },
-  {
-    title: 'Usuários',
-    icon: Users,
-    href: '/usuarios',
-    color: 'text-green-400'
-  },
-  {
-    title: 'Clientes',
-    icon: UserCheck,
-    href: '/clientes',
-    color: 'text-emerald-400'
-  },
-  {
-    title: 'Atendimento',
-    icon: MessageSquare,
-    href: '/atendimento',
-    color: 'text-purple-400'
-  },
-  {
-    title: 'Kanban',
-    icon: Grid2X2,
-    href: '/kanban',
-    color: 'text-orange-400'
-  },
-  {
-    title: 'ChatBot',
-    icon: Bot,
-    href: '/chatbot',
-    color: 'text-indigo-400'
-  },
-  {
-    title: 'Chat Interno',
-    icon: MessageCircle,
-    href: '/chat-interno',
-    color: 'text-cyan-400'
-  },
-  {
-    title: 'Painel',
-    icon: Settings,
-    href: '/painel',
-    color: 'text-red-400'
-  },
-  {
-    title: 'Setores',
-    icon: Building2,
-    href: '/setores',
-    color: 'text-teal-400'
-  }
-];
-
-interface SidebarProps {
-  isMobile?: boolean;
-  isOpen?: boolean;
-  onClose?: () => void;
-  onCollapsedChange?: (collapsed: boolean) => void;
+interface MenuItem {
+  name: string;
+  path: string;
+  icon: any;
+  description: string;
 }
 
-export function Sidebar({ isMobile = false, isOpen = false, onClose, onCollapsedChange }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+export function Sidebar() {
   const location = useLocation();
 
-  // On mobile, sidebar is always expanded when open
-  const isCollapsed = isMobile ? false : collapsed;
-
-  // Notify parent component about collapse state changes
-  useEffect(() => {
-    if (onCollapsedChange && !isMobile) {
-      onCollapsedChange(collapsed);
+  const menuItems = [
+    {
+      name: 'Dashboard',
+      path: '/',
+      icon: BarChart3,
+      description: 'Visão geral do sistema'
+    },
+    {
+      name: 'Usuários',
+      path: '/usuarios',
+      icon: Users,
+      description: 'Gerencie usuários e permissões'
+    },
+    {
+      name: 'Contatos',
+      path: '/clientes',
+      icon: UserCheck,
+      description: 'Base de dados de contatos'
+    },
+    {
+      name: 'Atendimento',
+      path: '/atendimento',
+      icon: MessageCircle,
+      description: 'Gerencie conversas e atendimentos'
+    },
+    {
+      name: 'Kanban',
+      path: '/kanban',
+      icon: Trello,
+      description: 'Visualização em kanban'
+    },
+    {
+      name: 'ChatBot',
+      path: '/chatbot',
+      icon: Bot,
+      description: 'Configure o bot de atendimento'
+    },
+    {
+      name: 'Chat Interno',
+      path: '/chat-interno',
+      icon: MessageSquare,
+      description: 'Comunicação da equipe'
+    },
+    {
+      name: 'Painel',
+      path: '/painel',
+      icon: Monitor,
+      description: 'Painel de controle'
+    },
+    {
+      name: 'Setores',
+      path: '/setores',
+      icon: Building2,
+      description: 'Gerencie setores da empresa'
     }
-  }, [collapsed, onCollapsedChange, isMobile]);
-
-  const handleToggleCollapse = () => {
-    setCollapsed(!collapsed);
-  };
-
-  const handleLinkClick = () => {
-    if (isMobile && onClose) {
-      onClose();
-    }
-  };
+  ];
 
   return (
-    <div className={cn(
-      "h-full flex flex-col",
-      isMobile ? "w-64 p-4" : "w-64 p-4"
-    )}>
-      <div className={cn(
-        "bg-amplie-sidebar flex-1 transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-lg h-full",
-        isMobile ? "w-full" : (isCollapsed ? "w-16" : "w-full")
-      )}>
-        {/* Header */}
-        <div className="p-6 border-b border-gray-700/30 flex-shrink-0 relative">
-          <div className="flex items-center justify-between">
-            {/* Mobile close button */}
-            {isMobile && (
-              <button
-                onClick={onClose}
-                className="absolute right-4 top-4 p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors z-10"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-
-            {!isCollapsed && (
-              <div className="flex items-center space-x-2">
-                <img 
-                  src="/lovable-uploads/5b035ca2-6a1b-45db-b6e2-f291736cf358.png" 
-                  alt="Logo" 
-                  className="h-8 w-auto"
-                />
-              </div>
-            )}
-            {isCollapsed && (
-              <div className="w-full flex justify-center">
-                <img 
-                  src="/lovable-uploads/a2e5cd13-e36f-4dee-b922-d556b4ba1516.png" 
-                  alt="Logo Icon" 
-                  className="h-10 w-10 object-contain"
-                />
-              </div>
-            )}
-          </div>
-          
-          {/* Toggle button - only show on desktop */}
-          {!isMobile && (
-            <button
-              onClick={handleToggleCollapse}
-              className={cn(
-                "p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors",
-                isCollapsed 
-                  ? "absolute -right-3 top-1/2 -translate-y-1/2 bg-amplie-sidebar border border-gray-700/30 shadow-lg z-10" 
-                  : "absolute right-6 top-1/2 -translate-y-1/2"
-              )}
-            >
-              {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            </button>
-          )}
-        </div>
-
-        {/* Navigation Menu with ScrollArea */}
-        <ScrollArea className="flex-1 px-3 py-6">
-          <nav className="space-y-1">
-            {menuItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.href;
-              
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={handleLinkClick}
-                  className={cn(
-                    "flex items-center rounded-lg transition-all duration-200 group",
-                    isCollapsed 
-                      ? "justify-center px-0 py-3 w-full" 
-                      : "space-x-3 px-3 py-3",
-                    isActive 
-                      ? isCollapsed
-                        ? "bg-amplie-sidebar-active text-white shadow-lg w-full"
-                        : "bg-amplie-sidebar-active text-white shadow-lg"
-                      : "text-gray-300 hover:bg-amplie-sidebar-hover hover:text-white"
-                  )}
-                >
-                  <div className={cn(
-                    "p-2 rounded-lg transition-colors",
-                    isCollapsed && isActive 
-                      ? "bg-transparent" 
-                      : isActive 
-                        ? "bg-white/20" 
-                        : "bg-gray-700/30 group-hover:bg-gray-600/50"
-                  )}>
-                    <Icon className={cn("w-5 h-5", isActive ? "text-white" : item.color)} />
-                  </div>
-                  {!isCollapsed && (
-                    <span className="font-medium text-sm">{item.title}</span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
-        </ScrollArea>
-
-        {/* Footer */}
-        <div className="p-4 border-t border-gray-700/30 flex-shrink-0">
-          {!isCollapsed ? (
-            <div className="flex items-center space-x-3 text-gray-400 text-sm">
-              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-white font-medium">Admin User</p>
-                <p className="text-xs">Administrador</p>
-              </div>
+    <div className="flex flex-col h-full gap-4 py-4 w-64 border-r">
+      <div className="px-4">
+        <Button variant="outline" className="w-full justify-start">
+          <LayoutDashboard className="mr-2 h-4 w-4" />
+          Menu
+        </Button>
+      </div>
+      <Separator />
+      <div className="flex flex-col space-y-1">
+        {menuItems.map((item) => (
+          <Button
+            key={item.name}
+            variant="ghost"
+            className={`w-full justify-start px-4 ${
+              location.pathname === item.path ? "font-bold" : ""
+            }`}
+            onClick={() => {
+              window.location.href = item.path;
+            }}
+          >
+            <item.icon className="mr-2 h-4 w-4" />
+            <span>{item.name}</span>
+          </Button>
+        ))}
+      </div>
+      <Separator />
+      <div className="mt-auto px-4">
+        <Collapsible className="w-full space-y-2">
+          <CollapsibleTrigger className="w-full flex items-center justify-between rounded-md border p-2">
+            <div className="flex items-center space-x-2">
+              <Settings className="h-4 w-4" />
+              <span>Configurações</span>
             </div>
-          ) : (
-            <div className="flex justify-center">
-              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4 text-gray-400" />
-              </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent className="pl-4">
+            <div className="flex flex-col space-y-1">
+              <Button variant="ghost" className="w-full justify-start">
+                Geral
+              </Button>
+              <Button variant="ghost" className="w-full justify-start">
+                Aparência
+              </Button>
+              <Button variant="ghost" className="w-full justify-start">
+                Notificações
+              </Button>
             </div>
-          )}
-        </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
