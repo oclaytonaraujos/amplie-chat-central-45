@@ -1,11 +1,12 @@
-
 import { useState } from 'react';
-import { MessageSquare, User } from 'lucide-react';
+import { MessageSquare, User, Plus } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
 import { AtendimentosList } from '@/components/atendimento/AtendimentosList';
 import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
 import { ClienteInfo } from '@/components/atendimento/ClienteInfo';
+import { ContactsList } from '@/components/atendimento/ContactsList';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Button } from '@/components/ui/button';
 
 // Dados de exemplo
 const dadosAtendimentos = [
@@ -95,13 +96,50 @@ const clienteExemplo = {
   ]
 };
 
+// Dados de contatos mockados
+const contatosMock = [
+  {
+    id: 1,
+    nome: 'Carlos Mendes',
+    telefone: '+55 11 91234-5678',
+    email: 'carlos.mendes@email.com',
+    status: 'online' as const,
+    ultimoContato: '2 dias atrás'
+  },
+  {
+    id: 2,
+    nome: 'Fernanda Costa',
+    telefone: '+55 11 98765-4321',
+    email: 'fernanda.costa@email.com',
+    status: 'offline' as const,
+    ultimoContato: '1 semana atrás'
+  },
+  {
+    id: 3,
+    nome: 'Ricardo Silva',
+    telefone: '+55 11 95555-1234',
+    status: 'online' as const,
+    ultimoContato: '3 dias atrás'
+  },
+  {
+    id: 4,
+    nome: 'Juliana Santos',
+    telefone: '+55 11 97777-8888',
+    email: 'juliana.santos@email.com',
+    status: 'offline' as const,
+    ultimoContato: '5 dias atrás'
+  }
+];
+
 export default function Atendimento() {
   const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
   const [showChat, setShowChat] = useState(false);
+  const [showContacts, setShowContacts] = useState(false);
   const isMobile = useIsMobile();
   
   const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
     setSelectedAtendimento(atendimento);
+    setShowContacts(false);
     if (isMobile) {
       setShowChat(true);
     }
@@ -109,6 +147,7 @@ export default function Atendimento() {
 
   const handleReturnToList = () => {
     setShowChat(false);
+    setShowContacts(false);
   };
 
   const handleSairConversa = () => {
@@ -130,14 +169,49 @@ export default function Atendimento() {
     }
   };
 
-  // Layout mobile: mostra lista ou chat baseado no estado
+  const handleNovaConversa = () => {
+    setShowContacts(true);
+    if (isMobile) {
+      setShowChat(true);
+    }
+  };
+
+  const handleSelectContact = (contato: typeof contatosMock[0]) => {
+    // Criar novo atendimento baseado no contato selecionado
+    const novoAtendimento = {
+      id: dadosAtendimentos.length + 1,
+      cliente: contato.nome,
+      telefone: contato.telefone,
+      ultimaMensagem: 'Nova conversa iniciada',
+      tempo: 'agora',
+      setor: 'Suporte',
+      status: 'novos' as const
+    };
+    
+    setSelectedAtendimento(novoAtendimento);
+    setShowContacts(false);
+    if (isMobile) {
+      setShowChat(true);
+    }
+  };
+
+  // Layout mobile: mostra lista, contatos ou chat baseado no estado
   if (isMobile) {
     return (
       <div className="min-h-screen">
         {!showChat ? (
           // Mostra lista de atendimentos
           <div className="flex flex-col h-full space-y-4">
-            <FilterBar />
+            <div className="flex items-center justify-between">
+              <FilterBar />
+              <Button 
+                onClick={handleNovaConversa}
+                className="bg-green-500 hover:bg-green-600 text-white ml-2"
+                size="sm"
+              >
+                <Plus className="w-4 h-4" />
+              </Button>
+            </div>
             <div className="flex-1 overflow-hidden">
               <AtendimentosList 
                 atendimentos={dadosAtendimentos} 
@@ -147,6 +221,13 @@ export default function Atendimento() {
               />
             </div>
           </div>
+        ) : showContacts ? (
+          // Mostra lista de contatos
+          <ContactsList
+            contatos={contatosMock}
+            onSelectContact={handleSelectContact}
+            onBack={handleReturnToList}
+          />
         ) : selectedAtendimento ? (
           // Mostra chat em tela cheia
           <div className="h-full">
@@ -176,15 +257,35 @@ export default function Atendimento() {
         {/* Primeira Coluna - Pesquisa, Filtros e Atendimentos */}
         <div className="col-span-5 flex flex-col">
           {/* Barra de filtros e pesquisa */}
-          <FilterBar />
+          <div className="flex items-center space-x-2">
+            <div className="flex-1">
+              <FilterBar />
+            </div>
+            <Button 
+              onClick={handleNovaConversa}
+              className="bg-green-500 hover:bg-green-600 text-white"
+              size="sm"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Nova
+            </Button>
+          </div>
           
-          {/* Lista de atendimentos */}
+          {/* Lista de atendimentos ou contatos */}
           <div className="flex-1 mt-4">
-            <AtendimentosList 
-              atendimentos={dadosAtendimentos} 
-              onSelectAtendimento={handleSelectAtendimento}
-              selectedAtendimento={selectedAtendimento}
-            />
+            {showContacts ? (
+              <ContactsList
+                contatos={contatosMock}
+                onSelectContact={handleSelectContact}
+                onBack={() => setShowContacts(false)}
+              />
+            ) : (
+              <AtendimentosList 
+                atendimentos={dadosAtendimentos} 
+                onSelectAtendimento={handleSelectAtendimento}
+                selectedAtendimento={selectedAtendimento}
+              />
+            )}
           </div>
         </div>
 
