@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { MessageSquare, User, Plus, Filter } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
@@ -222,6 +223,7 @@ export default function Atendimento() {
       ultimaMensagem: 'Nova conversa iniciada',
       tempo: 'agora',
       setor: 'Suporte',
+      tags: [], // Add missing tags property as empty array
       status: 'novos' as const
     };
     
