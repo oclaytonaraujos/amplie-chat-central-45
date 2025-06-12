@@ -128,7 +128,7 @@ export function KanbanBoard({
                 <div className={`w-3 h-3 rounded-full ${coluna.cor}`} />
                 <h3 className="font-semibold text-gray-900">{coluna.titulo}</h3>
                 {!coluna.acessoLivre && !isAdmin && (
-                  <Shield className="w-4 h-4 text-gray-400" title="Acesso restrito" />
+                  <Shield className="w-4 h-4 text-gray-400" />
                 )}
               </div>
               <Badge variant="secondary" className="bg-white">
@@ -162,7 +162,7 @@ export function KanbanBoard({
                     
                     {/* Indicador de acesso restrito */}
                     {!coluna.acessoLivre && !isAdmin && atendimento.agente !== usuarioLogado && (
-                      <Shield className="w-4 h-4 text-orange-500" title="Solicitar acesso" />
+                      <Shield className="w-4 h-4 text-orange-500" />
                     )}
                   </div>
 

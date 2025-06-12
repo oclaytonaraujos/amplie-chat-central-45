@@ -10,7 +10,7 @@ interface Atendimento {
   setor: string;
   agente?: string;
   tags?: string[];
-  status: 'novos' | 'em-atendimento' | 'pendentes' | 'finalizados';
+  status: 'novos' | 'em-atendimento' | 'aguardando-cliente' | 'finalizados';
 }
 
 interface KanbanColumnsProps {
