@@ -1,5 +1,5 @@
 
-import { AtendimentoCard } from './AtendimentoCard';
+import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 
 interface Atendimento {
   id: number;
@@ -19,68 +19,28 @@ interface KanbanColumnsProps {
   usuarioLogado?: string;
 }
 
+// Mapear status antigo para novo
+const mapearStatus = (status: string) => {
+  switch (status) {
+    case 'pendentes': return 'aguardando-cliente';
+    default: return status;
+  }
+};
+
 export function KanbanColumns({ atendimentos, onSelectAtendimento, usuarioLogado = 'Ana Silva' }: KanbanColumnsProps) {
-  // Filtrar atendimentos em andamento do usuário logado
-  const atendimentosEmAndamento = atendimentos.filter(atendimento => 
-    atendimento.agente === usuarioLogado && 
-    (atendimento.status === 'em-atendimento' || atendimento.status === 'novos')
-  );
-
-  // Filtrar atendimentos pendentes (sem agente ou com outros agentes em status pendente)
-  const atendimentosPendentes = atendimentos.filter(atendimento => 
-    !atendimento.agente || 
-    (atendimento.agente !== usuarioLogado && atendimento.status === 'pendentes') ||
-    (atendimento.status === 'novos' && atendimento.agente !== usuarioLogado)
-  );
-
-  const colunas = [
-    { 
-      id: 'em-andamento', 
-      titulo: 'Em Andamento', 
-      cor: 'bg-green-500',
-      atendimentos: atendimentosEmAndamento
-    },
-    { 
-      id: 'pendentes', 
-      titulo: 'Atendimentos Pendentes', 
-      cor: 'bg-yellow-500',
-      atendimentos: atendimentosPendentes
-    }
-  ];
+  // Converter atendimentos para o novo formato
+  const atendimentosConvertidos = atendimentos.map(a => ({
+    ...a,
+    status: mapearStatus(a.status) as 'novos' | 'em-atendimento' | 'aguardando-cliente' | 'finalizados',
+    tempoAberto: a.tempo // Usar o tempo existente como tempo em aberto
+  }));
 
   return (
-    <div className="space-y-6">
-      {colunas.map(coluna => (
-        <div key={coluna.id} className="bg-gray-50 rounded-xl p-4">
-          {/* Header da Coluna */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${coluna.cor}`} />
-              <h3 className="font-semibold text-gray-900">{coluna.titulo}</h3>
-            </div>
-            <span className="bg-white text-gray-600 text-sm px-2 py-1 rounded-full font-medium">
-              {coluna.atendimentos.length}
-            </span>
-          </div>
-
-          {/* Cards da Coluna */}
-          <div className="space-y-3 max-h-[300px] overflow-y-auto">
-            {coluna.atendimentos.map(atendimento => (
-              <AtendimentoCard
-                key={atendimento.id}
-                {...atendimento}
-                onClick={() => onSelectAtendimento(atendimento)}
-              />
-            ))}
-            
-            {coluna.atendimentos.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <p className="text-sm">Nenhum atendimento</p>
-              </div>
-            )}
-          </div>
-        </div>
-      ))}
-    </div>
+    <KanbanBoard
+      atendimentos={atendimentosConvertidos}
+      onSelectAtendimento={onSelectAtendimento}
+      usuarioLogado={usuarioLogado}
+      isAdmin={false}
+    />
   );
 }
