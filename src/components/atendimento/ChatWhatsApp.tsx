@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
-import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut } from 'lucide-react';
+import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Message {
   id: number;
@@ -28,6 +29,12 @@ interface ClienteInfo {
   ultimoAcesso?: string;
 }
 
+interface TransferenciaInfo {
+  de: string;
+  motivo: string;
+  dataTransferencia: string;
+}
+
 interface ChatWhatsAppProps {
   cliente: ClienteInfo;
   mensagens: Message[];
@@ -35,6 +42,7 @@ interface ChatWhatsAppProps {
   onSairConversa?: () => void;
   onTransferir?: () => void;
   onFinalizar?: () => void;
+  transferencia?: TransferenciaInfo;
 }
 
 export function ChatWhatsApp({ 
@@ -43,7 +51,8 @@ export function ChatWhatsApp({
   onReturnToList,
   onSairConversa,
   onTransferir,
-  onFinalizar
+  onFinalizar,
+  transferencia
 }: ChatWhatsAppProps) {
   const [mensagens, setMensagens] = useState<Message[]>(initialMensagens);
   const [novaMensagem, setNovaMensagem] = useState('');
@@ -130,6 +139,27 @@ export function ChatWhatsApp({
           </Button>
         </div>
       </div>
+
+      {/* Alerta de transferência */}
+      {transferencia && (
+        <Alert className="m-4 border-orange-200 bg-orange-50">
+          <ArrowRight className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Atendimento transferido</strong> por {transferencia.de}
+                <div className="text-sm mt-1">
+                  <strong>Motivo:</strong> {transferencia.motivo}
+                </div>
+              </div>
+              <div className="flex items-center text-xs text-orange-600">
+                <Clock className="w-3 h-3 mr-1" />
+                {transferencia.dataTransferencia}
+              </div>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
       
       {/* Container para ações e mensagens */}
       <div className="flex flex-col flex-grow">

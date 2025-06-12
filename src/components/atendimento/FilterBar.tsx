@@ -18,12 +18,11 @@ export function FilterBar() {
           />
         </div>
 
-        {/* Botão de Filtros */}
+        {/* Botão de Filtros - apenas ícone */}
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="default" className="px-4">
-              <Filter className="w-4 h-4 mr-2" />
-              Filtros
+            <Button variant="outline" size="icon" className="w-10 h-10">
+              <Filter className="w-4 h-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80 p-4" align="end">

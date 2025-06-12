@@ -1,4 +1,5 @@
-import { Settings, MessageSquare, Clock, Globe, Shield } from 'lucide-react';
+
+import { Settings, MessageSquare, Clock, Globe, Shield, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -37,11 +38,52 @@ export default function Painel() {
           </div>
         </div>
 
-        {/* Mensagens Automáticas */}
+        {/* Controle de Atendimentos */}
         <div className="bg-white rounded-xl shadow-amplie p-6">
           <div className="flex items-center space-x-3 mb-6">
             <div className="p-2 bg-blue-100 rounded-lg">
-              <MessageSquare className="w-5 h-5 text-blue-600" />
+              <Users className="w-5 h-5 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Controle de Atendimentos</h3>
+          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Limite de Mensagens em Aberto por Agente
+              </label>
+              <Input 
+                type="number" 
+                min="1" 
+                max="20" 
+                defaultValue="5" 
+                placeholder="5"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Número máximo de conversas ativas que cada agente pode ter simultaneamente
+              </p>
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm font-medium text-gray-700">Receber Transferências Mesmo no Limite</span>
+                <p className="text-xs text-gray-500">Permitir que agentes recebam transferências mesmo atingindo o limite</p>
+              </div>
+              <Switch defaultChecked />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-sm font-medium text-gray-700">Distribuição Automática</span>
+                <p className="text-xs text-gray-500">Distribuir novos atendimentos automaticamente entre agentes disponíveis</p>
+              </div>
+              <Switch />
+            </div>
+          </div>
+        </div>
+
+        {/* Mensagens Automáticas */}
+        <div className="bg-white rounded-xl shadow-amplie p-6">
+          <div className="flex items-center space-x-3 mb-6">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <MessageSquare className="w-5 h-5 text-purple-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Mensagens Automáticas</h3>
           </div>
@@ -94,8 +136,8 @@ export default function Painel() {
         {/* Configurações Gerais */}
         <div className="bg-white rounded-xl shadow-amplie p-6">
           <div className="flex items-center space-x-3 mb-6">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Globe className="w-5 h-5 text-purple-600" />
+            <div className="p-2 bg-gray-100 rounded-lg">
+              <Globe className="w-5 h-5 text-gray-600" />
             </div>
             <h3 className="text-lg font-semibold text-gray-900">Configurações Gerais</h3>
           </div>

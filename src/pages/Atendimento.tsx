@@ -1,14 +1,16 @@
 import { useState } from 'react';
-import { MessageSquare, User, Plus } from 'lucide-react';
+import { MessageSquare, User, Plus, Filter } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
 import { AtendimentosList } from '@/components/atendimento/AtendimentosList';
 import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
 import { ClienteInfo } from '@/components/atendimento/ClienteInfo';
 import { ContactsList } from '@/components/atendimento/ContactsList';
+import { TransferDialog } from '@/components/atendimento/TransferDialog';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
-// Dados de exemplo
+// Dados de exemplo com transferências
 const dadosAtendimentos = [
   {
     id: 1,
@@ -19,7 +21,12 @@ const dadosAtendimentos = [
     setor: 'Suporte',
     agente: 'Ana Silva',
     tags: ['Pedido', 'Urgente'],
-    status: 'em-atendimento' as const
+    status: 'em-atendimento' as const,
+    transferencia: {
+      de: 'Carlos Santos',
+      motivo: 'Cliente solicitou falar com supervisor',
+      dataTransferencia: '14:25'
+    }
   },
   {
     id: 2,
@@ -72,6 +79,9 @@ const dadosAtendimentos = [
     status: 'finalizados' as const
   }
 ];
+
+// Configuração simulada do limite de mensagens (normalmente viria do Painel)
+const LIMITE_MENSAGENS_ABERTAS = 5; // Configurável pelo administrador
 
 const mensagensExemplo = [
   { id: 1, texto: 'Olá! Preciso de ajuda com meu pedido #12345', autor: 'cliente' as const, tempo: '14:30' },
@@ -135,7 +145,17 @@ export default function Atendimento() {
   const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showContacts, setShowContacts] = useState(false);
+  const [showTransferDialog, setShowTransferDialog] = useState(false);
   const isMobile = useIsMobile();
+  const { toast } = useToast();
+
+  // Calcular mensagens em aberto para o agente atual
+  const mensagensEmAberto = dadosAtendimentos.filter(a => 
+    (a.status === 'novos' || a.status === 'em-atendimento') && 
+    a.agente === 'Ana Silva' // Agente atual simulado
+  ).length;
+
+  const podeIniciarNovoAtendimento = mensagensEmAberto < LIMITE_MENSAGENS_ABERTAS;
   
   const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
     setSelectedAtendimento(atendimento);
@@ -158,7 +178,7 @@ export default function Atendimento() {
   };
 
   const handleTransferir = () => {
-    console.log('Transferir atendimento');
+    setShowTransferDialog(true);
   };
 
   const handleFinalizar = () => {
@@ -170,6 +190,14 @@ export default function Atendimento() {
   };
 
   const handleNovaConversa = () => {
+    if (!podeIniciarNovoAtendimento) {
+      toast({
+        title: "Limite atingido",
+        description: `Você atingiu o limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens em aberto. Finalize ou transfira alguns atendimentos para iniciar novos.`,
+        variant: "destructive"
+      });
+      return;
+    }
     setShowContacts(true);
     if (isMobile) {
       setShowChat(true);
@@ -177,6 +205,15 @@ export default function Atendimento() {
   };
 
   const handleSelectContact = (contato: typeof contatosMock[0]) => {
+    if (!podeIniciarNovoAtendimento) {
+      toast({
+        title: "Limite atingido",
+        description: `Você atingiu o limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens em aberto. Finalize ou transfira alguns atendimentos para iniciar novos.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     // Criar novo atendimento baseado no contato selecionado
     const novoAtendimento = {
       id: dadosAtendimentos.length + 1,
@@ -195,6 +232,19 @@ export default function Atendimento() {
     }
   };
 
+  const handleConfirmTransfer = (agente: string, motivo: string) => {
+    console.log('Transferir para:', agente, 'Motivo:', motivo);
+    toast({
+      title: "Atendimento transferido",
+      description: `Atendimento transferido para ${agente} com sucesso.`,
+    });
+    setShowTransferDialog(false);
+    setSelectedAtendimento(null);
+    if (isMobile) {
+      setShowChat(false);
+    }
+  };
+
   // Layout mobile: mostra lista, contatos ou chat baseado no estado
   if (isMobile) {
     return (
@@ -206,8 +256,10 @@ export default function Atendimento() {
               <FilterBar />
               <Button 
                 onClick={handleNovaConversa}
-                className="bg-green-500 hover:bg-green-600 text-white ml-2"
-                size="sm"
+                disabled={!podeIniciarNovoAtendimento}
+                className="bg-green-500 hover:bg-green-600 text-white ml-2 w-10 h-10 p-0"
+                size="icon"
+                title={!podeIniciarNovoAtendimento ? `Limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens atingido` : 'Nova conversa'}
               >
                 <Plus className="w-4 h-4" />
               </Button>
@@ -243,9 +295,17 @@ export default function Atendimento() {
               onSairConversa={handleSairConversa}
               onTransferir={handleTransferir}
               onFinalizar={handleFinalizar}
+              transferencia={selectedAtendimento.transferencia}
             />
           </div>
         ) : null}
+
+        {/* Dialog de transferência */}
+        <TransferDialog
+          open={showTransferDialog}
+          onOpenChange={setShowTransferDialog}
+          onConfirm={handleConfirmTransfer}
+        />
       </div>
     );
   }
@@ -263,11 +323,12 @@ export default function Atendimento() {
             </div>
             <Button 
               onClick={handleNovaConversa}
-              className="bg-green-500 hover:bg-green-600 text-white"
-              size="sm"
+              disabled={!podeIniciarNovoAtendimento}
+              className="bg-green-500 hover:bg-green-600 text-white w-10 h-10 p-0"
+              size="icon"
+              title={!podeIniciarNovoAtendimento ? `Limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens atingido` : 'Nova conversa'}
             >
-              <Plus className="w-4 h-4 mr-1" />
-              Nova
+              <Plus className="w-4 h-4" />
             </Button>
           </div>
           
@@ -305,6 +366,7 @@ export default function Atendimento() {
                 onSairConversa={handleSairConversa}
                 onTransferir={handleTransferir}
                 onFinalizar={handleFinalizar}
+                transferencia={selectedAtendimento.transferencia}
               />
             ) : (
               <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
@@ -312,6 +374,11 @@ export default function Atendimento() {
                   <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-600 mb-1">Selecione uma conversa</h3>
                   <p className="text-sm text-gray-500">Clique em uma conversa para iniciar o atendimento</p>
+                  {!podeIniciarNovoAtendimento && (
+                    <p className="text-xs text-orange-600 mt-2">
+                      Limite de {LIMITE_MENSAGENS_ABERTAS} mensagens em aberto atingido
+                    </p>
+                  )}
                 </div>
               </div>
             )}
@@ -332,6 +399,13 @@ export default function Atendimento() {
           </div>
         </div>
       </div>
+
+      {/* Dialog de transferência */}
+      <TransferDialog
+        open={showTransferDialog}
+        onOpenChange={setShowTransferDialog}
+        onConfirm={handleConfirmTransfer}
+      />
     </div>
   );
 }
