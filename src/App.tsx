@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,6 +11,7 @@ import Usuarios from "./pages/Usuarios";
 import Atendimento from "./pages/Atendimento";
 import Kanban from "./pages/Kanban";
 import ChatBot from "./pages/ChatBot";
+import ChatInterno from "./pages/ChatInterno";
 import Painel from "./pages/Painel";
 import Setores from "./pages/Setores";
 import MeuPerfil from "./pages/MeuPerfil";
@@ -26,6 +28,7 @@ import {
   MessageCircle, 
   Trello, 
   Bot, 
+  MessageSquare,
   Monitor, 
   Building2,
   User,
@@ -88,6 +91,15 @@ const App = () => (
                 icon={<Bot className="w-6 h-6 text-indigo-400" />}
               >
                 <ChatBot />
+              </Layout>
+            } />
+            <Route path="/chat-interno" element={
+              <Layout 
+                title="Chat Interno" 
+                description="Comunicação interna entre a equipe"
+                icon={<MessageSquare className="w-6 h-6 text-cyan-400" />}
+              >
+                <ChatInterno />
               </Layout>
             } />
             <Route path="/painel" element={
