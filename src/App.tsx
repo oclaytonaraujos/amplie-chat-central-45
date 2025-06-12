@@ -18,7 +18,6 @@ import MeuPerfil from "./pages/MeuPerfil";
 import PlanoFaturamento from "./pages/PlanoFaturamento";
 import GerenciarEquipe from "./pages/GerenciarEquipe";
 import ConfiguracoesGerais from "./pages/configuracoes/ConfiguracoesGerais";
-import PrivacidadeSeguranca from "./pages/configuracoes/PrivacidadeSeguranca";
 import PreferenciasNotificacao from "./pages/configuracoes/PreferenciasNotificacao";
 import Aparencia from "./pages/configuracoes/Aparencia";
 import Idioma from "./pages/configuracoes/Idioma";
@@ -34,7 +33,6 @@ import {
   Monitor, 
   Building2,
   User,
-  Shield,
   Bell,
   Globe,
   Settings,
@@ -167,15 +165,6 @@ const App = () => (
                 icon={<User className="w-6 h-6 text-blue-400" />}
               >
                 <ConfiguracoesGerais />
-              </Layout>
-            } />
-            <Route path="/configuracoes/privacidade" element={
-              <Layout 
-                title="Privacidade e Segurança" 
-                description="Configure suas preferências de privacidade"
-                icon={<Shield className="w-6 h-6 text-green-400" />}
-              >
-                <PrivacidadeSeguranca />
               </Layout>
             } />
             <Route path="/configuracoes/notificacoes" element={

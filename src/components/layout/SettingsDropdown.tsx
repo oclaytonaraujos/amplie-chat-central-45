@@ -1,5 +1,5 @@
 
-import { Settings, Shield, Bell, Monitor, Sun, Globe } from 'lucide-react';
+import { Settings, Bell, Monitor, Sun, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
@@ -31,11 +31,6 @@ export function SettingsDropdown() {
       <DropdownMenuContent align="end" className="w-56 bg-white">
         <DropdownMenuLabel>Configurações</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/privacidade')} className="cursor-pointer">
-          <Shield className="mr-2 h-4 w-4" />
-          Privacidade e Segurança
-        </DropdownMenuItem>
         
         <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/notificacoes')} className="cursor-pointer">
           <Bell className="mr-2 h-4 w-4" />
