@@ -79,7 +79,7 @@ const mensagensMock: Mensagem[] = [
 ];
 
 export default function ChatInterno() {
-  const [conversaSelecionada, setConversaSelecionada] = useState<Conversa | null>(conversasMock[0]);
+  const [conversaSelecionada, setConversaSelecionada] = useState<Conversa | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>(mensagensMock);
   const [showContacts, setShowContacts] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -90,6 +90,10 @@ export default function ChatInterno() {
     if (isMobile) {
       setSidebarOpen(false);
     }
+  };
+
+  const handleCloseConversa = () => {
+    setConversaSelecionada(null);
   };
 
   const handleSendMessage = (texto: string) => {
@@ -178,6 +182,7 @@ export default function ChatInterno() {
           mensagens={mensagens}
           onSendMessage={handleSendMessage}
           onOpenSidebar={() => setSidebarOpen(true)}
+          onCloseConversa={handleCloseConversa}
           showMenuButton={isMobile}
         />
       </div>

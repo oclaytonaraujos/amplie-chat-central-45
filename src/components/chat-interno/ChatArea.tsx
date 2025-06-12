@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Send, Paperclip, Smile, Menu, MoreVertical, Users, User } from 'lucide-react';
+import { Send, Paperclip, Smile, Menu, MoreVertical, Users, User, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -47,6 +47,7 @@ interface ChatAreaProps {
   mensagens: Mensagem[];
   onSendMessage: (texto: string) => void;
   onOpenSidebar?: () => void;
+  onCloseConversa?: () => void;
   showMenuButton?: boolean;
 }
 
@@ -55,6 +56,7 @@ export function ChatArea({
   mensagens,
   onSendMessage,
   onOpenSidebar,
+  onCloseConversa,
   showMenuButton = false
 }: ChatAreaProps) {
   const [novaMensagem, setNovaMensagem] = useState('');
@@ -145,9 +147,16 @@ export function ChatArea({
             </div>
           </div>
           
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center space-x-2">
+            {onCloseConversa && (
+              <Button variant="ghost" size="icon" onClick={onCloseConversa} title="Fechar conversa">
+                <X className="w-5 h-5" />
+              </Button>
+            )}
+            <Button variant="ghost" size="icon">
+              <MoreVertical className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </div>
 
