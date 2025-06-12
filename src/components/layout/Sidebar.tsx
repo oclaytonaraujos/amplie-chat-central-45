@@ -12,7 +12,8 @@ import {
   MessageCircle,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  UserCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -29,6 +30,12 @@ const menuItems = [
     icon: Users,
     href: '/usuarios',
     color: 'text-green-400'
+  },
+  {
+    title: 'Clientes',
+    icon: UserCheck,
+    href: '/clientes',
+    color: 'text-emerald-400'
   },
   {
     title: 'Atendimento',

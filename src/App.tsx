@@ -8,6 +8,7 @@ import { ThemeProvider } from "./hooks/useTheme";
 import { Layout } from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Usuarios from "./pages/Usuarios";
+import Clientes from "./pages/Clientes";
 import Atendimento from "./pages/Atendimento";
 import Kanban from "./pages/Kanban";
 import ChatBot from "./pages/ChatBot";
@@ -35,7 +36,8 @@ import {
   Shield,
   Bell,
   Globe,
-  Settings
+  Settings,
+  UserCheck
 } from "lucide-react";
 
 const queryClient = new QueryClient();
@@ -64,6 +66,15 @@ const App = () => (
                 icon={<Users className="w-6 h-6 text-green-400" />}
               >
                 <Usuarios />
+              </Layout>
+            } />
+            <Route path="/clientes" element={
+              <Layout 
+                title="Clientes" 
+                description="Base de dados centralizada de clientes"
+                icon={<UserCheck className="w-6 h-6 text-emerald-400" />}
+              >
+                <Clientes />
               </Layout>
             } />
             <Route path="/atendimento" element={
