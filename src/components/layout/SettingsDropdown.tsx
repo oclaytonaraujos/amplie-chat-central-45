@@ -1,5 +1,5 @@
 
-import { Settings, User, Shield, Bell, Monitor, Moon, Sun, Globe } from 'lucide-react';
+import { Settings, Shield, Bell, Monitor, Sun, Globe } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { 
@@ -31,11 +31,6 @@ export function SettingsDropdown() {
       <DropdownMenuContent align="end" className="w-56 bg-white">
         <DropdownMenuLabel>Configurações</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/conta')} className="cursor-pointer">
-          <User className="mr-2 h-4 w-4" />
-          Configurações da Conta
-        </DropdownMenuItem>
         
         <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/privacidade')} className="cursor-pointer">
           <Shield className="mr-2 h-4 w-4" />
@@ -73,13 +68,6 @@ export function SettingsDropdown() {
             </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuSub>
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem onClick={() => handleNavigateTo('/configuracoes/avancadas')} className="cursor-pointer">
-          <Settings className="mr-2 h-4 w-4" />
-          Configurações Avançadas
-        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
