@@ -10,6 +10,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { ContatoDetalhes } from '@/components/contatos/ContatoDetalhes';
 import { NovoContatoDialog } from '@/components/contatos/NovoContatoDialog';
+import { EditarContatoDialog } from '@/components/contatos/EditarContatoDialog';
+import { ExcluirContatoDialog } from '@/components/contatos/ExcluirContatoDialog';
+import { FiltrosContatos } from '@/components/contatos/FiltrosContatos';
+import { useToast } from '@/hooks/use-toast';
 
 interface Contato {
   id: number;
@@ -29,7 +33,7 @@ interface Contato {
 }
 
 // Dados mock para demonstração
-const contatosMock: Contato[] = [
+const contatosMockInicial: Contato[] = [
   {
     id: 1,
     nome: 'João Silva',
@@ -89,25 +93,25 @@ const contatosMock: Contato[] = [
   }
 ];
 
-const setores = ['Todos', 'Vendas', 'Suporte', 'Financeiro', 'Técnico'];
-const todasTags = ['VIP', 'Interessado', 'Problema Recorrente', 'Novo Contato'];
-
 export default function Contatos() {
-  const [contatos, setContatos] = useState<Contato[]>(contatosMock);
+  const [contatos, setContatos] = useState<Contato[]>(contatosMockInicial);
   const [filtroTipo, setFiltroTipo] = useState<'todos' | 'meus'>('todos');
   const [pesquisa, setPesquisa] = useState('');
-  const [setorSelecionado, setSetorSelecionado] = useState('Todos');
-  const [tagSelecionada, setTagSelecionada] = useState('Todas');
-  const [statusSelecionado, setStatusSelecionado] = useState('Todos');
+  const [filtros, setFiltros] = useState({ setor: '', status: '', tag: '' });
   const [contatoSelecionado, setContatoSelecionado] = useState<Contato | null>(null);
   const [showNovoContato, setShowNovoContato] = useState(false);
+  const [editarContatoOpen, setEditarContatoOpen] = useState(false);
+  const [excluirContatoOpen, setExcluirContatoOpen] = useState(false);
+  const [contatoParaEdicao, setContatoParaEdicao] = useState<Contato | null>(null);
+  const [contatoParaExclusao, setContatoParaExclusao] = useState<Contato | null>(null);
   const [usuarioLogado] = useState('Ana Silva'); // Mock do usuário logado
+  const { toast } = useToast();
 
   // Filtrar contatos baseado nos critérios
   const contatosFiltrados = contatos.filter(contato => {
     // Filtro de tipo (todos/meus)
     if (filtroTipo === 'meus') {
-      const temAssociacao = contato.atendentesAssociados.some(assoc => assoc.atendente === usuarioLogado);
+      const temAssociacao = contato.atendentesAssociadas.some(assoc => assoc.atendente === usuarioLogado);
       if (!temAssociacao) return false;
     }
 
@@ -123,18 +127,16 @@ export default function Contatos() {
       }
     }
 
-    // Filtro de setor
-    if (setorSelecionado !== 'Todos' && contato.setorUltimoAtendimento !== setorSelecionado) {
+    // Filtros avançados
+    if (filtros.setor && contato.setorUltimoAtendimento !== filtros.setor) {
       return false;
     }
 
-    // Filtro de tag
-    if (tagSelecionada !== 'Todas' && !contato.tags.includes(tagSelecionada)) {
+    if (filtros.status && contato.status !== filtros.status) {
       return false;
     }
 
-    // Filtro de status
-    if (statusSelecionado !== 'Todos' && contato.status !== statusSelecionado) {
+    if (filtros.tag && !contato.tags.includes(filtros.tag)) {
       return false;
     }
 
@@ -143,16 +145,38 @@ export default function Contatos() {
 
   const handleIniciarConversa = (contato: Contato) => {
     console.log('Iniciando conversa com:', contato.nome);
-    // Implementar navegação para chat
+    toast({
+      title: "Conversa iniciada",
+      description: `Iniciando conversa com ${contato.nome}`,
+    });
   };
 
-  const handleEditarContato = (contato: Contato) => {
-    console.log('Editando contato:', contato.nome);
-    // Implementar edição
+  const abrirEdicao = (contato: Contato) => {
+    setContatoParaEdicao(contato);
+    setEditarContatoOpen(true);
+  };
+
+  const abrirExclusao = (contato: Contato) => {
+    setContatoParaExclusao(contato);
+    setExcluirContatoOpen(true);
+  };
+
+  const handleEditarContato = (contatoEditado: Contato) => {
+    setContatos(prev => prev.map(c => c.id === contatoEditado.id ? contatoEditado : c));
+    toast({
+      title: "Contato atualizado",
+      description: `As informações de ${contatoEditado.nome} foram atualizadas.`,
+    });
   };
 
   const handleExcluirContato = (contatoId: number) => {
+    const contato = contatos.find(c => c.id === contatoId);
     setContatos(prev => prev.filter(c => c.id !== contatoId));
+    toast({
+      title: "Contato excluído",
+      description: `${contato?.nome} foi removido do sistema.`,
+      variant: "destructive"
+    });
   };
 
   const getStatusBadge = (status: string) => {
@@ -173,7 +197,7 @@ export default function Contatos() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header com estatísticas */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
@@ -209,39 +233,59 @@ export default function Contatos() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Contatos VIP</CardTitle>
+            <Tag className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {contatos.filter(c => c.tags.includes('VIP')).length}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Filtros principais */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center space-x-2">
-            <Filter className="w-5 h-5" />
-            <span>Filtros</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Filtro Todos/Meus Contatos */}
-          <div className="flex space-x-2">
-            <Button
-              variant={filtroTipo === 'todos' ? 'default' : 'outline'}
-              onClick={() => setFiltroTipo('todos')}
-              className="flex items-center space-x-2"
-            >
-              <UserCheck className="w-4 h-4" />
-              <span>Todos os Contatos</span>
-            </Button>
-            <Button
-              variant={filtroTipo === 'meus' ? 'default' : 'outline'}
-              onClick={() => setFiltroTipo('meus')}
-              className="flex items-center space-x-2"
-            >
-              <UserCheck className="w-4 h-4" />
-              <span>Meus Contatos</span>
-            </Button>
-          </div>
+      {/* Action Button */}
+      <div className="flex justify-end">
+        <Button 
+          className="bg-amplie-primary hover:bg-amplie-primary-light"
+          onClick={() => setShowNovoContato(true)}
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Novo Contato
+        </Button>
+      </div>
 
-          {/* Barra de pesquisa e filtros adicionais */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      {/* Filtros */}
+      <FiltrosContatos onFiltrosChange={setFiltros} />
+
+      {/* Filtros principais e pesquisa */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-4">
+            {/* Filtro Todos/Meus Contatos */}
+            <div className="flex space-x-2">
+              <Button
+                variant={filtroTipo === 'todos' ? 'default' : 'outline'}
+                onClick={() => setFiltroTipo('todos')}
+                className="flex items-center space-x-2"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Todos os Contatos</span>
+              </Button>
+              <Button
+                variant={filtroTipo === 'meus' ? 'default' : 'outline'}
+                onClick={() => setFiltroTipo('meus')}
+                className="flex items-center space-x-2"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Meus Contatos</span>
+              </Button>
+            </div>
+
+            {/* Barra de pesquisa */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
@@ -251,50 +295,6 @@ export default function Contatos() {
                 className="pl-10"
               />
             </div>
-
-            <Select value={setorSelecionado} onValueChange={setSetorSelecionado}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por setor" />
-              </SelectTrigger>
-              <SelectContent>
-                {setores.map((setor) => (
-                  <SelectItem key={setor} value={setor}>
-                    {setor}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={tagSelecionada} onValueChange={setTagSelecionada}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por tag" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Todas">Todas as Tags</SelectItem>
-                {todasTags.map((tag) => (
-                  <SelectItem key={tag} value={tag}>
-                    {tag}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={statusSelecionado} onValueChange={setStatusSelecionado}>
-              <SelectTrigger>
-                <SelectValue placeholder="Filtrar por status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Todos">Todos os Status</SelectItem>
-                <SelectItem value="ativo">Ativo</SelectItem>
-                <SelectItem value="inativo">Inativo</SelectItem>
-                <SelectItem value="bloqueado">Bloqueado</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button onClick={() => setShowNovoContato(true)} className="w-full">
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Contato
-            </Button>
           </div>
         </CardContent>
       </Card>
@@ -306,7 +306,7 @@ export default function Contatos() {
             <TableHeader>
               <TableRow>
                 <TableHead>Contato</TableHead>
-                <TableHead>Contato</TableHead>
+                <TableHead>Informações</TableHead>
                 <TableHead>Último Atendente</TableHead>
                 <TableHead>Setor</TableHead>
                 <TableHead>Última Interação</TableHead>
@@ -371,10 +371,10 @@ export default function Contatos() {
                       <Button size="sm" variant="ghost" onClick={() => handleIniciarConversa(contato)}>
                         <MessageSquare className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleEditarContato(contato)}>
+                      <Button size="sm" variant="ghost" onClick={() => abrirEdicao(contato)}>
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => handleExcluirContato(contato.id)}>
+                      <Button size="sm" variant="ghost" onClick={() => abrirExclusao(contato)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
@@ -417,7 +417,27 @@ export default function Contatos() {
             ...novoContato,
             id: prev.length + 1
           }]);
+          toast({
+            title: "Contato criado",
+            description: `${novoContato.nome} foi adicionado com sucesso.`,
+          });
         }}
+      />
+
+      {/* Dialog de edição */}
+      <EditarContatoDialog
+        open={editarContatoOpen}
+        onOpenChange={setEditarContatoOpen}
+        contato={contatoParaEdicao}
+        onContatoEditado={handleEditarContato}
+      />
+
+      {/* Dialog de exclusão */}
+      <ExcluirContatoDialog
+        open={excluirContatoOpen}
+        onOpenChange={setExcluirContatoOpen}
+        contato={contatoParaExclusao}
+        onContatoExcluido={handleExcluirContato}
       />
     </div>
   );
