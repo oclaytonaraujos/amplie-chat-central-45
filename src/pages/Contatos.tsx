@@ -111,7 +111,7 @@ export default function Contatos() {
   const contatosFiltrados = contatos.filter(contato => {
     // Filtro de tipo (todos/meus)
     if (filtroTipo === 'meus') {
-      const temAssociacao = contato.atendentesAssociadas.some(assoc => assoc.atendente === usuarioLogado);
+      const temAssociacao = contato.atendentesAssociados.some(assoc => assoc.atendente === usuarioLogado);
       if (!temAssociacao) return false;
     }
 
