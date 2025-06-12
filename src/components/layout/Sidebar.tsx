@@ -9,6 +9,7 @@ import {
   Settings, 
   Building2,
   Bot,
+  MessageCircle,
   ChevronLeft,
   ChevronRight,
   X
@@ -46,6 +47,12 @@ const menuItems = [
     icon: Bot,
     href: '/chatbot',
     color: 'text-indigo-400'
+  },
+  {
+    title: 'Chat Interno',
+    icon: MessageCircle,
+    href: '/chat-interno',
+    color: 'text-cyan-400'
   },
   {
     title: 'Painel',

@@ -5,29 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-
-interface Usuario {
-  id: number;
-  nome: string;
-  email: string;
-  avatar?: string;
-  status: 'online' | 'offline' | 'ausente';
-  cargo: string;
-}
-
-interface Conversa {
-  id: number;
-  tipo: 'individual' | 'grupo';
-  nome: string;
-  participantes: Usuario[];
-  ultimaMensagem?: {
-    texto: string;
-    autor: string;
-    tempo: string;
-  };
-  mensagensNaoLidas: number;
-  avatar?: string;
-}
+import { Usuario, Conversa } from '@/types/chat-interno';
 
 interface ChatSidebarProps {
   conversas: Conversa[];

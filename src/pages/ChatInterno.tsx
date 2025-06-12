@@ -4,42 +4,7 @@ import { ChatSidebar } from '@/components/chat-interno/ChatSidebar';
 import { ChatArea } from '@/components/chat-interno/ChatArea';
 import { ContactsList } from '@/components/chat-interno/ContactsList';
 import { useIsMobile } from '@/hooks/use-mobile';
-
-interface Usuario {
-  id: number;
-  nome: string;
-  email: string;
-  avatar?: string;
-  status: 'online' | 'offline' | 'ausente';
-  cargo: string;
-}
-
-interface Conversa {
-  id: number;
-  tipo: 'individual' | 'grupo';
-  nome: string;
-  participantes: Usuario[];
-  ultimaMensagem?: {
-    texto: string;
-    autor: string;
-    tempo: string;
-  };
-  mensagensNaoLidas: number;
-  avatar?: string;
-}
-
-interface Mensagem {
-  id: number;
-  texto: string;
-  autor: Usuario;
-  tempo: string;
-  tipo: 'texto' | 'imagem' | 'documento' | 'audio';
-  anexo?: {
-    nome: string;
-    url: string;
-    tamanho?: string;
-  };
-}
+import { Usuario, Conversa, Mensagem } from '@/types/chat-interno';
 
 // Dados mockados para demonstração
 const usuariosMock: Usuario[] = [
@@ -172,7 +137,7 @@ export default function ChatInterno() {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex bg-gray-50 rounded-xl overflow-hidden">
+    <div className="h-full flex bg-gray-50 rounded-xl overflow-hidden">
       {/* Mobile sidebar overlay */}
       {isMobile && sidebarOpen && (
         <div 
