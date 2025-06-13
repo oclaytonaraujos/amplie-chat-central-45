@@ -87,60 +87,49 @@ export function ChatArea({
 
   if (!conversa) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-white p-4">
-        <div className="text-center text-gray-500 max-w-sm">
-          <div className="w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Users className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
+      <div className="flex-1 flex items-center justify-center bg-white">
+        <div className="text-center text-gray-500">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Users className="w-8 h-8 text-gray-400" />
           </div>
-          <h3 className="text-base md:text-lg font-medium mb-2 break-words">Selecione uma conversa</h3>
-          <p className="text-xs md:text-sm break-words">
-            {showMenuButton ? 'Toque no menu para ver as conversas' : 'Escolha uma conversa existente ou inicie uma nova para começar a conversar'}
-          </p>
-          {showMenuButton && (
-            <Button 
-              onClick={onOpenSidebar}
-              className="mt-4 bg-blue-500 hover:bg-blue-600 text-white"
-            >
-              <Menu className="w-4 h-4 mr-2" />
-              Ver conversas
-            </Button>
-          )}
+          <h3 className="text-lg font-medium mb-2">Selecione uma conversa</h3>
+          <p className="text-sm">Escolha uma conversa existente ou inicie uma nova para começar a conversar</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white h-full">
+    <div className="flex-1 flex flex-col bg-white">
       {/* Header da conversa */}
-      <div className="p-3 md:p-4 border-b border-gray-200 bg-white flex-shrink-0">
+      <div className="p-4 border-b border-gray-200 bg-white">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
+          <div className="flex items-center space-x-3">
             {showMenuButton && (
-              <Button variant="ghost" size="icon" onClick={onOpenSidebar} className="h-8 w-8 md:h-9 md:w-9 flex-shrink-0">
-                <Menu className="w-4 h-4 md:w-5 md:h-5" />
+              <Button variant="ghost" size="icon" onClick={onOpenSidebar}>
+                <Menu className="w-5 h-5" />
               </Button>
             )}
             
-            <div className="relative flex-shrink-0">
-              <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
+            <div className="relative">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full flex items-center justify-center">
                 {conversa.tipo === 'grupo' ? (
-                  <Users className="w-3 h-3 md:w-5 md:h-5 text-white" />
+                  <Users className="w-5 h-5 text-white" />
                 ) : (
-                  <User className="w-3 h-3 md:w-5 md:h-5 text-white" />
+                  <User className="w-5 h-5 text-white" />
                 )}
               </div>
               
               {/* Status indicator para conversas individuais */}
               {conversa.tipo === 'individual' && conversa.participantes[0] && (
-                <div className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 md:w-3 md:h-3 rounded-full border-2 border-white ${getStatusColor(conversa.participantes[0].status)}`} />
+                <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${getStatusColor(conversa.participantes[0].status)}`} />
               )}
             </div>
             
-            <div className="min-w-0 flex-1">
-              <h3 className="text-sm md:text-base font-medium text-gray-900 truncate break-words">{conversa.nome}</h3>
+            <div>
+              <h3 className="font-medium text-gray-900">{conversa.nome}</h3>
               {conversa.tipo === 'individual' && conversa.participantes[0] ? (
-                <div className="flex items-center space-x-1 md:space-x-2">
+                <div className="flex items-center space-x-2">
                   <Badge variant="outline" className={`text-xs ${
                     conversa.participantes[0].status === 'online' ? 'text-green-700 bg-green-50 border-green-200' :
                     conversa.participantes[0].status === 'ausente' ? 'text-yellow-700 bg-yellow-50 border-yellow-200' :
@@ -148,7 +137,7 @@ export function ChatArea({
                   }`}>
                     {getStatusText(conversa.participantes[0].status)}
                   </Badge>
-                  <span className="text-xs text-gray-500 hidden md:inline break-words">{conversa.participantes[0].cargo}</span>
+                  <span className="text-xs text-gray-500">{conversa.participantes[0].cargo}</span>
                 </div>
               ) : (
                 <p className="text-xs text-gray-500">
@@ -158,45 +147,45 @@ export function ChatArea({
             </div>
           </div>
           
-          <div className="flex items-center space-x-1 flex-shrink-0">
-            {onCloseConversa && showMenuButton && (
-              <Button variant="ghost" size="icon" onClick={onCloseConversa} title="Voltar" className="h-8 w-8">
-                <X className="w-4 h-4" />
+          <div className="flex items-center space-x-2">
+            {onCloseConversa && (
+              <Button variant="ghost" size="icon" onClick={onCloseConversa} title="Fechar conversa">
+                <X className="w-5 h-5" />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8 hidden md:flex">
-              <MoreVertical className="w-4 h-4" />
+            <Button variant="ghost" size="icon">
+              <MoreVertical className="w-5 h-5" />
             </Button>
           </div>
         </div>
       </div>
 
       {/* Área de mensagens */}
-      <ScrollArea className="flex-1 p-3 md:p-4">
-        <div className="space-y-3 md:space-y-4">
+      <ScrollArea className="flex-1 p-4">
+        <div className="space-y-4">
           {mensagens.map((mensagem) => {
             const isOwnMessage = mensagem.autor.nome === 'Você';
             
             return (
               <div key={mensagem.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] md:max-w-[70%] ${isOwnMessage ? 'order-2' : 'order-1'}`}>
+                <div className={`max-w-[70%] ${isOwnMessage ? 'order-2' : 'order-1'}`}>
                   {/* Avatar e nome (apenas para mensagens de outros) */}
                   {!isOwnMessage && (
                     <div className="flex items-center space-x-2 mb-1">
-                      <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-2 h-2 md:w-3 md:h-3 text-white" />
+                      <div className="w-6 h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
+                        <User className="w-3 h-3 text-white" />
                       </div>
-                      <span className="text-xs font-medium text-gray-600 break-words">{mensagem.autor.nome}</span>
+                      <span className="text-xs font-medium text-gray-600">{mensagem.autor.nome}</span>
                     </div>
                   )}
                   
                   {/* Balão da mensagem */}
-                  <div className={`px-3 py-2 md:px-4 md:py-2 rounded-lg ${
+                  <div className={`px-4 py-2 rounded-lg ${
                     isOwnMessage 
                       ? 'bg-blue-500 text-white' 
                       : 'bg-gray-100 text-gray-900'
                   }`}>
-                    <p className="text-sm break-words">{mensagem.texto}</p>
+                    <p className="text-sm">{mensagem.texto}</p>
                     <p className={`text-xs mt-1 ${
                       isOwnMessage ? 'text-blue-100' : 'text-gray-500'
                     }`}>
@@ -211,10 +200,10 @@ export function ChatArea({
       </ScrollArea>
 
       {/* Input de mensagem */}
-      <div className="p-3 md:p-4 border-t border-gray-200 bg-white flex-shrink-0 safe-area-inset-top">
-        <div className="flex items-end space-x-2">
-          <Button variant="ghost" size="icon" className="hidden md:flex h-9 w-9 flex-shrink-0">
-            <Paperclip className="w-4 h-4 text-gray-500" />
+      <div className="p-4 border-t border-gray-200 bg-white">
+        <div className="flex items-center space-x-2">
+          <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <Paperclip className="w-5 h-5 text-gray-500" />
           </Button>
           
           <div className="flex-1 relative">
@@ -228,13 +217,12 @@ export function ChatArea({
                   handleEnviarMensagem();
                 }
               }}
-              className="pr-10 min-h-[40px] text-sm"
-              style={{ fontSize: '16px' }} // Evita zoom no iOS
+              className="pr-10"
             />
             <Button 
               variant="ghost" 
               size="icon" 
-              className="absolute right-1 top-1/2 transform -translate-y-1/2 hidden md:flex h-8 w-8"
+              className="absolute right-1 top-1/2 transform -translate-y-1/2 hidden sm:flex"
             >
               <Smile className="w-4 h-4 text-gray-500" />
             </Button>
@@ -243,7 +231,7 @@ export function ChatArea({
           <Button
             onClick={handleEnviarMensagem}
             disabled={!novaMensagem.trim()}
-            className="bg-blue-500 hover:bg-blue-600 text-white h-10 w-10 p-0 flex-shrink-0"
+            className="bg-blue-500 hover:bg-blue-600 text-white"
           >
             <Send className="w-4 h-4" />
           </Button>
