@@ -120,37 +120,29 @@ export default function Dashboard() {
         <MetricCard
           title="Atendimentos em Aberto"
           value={42}
-          subtitle="Aguardando resposta"
           icon={<MessageSquare className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-blue-500 to-blue-600"
-          trend={{ value: 12, isPositive: true }}
         />
         
         <MetricCard
           title="Finalizados Hoje"
           value={18}
-          subtitle="Meta: 25 atendimentos"
           icon={<CheckCircle className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-green-500 to-green-600"
-          trend={{ value: 8, isPositive: true }}
         />
         
         <MetricCard
           title="Tempo Médio de Espera"
           value="2m 34s"
-          subtitle="Meta: < 3 minutos"
           icon={<Clock className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-orange-500 to-orange-600"
-          trend={{ value: 5, isPositive: false }}
         />
         
         <MetricCard
           title="Tempo Médio de Atendimento"
           value="8m 12s"
-          subtitle="Meta: < 10 minutos"
           icon={<Timer className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-purple-500 to-purple-600"
-          trend={{ value: 15, isPositive: false }}
         />
       </div>
 
