@@ -29,61 +29,64 @@ export default function Setores() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 md:p-6 space-y-6 min-h-screen">
       {/* Header com botão de ação */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Setores</h1>
-          <p className="text-gray-600">Gerencie os setores da sua empresa</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 break-words">Setores</h1>
+          <p className="text-sm md:text-base text-gray-600 break-words">Gerencie os setores da sua empresa</p>
         </div>
-        <NovoSetorDialog />
+        <div className="flex-shrink-0">
+          <NovoSetorDialog />
+        </div>
       </div>
 
       {/* Search */}
-      <div className="bg-white rounded-xl shadow-amplie p-6">
+      <div className="bg-white rounded-xl shadow-amplie p-4 md:p-6">
         <Input
           placeholder="Pesquisar setores..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full"
         />
       </div>
 
       {/* Estatísticas gerais */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-xl shadow-amplie p-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="bg-white rounded-xl shadow-amplie p-4 md:p-6 min-w-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <Building2 className="w-5 h-5 text-blue-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Total de Setores</p>
-              <p className="text-2xl font-bold text-gray-900">{setores.length}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs md:text-sm text-gray-600 break-words">Total de Setores</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">{setores.length}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-amplie p-6">
+        <div className="bg-white rounded-xl shadow-amplie p-4 md:p-6 min-w-0">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <Users className="w-5 h-5 text-green-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Total de Agentes</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs md:text-sm text-gray-600 break-words">Total de Agentes</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">
                 {setores.reduce((total, setor) => total + setor.agentes, 0)}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-amplie p-6">
+        <div className="bg-white rounded-xl shadow-amplie p-4 md:p-6 min-w-0 sm:col-span-2 lg:col-span-1">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center flex-shrink-0">
               <Clock className="w-5 h-5 text-orange-600" />
             </div>
-            <div>
-              <p className="text-sm text-gray-600">Atendimentos Ativos</p>
-              <p className="text-2xl font-bold text-gray-900">
+            <div className="min-w-0 flex-1">
+              <p className="text-xs md:text-sm text-gray-600 break-words">Atendimentos Ativos</p>
+              <p className="text-lg md:text-2xl font-bold text-gray-900">
                 {setores.reduce((total, setor) => total + setor.atendimentosAtivos, 0)}
               </p>
             </div>
@@ -92,29 +95,30 @@ export default function Setores() {
       </div>
 
       {/* Setores Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {filteredSetores.map((setor) => (
-          <div key={setor.id} className="bg-white rounded-xl shadow-amplie p-6 hover:shadow-amplie-hover transition-all duration-300">
+          <div key={setor.id} className="bg-white rounded-xl shadow-amplie p-4 md:p-6 hover:shadow-amplie-hover transition-all duration-300 min-w-0 flex flex-col">
             {/* Header do Card */}
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center space-x-3">
-                <div className={`w-10 h-10 ${setor.cor} rounded-lg flex items-center justify-center`}>
+            <div className="flex items-start justify-between mb-4 gap-2">
+              <div className="flex items-start space-x-3 min-w-0 flex-1">
+                <div className={`w-10 h-10 ${setor.cor} rounded-lg flex items-center justify-center flex-shrink-0`}>
                   <Building2 className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold text-gray-900 truncate">{setor.nome}</h3>
-                  <div className="flex items-center space-x-2">
-                    <Badge variant={setor.ativo ? "default" : "secondary"} className="text-xs">
+                  <h3 className="font-semibold text-gray-900 break-words text-sm md:text-base leading-tight">{setor.nome}</h3>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <Badge variant={setor.ativo ? "default" : "secondary"} className="text-xs flex-shrink-0">
                       {setor.ativo ? "Ativo" : "Inativo"}
                     </Badge>
                   </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-1">
+              <div className="flex items-center space-x-1 flex-shrink-0">
                 <Button 
                   variant="ghost" 
                   size="sm"
                   onClick={() => setSetorParaEditar(setor)}
+                  className="h-8 w-8 p-0"
                 >
                   <Edit className="w-4 h-4 text-gray-500" />
                 </Button>
@@ -122,6 +126,7 @@ export default function Setores() {
                   variant="ghost" 
                   size="sm"
                   onClick={() => setSetorParaExcluir(setor)}
+                  className="h-8 w-8 p-0"
                 >
                   <Trash2 className="w-4 h-4 text-red-500" />
                 </Button>
@@ -130,29 +135,31 @@ export default function Setores() {
 
             {/* Descrição */}
             {setor.descricao && (
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">{setor.descricao}</p>
+              <div className="mb-4 min-w-0">
+                <p className="text-xs md:text-sm text-gray-600 break-words line-clamp-3 leading-relaxed">{setor.descricao}</p>
+              </div>
             )}
 
             {/* Estatísticas */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Users className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">Agentes</span>
+            <div className="space-y-3 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center space-x-2 min-w-0 flex-1">
+                  <Users className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span className="text-xs md:text-sm text-gray-600 break-words">Agentes</span>
                 </div>
-                <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+                <Badge variant="secondary" className="bg-gray-100 text-gray-800 flex-shrink-0 text-xs">
                   {setor.agentes}
                 </Badge>
               </div>
               
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Clock className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-600">Atendimentos</span>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center space-x-2 min-w-0 flex-1">
+                  <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <span className="text-xs md:text-sm text-gray-600 break-words">Atendimentos</span>
                 </div>
                 <Badge 
                   variant="secondary" 
-                  className={`${setor.atendimentosAtivos > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                  className={`flex-shrink-0 text-xs ${setor.atendimentosAtivos > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
                 >
                   {setor.atendimentosAtivos}
                 </Badge>
@@ -161,9 +168,9 @@ export default function Setores() {
 
             {/* Progress Bar */}
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>Capacidade</span>
-                <span>{setor.atendimentosAtivos}/{setor.capacidadeMaxima}</span>
+              <div className="flex justify-between text-xs md:text-sm text-gray-600 mb-2 gap-2">
+                <span className="break-words">Capacidade</span>
+                <span className="flex-shrink-0">{setor.atendimentosAtivos}/{setor.capacidadeMaxima}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div 
@@ -175,7 +182,7 @@ export default function Setores() {
 
             {/* Data de criação */}
             <div className="mt-4 pt-4 border-t border-gray-100">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-gray-500 break-words">
                 Criado em {formatarData(setor.criadoEm)}
               </p>
             </div>
@@ -185,19 +192,19 @@ export default function Setores() {
 
       {/* Empty State para busca */}
       {filteredSetores.length === 0 && setores.length > 0 && (
-        <div className="bg-white rounded-xl shadow-amplie p-12 text-center">
+        <div className="bg-white rounded-xl shadow-amplie p-8 md:p-12 text-center">
           <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum setor encontrado</h3>
-          <p className="text-gray-500 mb-6">Não encontramos setores com os critérios de busca.</p>
+          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2 break-words">Nenhum setor encontrado</h3>
+          <p className="text-sm md:text-base text-gray-500 mb-6 break-words">Não encontramos setores com os critérios de busca.</p>
         </div>
       )}
 
       {/* Empty State inicial */}
       {setores.length === 0 && (
-        <div className="bg-white rounded-xl shadow-amplie p-12 text-center">
+        <div className="bg-white rounded-xl shadow-amplie p-8 md:p-12 text-center">
           <Building2 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum setor cadastrado</h3>
-          <p className="text-gray-500 mb-6">Comece criando o primeiro setor da sua empresa.</p>
+          <h3 className="text-base md:text-lg font-medium text-gray-900 mb-2 break-words">Nenhum setor cadastrado</h3>
+          <p className="text-sm md:text-base text-gray-500 mb-6 break-words">Comece criando o primeiro setor da sua empresa.</p>
           <NovoSetorDialog />
         </div>
       )}
