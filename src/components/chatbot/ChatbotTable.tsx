@@ -1,7 +1,13 @@
 
-import { Bot, Edit, Trash2, Power, PowerOff, MessageCircle, ArrowRight } from 'lucide-react';
+import { Bot, Edit, Trash2, Power, PowerOff, MessageCircle, ArrowRight, Copy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Chatbot {
   id: number;
@@ -15,11 +21,12 @@ interface Chatbot {
 interface ChatbotTableProps {
   chatbots: Chatbot[];
   onEdit: (chatbot: Chatbot) => void;
+  onDuplicate: (chatbotId: number) => void;
   onToggleStatus: (chatbotId: number) => void;
   onDelete: (chatbotId: number) => void;
 }
 
-export function ChatbotTable({ chatbots, onEdit, onToggleStatus, onDelete }: ChatbotTableProps) {
+export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, onDelete }: ChatbotTableProps) {
   return (
     <div className="bg-white rounded-xl shadow-amplie overflow-hidden">
       <div className="overflow-x-auto">
@@ -80,13 +87,25 @@ export function ChatbotTable({ chatbots, onEdit, onToggleStatus, onDelete }: Cha
                     >
                       {chatbot.status === 'Ativo' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
                     </Button>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => onEdit(chatbot)}
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Button>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onEdit(chatbot)}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Editar
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onDuplicate(chatbot.id)}>
+                          <Copy className="w-4 h-4 mr-2" />
+                          Duplicar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
                     <Button 
                       variant="ghost" 
                       size="sm" 
