@@ -3,9 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { CreditCard, Download, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
-import { AlterarPlanoDialog } from '@/components/plano/AlterarPlanoDialog';
 import { GerenciarPagamentoDialog } from '@/components/plano/GerenciarPagamentoDialog';
-import { CancelarPlanoDialog } from '@/components/plano/CancelarPlanoDialog';
 
 export default function PlanoFaturamento() {
   const planoAtual = {
@@ -89,15 +87,9 @@ export default function PlanoFaturamento() {
           </div>
           
           <div className="flex gap-2">
-            <AlterarPlanoDialog>
-              <Button variant="outline">Alterar Plano</Button>
-            </AlterarPlanoDialog>
             <GerenciarPagamentoDialog>
               <Button variant="outline">Gerenciar Pagamento</Button>
             </GerenciarPagamentoDialog>
-            <CancelarPlanoDialog>
-              <Button variant="destructive">Cancelar Plano</Button>
-            </CancelarPlanoDialog>
           </div>
         </CardContent>
       </Card>
