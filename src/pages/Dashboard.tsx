@@ -6,7 +6,8 @@ import {
   Users,
   TrendingUp,
   Building2,
-  Activity
+  Activity,
+  Medal
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { ChartCard } from '@/components/dashboard/ChartCard';
@@ -202,7 +203,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Gráfico de Atendimentos por Setor - Removendo labels fixos */}
+        {/* Gráfico de Atendimentos por Setor */}
         <ChartCard
           title="Atendimentos por Setor"
           icon={<Building2 className="w-5 h-5 text-white" />}
@@ -245,21 +246,25 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </div>
             
-            {/* Responsive legend */}
+            {/* Legenda responsiva melhorada */}
             <div className="flex-shrink-0 pt-4">
-              <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2 gap-2">
                 {setoresData.map((entry, index) => (
-                  <div key={index} className="flex items-center space-x-2 min-w-0">
+                  <div key={index} className="flex items-center space-x-2 min-w-0 p-2 rounded-lg hover:bg-gray-50 transition-colors">
                     <div 
                       className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: entry.cor }}
                     ></div>
-                    <span className="text-xs sm:text-sm text-gray-600 font-medium truncate">
-                      {entry.nome}
-                    </span>
-                    <span className="text-xs text-gray-500 hidden sm:inline">
-                      ({entry.valor})
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <span className="text-sm text-gray-600 font-medium break-words">
+                          {entry.nome}
+                        </span>
+                        <span className="text-xs text-gray-500 sm:ml-2 whitespace-nowrap">
+                          {entry.valor} tickets
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -285,11 +290,11 @@ export default function Dashboard() {
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors">
               <p className="text-2xl font-bold text-yellow-600">18</p>
-              <p className="text-sm text-gray-600">Em Atendimento</p>
+              <p className="text-sm text-gray-600 break-words">Em Atendimento</p>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors">
               <p className="text-2xl font-bold text-orange-600">8</p>
-              <p className="text-sm text-gray-600">Aguardando Cliente</p>
+              <p className="text-sm text-gray-600 break-words">Aguardando Cliente</p>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
               <p className="text-2xl font-bold text-green-600">4</p>
@@ -298,7 +303,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Top Agentes */}
+        {/* Top Agentes com medalhas */}
         <div className="bg-white rounded-xl shadow-amplie p-6 hover:shadow-amplie-hover transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Top Agentes Hoje</h3>
@@ -307,23 +312,40 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="space-y-4">
-            {topAgentes.map((agente, index) => (
-              <div key={agente.nome} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">{index + 1}</span>
+            {topAgentes.map((agente, index) => {
+              const getMedalColor = (position: number) => {
+                if (position === 0) return "text-yellow-500"; // Ouro
+                if (position === 1) return "text-gray-400"; // Prata
+                if (position === 2) return "text-amber-600"; // Bronze
+                return "text-gray-400";
+              };
+
+              return (
+                <div key={agente.nome} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      {index < 3 ? (
+                        <div className="w-8 h-8 flex items-center justify-center">
+                          <Medal className={`w-6 h-6 ${getMedalColor(index)}`} />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
+                          <span className="text-white text-sm font-medium">{index + 1}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 break-words">{agente.nome}</p>
+                      <p className="text-sm text-gray-500 break-words">{agente.setor}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{agente.nome}</p>
-                    <p className="text-sm text-gray-500">{agente.setor}</p>
+                  <div className="text-right flex-shrink-0 ml-3">
+                    <p className="font-bold text-gray-900">{agente.atendimentos}</p>
+                    <p className="text-sm text-gray-500 whitespace-nowrap">atendimentos</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-bold text-gray-900">{agente.atendimentos}</p>
-                  <p className="text-sm text-gray-500">atendimentos</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
