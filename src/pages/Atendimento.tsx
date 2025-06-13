@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { MessageSquare, User, Plus, Filter } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
@@ -7,6 +6,9 @@ import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
 import { ClienteInfo } from '@/components/atendimento/ClienteInfo';
 import { ContactsList } from '@/components/atendimento/ContactsList';
 import { TransferDialog } from '@/components/atendimento/TransferDialog';
+import { ConfirmSaveContactDialog } from '@/components/contatos/ConfirmSaveContactDialog';
+import { NovoContatoDialog } from '@/components/contatos/NovoContatoDialog';
+import { useContactCheck } from '@/hooks/useContactCheck';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
@@ -108,7 +110,7 @@ const clienteExemplo = {
 };
 
 // Dados de contatos mockados
-const contatosMock = [
+const contatosMockInicial = [
   {
     id: 1,
     nome: 'Carlos Mendes',
@@ -147,8 +149,22 @@ export default function Atendimento() {
   const [showChat, setShowChat] = useState(false);
   const [showContacts, setShowContacts] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [contatos, setContatos] = useState(contatosMockInicial); // Estado local dos contatos
   const isMobile = useIsMobile();
   const { toast } = useToast();
+
+  // Hook para gerenciar verificação e salvamento de contatos
+  const {
+    pendingContact,
+    showConfirmDialog,
+    showNovoContatoDialog,
+    setShowConfirmDialog,
+    setShowNovoContatoDialog,
+    handleFinalizarWithContactCheck,
+    handleConfirmSave,
+    handleCancelSave,
+    handleContactSaved
+  } = useContactCheck();
 
   // Calcular mensagens em aberto para o agente atual
   const mensagensEmAberto = dadosAtendimentos.filter(a => 
@@ -183,11 +199,26 @@ export default function Atendimento() {
   };
 
   const handleFinalizar = () => {
-    console.log('Finalizar atendimento');
-    setSelectedAtendimento(null);
-    if (isMobile) {
-      setShowChat(false);
-    }
+    if (!selectedAtendimento) return;
+
+    // Agente e setor atuais (normalmente viriam do contexto de autenticação)
+    const agenteAtual = 'Ana Silva';
+    const setorAtual = 'Suporte';
+
+    // Usa o hook para verificar se deve salvar contato
+    handleFinalizarWithContactCheck(
+      selectedAtendimento,
+      contatos,
+      agenteAtual,
+      setorAtual,
+      () => {
+        console.log('Finalizar atendimento');
+        setSelectedAtendimento(null);
+        if (isMobile) {
+          setShowChat(false);
+        }
+      }
+    );
   };
 
   const handleNovaConversa = () => {
@@ -245,6 +276,15 @@ export default function Atendimento() {
     if (isMobile) {
       setShowChat(false);
     }
+  };
+
+  const handleContatoAdicionado = (novoContato: any) => {
+    setContatos(prev => [...prev, { ...novoContato, id: prev.length + 1 }]);
+    handleContactSaved();
+    toast({
+      title: "Contato salvo",
+      description: `${novoContato.nome} foi adicionado aos contatos com sucesso.`
+    });
   };
 
   // Layout mobile: mostra lista, contatos ou chat baseado no estado
@@ -308,6 +348,24 @@ export default function Atendimento() {
           onOpenChange={setShowTransferDialog}
           onConfirm={handleConfirmTransfer}
         />
+
+        {/* Dialog de confirmação para salvar contato */}
+        <ConfirmSaveContactDialog
+          open={showConfirmDialog}
+          onOpenChange={setShowConfirmDialog}
+          onConfirm={handleConfirmSave}
+          onCancel={handleCancelSave}
+          clienteNome={pendingContact?.nome || ''}
+          clienteTelefone={pendingContact?.telefone || ''}
+        />
+
+        {/* Dialog para criar novo contato com dados pré-preenchidos */}
+        <NovoContatoDialog
+          open={showNovoContatoDialog}
+          onOpenChange={setShowNovoContatoDialog}
+          onContatoAdicionado={handleContatoAdicionado}
+          dadosIniciais={pendingContact || undefined}
+        />
       </div>
     );
   }
@@ -367,7 +425,7 @@ export default function Atendimento() {
                 mensagens={mensagensExemplo}
                 onSairConversa={handleSairConversa}
                 onTransferir={handleTransferir}
-                onFinalizar={handleFinalizar}
+                onFinalizar={handleFinalizar} // Usa a nova função que verifica contatos
                 transferencia={selectedAtendimento.transferencia}
               />
             ) : (
@@ -407,6 +465,24 @@ export default function Atendimento() {
         open={showTransferDialog}
         onOpenChange={setShowTransferDialog}
         onConfirm={handleConfirmTransfer}
+      />
+
+      {/* Dialog de confirmação para salvar contato */}
+      <ConfirmSaveContactDialog
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+        onConfirm={handleConfirmSave}
+        onCancel={handleCancelSave}
+        clienteNome={pendingContact?.nome || ''}
+        clienteTelefone={pendingContact?.telefone || ''}
+      />
+
+      {/* Dialog para criar novo contato com dados pré-preenchidos */}
+      <NovoContatoDialog
+        open={showNovoContatoDialog}
+        onOpenChange={setShowNovoContatoDialog}
+        onContatoAdicionado={handleContatoAdicionado}
+        dadosIniciais={pendingContact || undefined}
       />
     </div>
   );

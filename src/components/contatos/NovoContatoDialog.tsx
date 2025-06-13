@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Plus, X } from 'lucide-react';
 
@@ -29,9 +28,15 @@ interface NovoContatoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onContatoAdicionado: (contato: NovoContato) => void;
+  dadosIniciais?: Partial<NovoContato>;
 }
 
-export function NovoContatoDialog({ open, onOpenChange, onContatoAdicionado }: NovoContatoDialogProps) {
+export function NovoContatoDialog({ 
+  open, 
+  onOpenChange, 
+  onContatoAdicionado, 
+  dadosIniciais 
+}: NovoContatoDialogProps) {
   const [formData, setFormData] = useState({
     nome: '',
     telefone: '',
@@ -40,6 +45,28 @@ export function NovoContatoDialog({ open, onOpenChange, onContatoAdicionado }: N
   });
   const [tags, setTags] = useState<string[]>([]);
   const [novaTag, setNovaTag] = useState('');
+
+  // Preenche os dados iniciais quando o diálogo abre
+  useEffect(() => {
+    if (open && dadosIniciais) {
+      setFormData({
+        nome: dadosIniciais.nome || '',
+        telefone: dadosIniciais.telefone || '',
+        email: dadosIniciais.email || '',
+        status: dadosIniciais.status || 'ativo'
+      });
+      setTags(dadosIniciais.tags || []);
+    } else if (open && !dadosIniciais) {
+      // Reset para novo contato sem dados iniciais
+      setFormData({
+        nome: '',
+        telefone: '',
+        email: '',
+        status: 'ativo'
+      });
+      setTags([]);
+    }
+  }, [open, dadosIniciais]);
 
   const adicionarTag = () => {
     if (novaTag.trim() && !tags.includes(novaTag.trim())) {
@@ -57,12 +84,12 @@ export function NovoContatoDialog({ open, onOpenChange, onContatoAdicionado }: N
     
     const novoContato: NovoContato = {
       ...formData,
-      ultimoAtendente: 'Ana Silva', // Mock do usuário atual
-      setorUltimoAtendimento: 'Vendas', // Mock do setor
-      dataUltimaInteracao: new Date().toISOString(),
+      ultimoAtendente: dadosIniciais?.ultimoAtendente || 'Ana Silva',
+      setorUltimoAtendimento: dadosIniciais?.setorUltimoAtendimento || 'Vendas',
+      dataUltimaInteracao: dadosIniciais?.dataUltimaInteracao || new Date().toISOString(),
       tags,
-      totalAtendimentos: 0,
-      atendentesAssociados: [
+      totalAtendimentos: dadosIniciais?.totalAtendimentos || 0,
+      atendentesAssociados: dadosIniciais?.atendentesAssociados || [
         {
           setor: 'Vendas',
           atendente: 'Ana Silva'
@@ -88,7 +115,9 @@ export function NovoContatoDialog({ open, onOpenChange, onContatoAdicionado }: N
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Novo Contato</DialogTitle>
+          <DialogTitle>
+            {dadosIniciais ? 'Salvar Novo Contato' : 'Novo Contato'}
+          </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -167,7 +196,7 @@ export function NovoContatoDialog({ open, onOpenChange, onContatoAdicionado }: N
               Cancelar
             </Button>
             <Button type="submit">
-              Adicionar Contato
+              {dadosIniciais ? 'Salvar Contato' : 'Adicionar Contato'}
             </Button>
           </div>
         </form>
