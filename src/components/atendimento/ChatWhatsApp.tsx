@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock, Image, FileText, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -194,7 +195,7 @@ export function ChatWhatsApp({
   return (
     <div className="flex flex-col h-full bg-gray-50 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header do Chat */}
-      <div className="bg-white p-4 border-b border-gray-200 flex justify-between items-center">
+      <div className="bg-white p-4 border-b border-gray-200 flex justify-between items-center flex-shrink-0">
         <div className="flex items-center space-x-3">
           <Button variant="ghost" size="sm" className="lg:hidden" onClick={onReturnToList}>
             <ArrowLeft className="w-5 h-5" />
@@ -240,61 +241,62 @@ export function ChatWhatsApp({
 
       {/* Alerta de transferência */}
       {transferencia && (
-        <Alert className="m-4 border-orange-200 bg-orange-50">
-          <ArrowRight className="h-4 w-4 text-orange-600" />
-          <AlertDescription className="text-orange-800">
-            <div className="flex items-center justify-between">
-              <div>
-                <strong>Atendimento transferido</strong> por {transferencia.de}
-                <div className="text-sm mt-1">
-                  <strong>Motivo:</strong> {transferencia.motivo}
+        <div className="m-4 flex-shrink-0">
+          <Alert className="border-orange-200 bg-orange-50">
+            <ArrowRight className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <strong>Atendimento transferido</strong> por {transferencia.de}
+                  <div className="text-sm mt-1">
+                    <strong>Motivo:</strong> {transferencia.motivo}
+                  </div>
+                </div>
+                <div className="flex items-center text-xs text-orange-600">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {transferencia.dataTransferencia}
                 </div>
               </div>
-              <div className="flex items-center text-xs text-orange-600">
-                <Clock className="w-3 h-3 mr-1" />
-                {transferencia.dataTransferencia}
-              </div>
-            </div>
-          </AlertDescription>
-        </Alert>
+            </AlertDescription>
+          </Alert>
+        </div>
       )}
       
-      {/* Container para ações e mensagens */}
-      <div className="flex flex-col flex-grow">
-        {/* Ações do atendimento */}
-        <div className="bg-gray-50 p-3 border-b border-gray-200 flex justify-end space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={onSairConversa}
-            className="bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100"
-          >
-            <LogOut className="w-4 h-4 mr-1" />
-            <span className="hidden sm:inline">Sair</span>
-          </Button>
-          <Button variant="outline" size="sm" onClick={onTransferir} className="hidden sm:flex">
-            Transferir
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100" 
-            onClick={onFinalizar}
-          >
-            <span className="hidden sm:inline">Finalizar</span>
-            <span className="sm:hidden">Fim</span>
-          </Button>
-        </div>
-        
-        {/* Área de mensagens */}
-        <ScrollArea className="flex-grow p-4 bg-gray-100">
+      {/* Ações do atendimento */}
+      <div className="bg-gray-50 p-3 border-b border-gray-200 flex justify-end space-x-2 flex-shrink-0">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={onSairConversa}
+          className="bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100"
+        >
+          <LogOut className="w-4 h-4 mr-1" />
+          <span className="hidden sm:inline">Sair</span>
+        </Button>
+        <Button variant="outline" size="sm" onClick={onTransferir} className="hidden sm:flex">
+          Transferir
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100" 
+          onClick={onFinalizar}
+        >
+          <span className="hidden sm:inline">Finalizar</span>
+          <span className="sm:hidden">Fim</span>
+        </Button>
+      </div>
+      
+      {/* Área de mensagens com altura fixa e rolagem interna */}
+      <div className="flex-grow min-h-0 bg-gray-100">
+        <ScrollArea className="h-full p-4">
           <div className="space-y-3">
             {mensagens.map((mensagem) => (
               <div key={mensagem.id} 
                 className={`flex ${mensagem.autor === 'agente' ? 'justify-end' : 'justify-start'}`}
               >
                 <div 
-                  className={`max-w-[85%] sm:max-w-[80%] md:max-w-[70%] px-3 sm:px-4 py-2 rounded-lg ${
+                  className={`max-w-[85%] sm:max-w-[80%] md:max-w-[70%] px-3 sm:px-4 py-2 rounded-lg break-words ${
                     mensagem.autor === 'agente' 
                       ? 'bg-green-50 border border-green-100 text-gray-800' 
                       : 'bg-white border border-gray-200 text-gray-800'
@@ -302,7 +304,7 @@ export function ChatWhatsApp({
                 >
                   {renderAnexo(mensagem.anexo)}
                   
-                  {mensagem.texto && <p className="text-sm">{mensagem.texto}</p>}
+                  {mensagem.texto && <p className="text-sm break-words">{mensagem.texto}</p>}
                   
                   <div className={`flex justify-end items-center space-x-1 mt-1 text-xs ${
                     mensagem.autor === 'agente' ? 'text-gray-500' : 'text-gray-400'
@@ -327,69 +329,69 @@ export function ChatWhatsApp({
             )}
           </div>
         </ScrollArea>
-        
-        {/* Preview do anexo selecionado */}
-        {anexoSelecionado && (
-          <div className="p-3 bg-yellow-50 border-b border-yellow-200">
-            <div className="flex items-center space-x-2">
-              <Image className="w-4 h-4 text-yellow-600" />
-              <span className="text-sm text-yellow-800">Anexo: {anexoSelecionado.name}</span>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setAnexoSelecionado(null)}
-                className="text-yellow-600 hover:text-yellow-700"
-              >
-                Remover
-              </Button>
-            </div>
-          </div>
-        )}
-        
-        {/* Input de mensagem */}
-        <div className="bg-white p-3 border-t border-gray-200">
+      </div>
+      
+      {/* Preview do anexo selecionado */}
+      {anexoSelecionado && (
+        <div className="p-3 bg-yellow-50 border-b border-yellow-200 flex-shrink-0">
           <div className="flex items-center space-x-2">
-            <div className="relative">
-              <input
-                type="file"
-                id="anexo"
-                className="hidden"
-                accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
-                onChange={handleAnexoChange}
-              />
-              <Button variant="ghost" size="icon" className="hidden sm:flex" asChild>
-                <label htmlFor="anexo" className="cursor-pointer">
-                  <Paperclip className="w-5 h-5 text-gray-500" />
-                </label>
-              </Button>
-            </div>
-            
-            <Input 
-              placeholder="Digite uma mensagem..." 
-              className="flex-grow text-sm"
-              value={novaMensagem}
-              onChange={(e) => setNovaMensagem(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault();
-                  handleEnviarMensagem();
-                }
-              }}
-            />
-            
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <Mic className="w-5 h-5 text-gray-500" />
-            </Button>
-            
+            <Image className="w-4 h-4 text-yellow-600" />
+            <span className="text-sm text-yellow-800">Anexo: {anexoSelecionado.name}</span>
             <Button 
-              size="icon" 
-              className="bg-green-500 hover:bg-green-600 text-white"
-              disabled={(!novaMensagem.trim() && !anexoSelecionado) || !hasConnectedWhatsApp}
-              onClick={handleEnviarMensagem}
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setAnexoSelecionado(null)}
+              className="text-yellow-600 hover:text-yellow-700"
             >
-              <Send className="w-4 h-4" />
+              Remover
             </Button>
           </div>
+        </div>
+      )}
+      
+      {/* Input de mensagem */}
+      <div className="bg-white p-3 border-t border-gray-200 flex-shrink-0">
+        <div className="flex items-center space-x-2">
+          <div className="relative">
+            <input
+              type="file"
+              id="anexo"
+              className="hidden"
+              accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+              onChange={handleAnexoChange}
+            />
+            <Button variant="ghost" size="icon" className="hidden sm:flex" asChild>
+              <label htmlFor="anexo" className="cursor-pointer">
+                <Paperclip className="w-5 h-5 text-gray-500" />
+              </label>
+            </Button>
+          </div>
+          
+          <Input 
+            placeholder="Digite uma mensagem..." 
+            className="flex-grow text-sm"
+            value={novaMensagem}
+            onChange={(e) => setNovaMensagem(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleEnviarMensagem();
+              }
+            }}
+          />
+          
+          <Button variant="ghost" size="icon" className="hidden sm:flex">
+            <Mic className="w-5 h-5 text-gray-500" />
+          </Button>
+          
+          <Button 
+            size="icon" 
+            className="bg-green-500 hover:bg-green-600 text-white"
+            disabled={(!novaMensagem.trim() && !anexoSelecionado) || !hasConnectedWhatsApp}
+            onClick={handleEnviarMensagem}
+          >
+            <Send className="w-4 h-4" />
+          </Button>
         </div>
       </div>
     </div>
