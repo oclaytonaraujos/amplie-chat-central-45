@@ -94,6 +94,9 @@ export default function ChatInterno() {
 
   const handleCloseConversa = () => {
     setConversaSelecionada(null);
+    if (isMobile) {
+      setSidebarOpen(true);
+    }
   };
 
   const handleSendMessage = (texto: string) => {
@@ -141,7 +144,7 @@ export default function ChatInterno() {
   };
 
   return (
-    <div className="h-full flex bg-gray-50 rounded-xl overflow-hidden">
+    <div className="h-screen flex bg-gray-50 overflow-hidden">
       {/* Mobile sidebar overlay */}
       {isMobile && sidebarOpen && (
         <div 
@@ -153,10 +156,9 @@ export default function ChatInterno() {
       {/* Sidebar */}
       <div className={`
         ${isMobile 
-          ? `fixed inset-y-0 left-0 z-50 ${!sidebarOpen ? '-translate-x-full' : 'translate-x-0'} transition-transform duration-300 ease-in-out`
-          : 'relative'
+          ? `fixed inset-y-0 left-0 z-50 ${!sidebarOpen ? '-translate-x-full' : 'translate-x-0'} transition-transform duration-300 ease-in-out w-full max-w-sm`
+          : 'relative w-80'
         }
-        ${isMobile ? 'w-80' : 'w-80'}
       `}>
         {showContacts ? (
           <ContactsList
@@ -176,7 +178,7 @@ export default function ChatInterno() {
       </div>
 
       {/* Área principal do chat */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className={`flex-1 flex flex-col min-w-0 ${isMobile && sidebarOpen ? 'hidden' : ''}`}>
         <ChatArea
           conversa={conversaSelecionada}
           mensagens={mensagens}
