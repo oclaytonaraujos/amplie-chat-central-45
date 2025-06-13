@@ -1,7 +1,14 @@
 
-import { User, Phone, Clock, Tag } from 'lucide-react';
+import { User, Phone, Clock, Tag, ArrowRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+
+interface TransferenciaInfo {
+  de: string;
+  motivo: string;
+  dataTransferencia: string;
+}
 
 interface ClienteInfoProps {
   cliente: {
@@ -18,11 +25,35 @@ interface ClienteInfoProps {
       status: string;
     }[];
   };
+  transferencia?: TransferenciaInfo;
 }
 
-export function ClienteInfo({ cliente }: ClienteInfoProps) {
+export function ClienteInfo({ cliente, transferencia }: ClienteInfoProps) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      {/* Alerta de transferência no topo */}
+      {transferencia && (
+        <div className="p-3 border-b border-gray-200">
+          <Alert className="border-orange-200 bg-orange-50">
+            <ArrowRight className="h-4 w-4 text-orange-600" />
+            <AlertDescription className="text-orange-800">
+              <div className="flex items-center justify-between">
+                <div>
+                  <strong>Transferido</strong> por {transferencia.de}
+                  <div className="text-sm mt-1">
+                    <strong>Motivo:</strong> {transferencia.motivo}
+                  </div>
+                </div>
+                <div className="flex items-center text-xs text-orange-600">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {transferencia.dataTransferencia}
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
       {/* Header com info do cliente */}
       <div className="p-4 border-b border-gray-200">
         <div className="flex items-center space-x-3">
@@ -71,7 +102,7 @@ export function ClienteInfo({ cliente }: ClienteInfoProps) {
             <h4 className="text-sm font-medium text-gray-700">Histórico de Atendimentos</h4>
           </div>
           
-          <ScrollArea className="h-[280px]">
+          <ScrollArea className={transferencia ? "h-[220px]" : "h-[280px]"}>
             <div className="divide-y divide-gray-100">
               {cliente.historico.map((item) => (
                 <div key={item.id} className="p-3 hover:bg-gray-50">

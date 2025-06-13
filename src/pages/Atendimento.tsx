@@ -337,7 +337,6 @@ export default function Atendimento() {
               onSairConversa={handleSairConversa}
               onTransferir={handleTransferir}
               onFinalizar={handleFinalizar}
-              transferencia={selectedAtendimento.transferencia}
             />
           </div>
         ) : null}
@@ -425,8 +424,7 @@ export default function Atendimento() {
                 mensagens={mensagensExemplo}
                 onSairConversa={handleSairConversa}
                 onTransferir={handleTransferir}
-                onFinalizar={handleFinalizar} // Usa a nova função que verifica contatos
-                transferencia={selectedAtendimento.transferencia}
+                onFinalizar={handleFinalizar}
               />
             ) : (
               <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
@@ -447,7 +445,10 @@ export default function Atendimento() {
           {/* Informações do cliente - ocupa 1/3 da altura */}
           <div className="row-span-1">
             {selectedAtendimento ? (
-              <ClienteInfo cliente={clienteExemplo} />
+              <ClienteInfo 
+                cliente={clienteExemplo} 
+                transferencia={selectedAtendimento.transferencia}
+              />
             ) : (
               <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
                 <div className="text-center">

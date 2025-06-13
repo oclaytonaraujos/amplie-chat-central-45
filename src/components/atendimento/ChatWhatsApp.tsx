@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock, Image, FileText, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useZApi } from '@/hooks/useZApi';
 import { useWhatsAppConnections } from '@/hooks/useWhatsAppConnections';
 import { useToast } from '@/hooks/use-toast';
@@ -233,58 +233,46 @@ export function ChatWhatsApp({
           <Button variant="ghost" size="icon" className="hidden sm:flex">
             <Phone className="w-5 h-5 text-gray-600" />
           </Button>
-          <Button variant="ghost" size="icon">
-            <MoreVertical className="w-5 h-5 text-gray-600" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Alerta de transferência */}
-      {transferencia && (
-        <div className="m-4 flex-shrink-0">
-          <Alert className="border-orange-200 bg-orange-50">
-            <ArrowRight className="h-4 w-4 text-orange-600" />
-            <AlertDescription className="text-orange-800">
-              <div className="flex items-center justify-between">
-                <div>
-                  <strong>Atendimento transferido</strong> por {transferencia.de}
-                  <div className="text-sm mt-1">
-                    <strong>Motivo:</strong> {transferencia.motivo}
-                  </div>
-                </div>
-                <div className="flex items-center text-xs text-orange-600">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {transferencia.dataTransferencia}
-                </div>
+          
+          {/* Popover com ações do atendimento */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <MoreVertical className="w-5 h-5 text-gray-600" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48" align="end">
+              <div className="space-y-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onSairConversa}
+                  className="w-full justify-start bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sair da conversa
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onTransferir}
+                  className="w-full justify-start"
+                >
+                  <ArrowRight className="w-4 h-4 mr-2" />
+                  Transferir
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onFinalizar}
+                  className="w-full justify-start bg-red-50 border-red-200 text-red-600 hover:bg-red-100"
+                >
+                  Finalizar atendimento
+                </Button>
               </div>
-            </AlertDescription>
-          </Alert>
+            </PopoverContent>
+          </Popover>
         </div>
-      )}
-      
-      {/* Ações do atendimento */}
-      <div className="bg-gray-50 p-3 border-b border-gray-200 flex justify-end space-x-2 flex-shrink-0">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={onSairConversa}
-          className="bg-yellow-50 border-yellow-200 text-yellow-600 hover:bg-yellow-100"
-        >
-          <LogOut className="w-4 h-4 mr-1" />
-          <span className="hidden sm:inline">Sair</span>
-        </Button>
-        <Button variant="outline" size="sm" onClick={onTransferir} className="hidden sm:flex">
-          Transferir
-        </Button>
-        <Button 
-          variant="outline" 
-          size="sm" 
-          className="bg-red-50 border-red-200 text-red-600 hover:bg-red-100" 
-          onClick={onFinalizar}
-        >
-          <span className="hidden sm:inline">Finalizar</span>
-          <span className="sm:hidden">Fim</span>
-        </Button>
       </div>
       
       {/* Área de mensagens com altura fixa e rolagem interna */}
