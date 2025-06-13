@@ -234,7 +234,7 @@ class ZApiService {
       timestamp: new Date(webhookData.momment * 1000),
       senderName: webhookData.senderName || webhookData.chatName,
       senderPhoto: webhookData.senderPhoto,
-      type: 'text' as const,
+      type: 'text' as 'text' | 'image' | 'document' | 'audio' | 'video',
       content: '',
       attachment: null as any,
     };
