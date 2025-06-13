@@ -1,11 +1,13 @@
 
 import { useState } from 'react';
-import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock } from 'lucide-react';
+import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock, Image, FileText, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useZApi } from '@/hooks/useZApi';
+import { useToast } from '@/hooks/use-toast';
 
 interface Message {
   id: number;
@@ -57,45 +59,135 @@ export function ChatWhatsApp({
   const [mensagens, setMensagens] = useState<Message[]>(initialMensagens);
   const [novaMensagem, setNovaMensagem] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [anexoSelecionado, setAnexoSelecionado] = useState<File | null>(null);
   
-  const handleEnviarMensagem = () => {
-    if (!novaMensagem.trim()) return;
+  const { sendMessage, sendImageMessage, sendDocumentMessage, sendAudioMessage, isConfigured } = useZApi();
+  const { toast } = useToast();
+  
+  const handleEnviarMensagem = async () => {
+    if (!novaMensagem.trim() && !anexoSelecionado) return;
     
-    const novaMsgObj: Message = {
-      id: mensagens.length + 1,
-      texto: novaMensagem,
-      autor: 'agente',
-      tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-      status: 'enviado'
-    };
-    
-    setMensagens([...mensagens, novaMsgObj]);
-    setNovaMensagem('');
-    
-    // Simula alteração do status da mensagem
-    setTimeout(() => {
-      setMensagens(msgs => 
-        msgs.map(m => m.id === novaMsgObj.id ? {...m, status: 'entregue'} : m)
-      );
-    }, 1000);
-    
-    // Simula resposta do cliente após 2 segundos
-    setTimeout(() => {
-      setIsTyping(true);
-    }, 1500);
-    
-    setTimeout(() => {
-      setIsTyping(false);
-      setMensagens(msgs => [
-        ...msgs, 
-        {
-          id: msgs.length + 1,
-          texto: "Obrigado pelo atendimento!",
-          autor: 'cliente',
-          tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-        }
-      ]);
-    }, 3500);
+    if (!isConfigured) {
+      toast({
+        title: "Z-API não configurada",
+        description: "Configure a integração Z-API no painel primeiro",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let success = false;
+    let novaMsgObj: Message;
+
+    if (anexoSelecionado) {
+      // Simular upload do anexo e obter URL
+      const anexoUrl = URL.createObjectURL(anexoSelecionado);
+      
+      novaMsgObj = {
+        id: mensagens.length + 1,
+        texto: novaMensagem || '',
+        anexo: {
+          tipo: anexoSelecionado.type.startsWith('image/') ? 'imagem' : 
+                anexoSelecionado.type.startsWith('audio/') ? 'audio' : 'documento',
+          url: anexoUrl,
+          nome: anexoSelecionado.name
+        },
+        autor: 'agente',
+        tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        status: 'enviado'
+      };
+
+      // Enviar via Z-API baseado no tipo de arquivo
+      if (anexoSelecionado.type.startsWith('image/')) {
+        success = await sendImageMessage(cliente.telefone, anexoUrl, novaMensagem);
+      } else if (anexoSelecionado.type.startsWith('audio/')) {
+        success = await sendAudioMessage(cliente.telefone, anexoUrl);
+      } else {
+        success = await sendDocumentMessage(cliente.telefone, anexoUrl, anexoSelecionado.name);
+      }
+      
+      setAnexoSelecionado(null);
+    } else {
+      // Mensagem de texto
+      novaMsgObj = {
+        id: mensagens.length + 1,
+        texto: novaMensagem,
+        autor: 'agente',
+        tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        status: 'enviado'
+      };
+
+      success = await sendMessage(cliente.telefone, novaMensagem);
+    }
+
+    if (success) {
+      setMensagens([...mensagens, novaMsgObj]);
+      setNovaMensagem('');
+      
+      // Simular alteração do status da mensagem
+      setTimeout(() => {
+        setMensagens(msgs => 
+          msgs.map(m => m.id === novaMsgObj.id ? {...m, status: 'entregue'} : m)
+        );
+      }, 1000);
+      
+      // Simular resposta do cliente após 2 segundos
+      setTimeout(() => {
+        setIsTyping(true);
+      }, 1500);
+      
+      setTimeout(() => {
+        setIsTyping(false);
+        setMensagens(msgs => [
+          ...msgs, 
+          {
+            id: msgs.length + 1,
+            texto: "Obrigado pelo atendimento!",
+            autor: 'cliente',
+            tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }, 3500);
+    }
+  };
+
+  const handleAnexoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setAnexoSelecionado(file);
+    }
+  };
+
+  const renderAnexo = (anexo: Message['anexo']) => {
+    if (!anexo) return null;
+
+    switch (anexo.tipo) {
+      case 'imagem':
+        return (
+          <div className="mb-2 rounded overflow-hidden max-w-xs">
+            <img src={anexo.url} alt="Imagem" className="max-w-full h-auto" />
+          </div>
+        );
+      case 'audio':
+        return (
+          <div className="flex items-center space-x-2 bg-gray-100 p-2 rounded mb-2">
+            <Volume2 className="w-4 h-4 text-gray-600" />
+            <span className="text-sm">Áudio</span>
+            <audio controls className="h-8">
+              <source src={anexo.url} />
+            </audio>
+          </div>
+        );
+      case 'documento':
+        return (
+          <div className="flex items-center space-x-2 bg-gray-100 p-2 rounded mb-2">
+            <FileText className="w-4 h-4 text-gray-600" />
+            <span className="text-sm">{anexo.nome || 'Documento'}</span>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   return (
@@ -123,6 +215,11 @@ export function ChatWhatsApp({
                   cliente.status === 'online' ? 'bg-green-100 text-green-800 border-green-200' : 'bg-gray-100 text-gray-600'
                 }>
                   {cliente.status === 'online' ? 'Online' : 'Offline'}
+                </Badge>
+              )}
+              {!isConfigured && (
+                <Badge variant="destructive" className="text-xs">
+                  Z-API não configurada
                 </Badge>
               )}
             </div>
@@ -202,11 +299,7 @@ export function ChatWhatsApp({
                       : 'bg-white border border-gray-200 text-gray-800'
                   }`}
                 >
-                  {mensagem.anexo && mensagem.anexo.tipo === 'imagem' && (
-                    <div className="mb-2 rounded overflow-hidden">
-                      <img src={mensagem.anexo.url} alt="Imagem" className="max-w-full h-auto" />
-                    </div>
-                  )}
+                  {renderAnexo(mensagem.anexo)}
                   
                   {mensagem.texto && <p className="text-sm">{mensagem.texto}</p>}
                   
@@ -234,12 +327,41 @@ export function ChatWhatsApp({
           </div>
         </ScrollArea>
         
+        {/* Preview do anexo selecionado */}
+        {anexoSelecionado && (
+          <div className="p-3 bg-yellow-50 border-b border-yellow-200">
+            <div className="flex items-center space-x-2">
+              <Image className="w-4 h-4 text-yellow-600" />
+              <span className="text-sm text-yellow-800">Anexo: {anexoSelecionado.name}</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setAnexoSelecionado(null)}
+                className="text-yellow-600 hover:text-yellow-700"
+              >
+                Remover
+              </Button>
+            </div>
+          </div>
+        )}
+        
         {/* Input de mensagem */}
         <div className="bg-white p-3 border-t border-gray-200">
           <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" className="hidden sm:flex">
-              <Paperclip className="w-5 h-5 text-gray-500" />
-            </Button>
+            <div className="relative">
+              <input
+                type="file"
+                id="anexo"
+                className="hidden"
+                accept="image/*,audio/*,.pdf,.doc,.docx,.txt"
+                onChange={handleAnexoChange}
+              />
+              <Button variant="ghost" size="icon" className="hidden sm:flex" asChild>
+                <label htmlFor="anexo" className="cursor-pointer">
+                  <Paperclip className="w-5 h-5 text-gray-500" />
+                </label>
+              </Button>
+            </div>
             
             <Input 
               placeholder="Digite uma mensagem..." 
@@ -261,7 +383,7 @@ export function ChatWhatsApp({
             <Button 
               size="icon" 
               className="bg-green-500 hover:bg-green-600 text-white"
-              disabled={!novaMensagem.trim()}
+              disabled={(!novaMensagem.trim() && !anexoSelecionado) || !isConfigured}
               onClick={handleEnviarMensagem}
             >
               <Send className="w-4 h-4" />

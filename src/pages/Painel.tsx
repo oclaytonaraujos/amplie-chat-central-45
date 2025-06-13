@@ -3,41 +3,15 @@ import { Settings, MessageSquare, Clock, Globe, Shield, Users } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
+import { ZApiConfig } from '@/components/zapi/ZApiConfig';
 
 export default function Painel() {
   return (
     <div className="p-6 space-y-6">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Integração WhatsApp */}
-        <div className="bg-white rounded-xl shadow-amplie p-6">
-          <div className="flex items-center space-x-3 mb-6">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <MessageSquare className="w-5 h-5 text-green-600" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900">Integração WhatsApp</h3>
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Token da API</label>
-              <Input placeholder="Insira o token da WhatsApp Business API" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">URL do Webhook</label>
-              <Input placeholder="https://sua-api.com/webhook" />
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium text-gray-700">Status da Conexão</span>
-              <div className="flex items-center space-x-2">
-                <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                <span className="text-sm text-gray-500">Offline</span>
-              </div>
-            </div>
-            <Button className="w-full bg-amplie-primary hover:bg-amplie-primary-light">
-              Testar Conexão
-            </Button>
-          </div>
-        </div>
+      {/* Configuração Z-API */}
+      <ZApiConfig />
 
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Controle de Atendimentos */}
         <div className="bg-white rounded-xl shadow-amplie p-6">
           <div className="flex items-center space-x-3 mb-6">
