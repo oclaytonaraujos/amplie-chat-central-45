@@ -1,4 +1,3 @@
-
 import { 
   MessageSquare, 
   Clock, 
@@ -67,6 +66,9 @@ const CustomBarTooltip = ({ active, payload, label }: any) => {
 // Custom tooltip for pie chart
 const CustomPieTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
+    const total = setoresData.reduce((sum, item) => sum + item.valor, 0);
+    const percentage = ((payload[0].value / total) * 100).toFixed(1);
+    
     return (
       <div className="bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-200/50">
         <p className="font-semibold text-gray-800">{payload[0].name}</p>
@@ -75,7 +77,7 @@ const CustomPieTooltip = ({ active, payload }: any) => {
             className="inline-block w-3 h-3 rounded-full mr-2" 
             style={{ backgroundColor: payload[0].payload.cor }}
           ></span>
-          {payload[0].value} atendimentos ({((payload[0].value / 100) * 100).toFixed(1)}%)
+          {payload[0].value} atendimentos ({percentage}%)
         </p>
       </div>
     );
@@ -200,7 +202,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Gráfico de Atendimentos por Setor - Melhorado para responsividade */}
+        {/* Gráfico de Atendimentos por Setor - Removendo labels fixos */}
         <ChartCard
           title="Atendimentos por Setor"
           icon={<Building2 className="w-5 h-5 text-white" />}
@@ -223,8 +225,6 @@ export default function Dashboard() {
                     data={setoresData}
                     cx="50%"
                     cy="50%"
-                    labelLine={false}
-                    label={renderCustomizedLabel}
                     outerRadius="80%"
                     innerRadius="40%"
                     fill="#8884d8"
@@ -236,7 +236,7 @@ export default function Dashboard() {
                       <Cell 
                         key={`cell-${index}`} 
                         fill={`url(#gradient-${index})`}
-                        className="hover:opacity-80 transition-opacity duration-200"
+                        className="hover:opacity-80 transition-opacity duration-200 cursor-pointer"
                       />
                     ))}
                   </Pie>
