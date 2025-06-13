@@ -5,7 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { SystemProvider } from "@/contexts/SystemContext";
-import Layout from "./components/layout/Layout";
+import { Layout } from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Atendimento from "./pages/Atendimento";
 import Contatos from "./pages/Contatos";
@@ -20,7 +20,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Layout>
+          <Layout title="Dashboard" description="Visão geral do sistema">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/atendimento" element={<Atendimento />} />
