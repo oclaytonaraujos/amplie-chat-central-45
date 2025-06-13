@@ -6,6 +6,7 @@ import { CreditCard, Download, Calendar, CheckCircle, AlertCircle } from 'lucide
 import { AlterarPlanoDialog } from '@/components/plano/AlterarPlanoDialog';
 import { GerenciarPagamentoDialog } from '@/components/plano/GerenciarPagamentoDialog';
 import { CancelarPlanoDialog } from '@/components/plano/CancelarPlanoDialog';
+
 export default function PlanoFaturamento() {
   const planoAtual = {
     nome: 'Plano Premium',
@@ -89,7 +90,7 @@ export default function PlanoFaturamento() {
           
           <div className="flex gap-2">
             <AlterarPlanoDialog>
-              
+              <Button variant="outline">Alterar Plano</Button>
             </AlterarPlanoDialog>
             <GerenciarPagamentoDialog>
               <Button variant="outline">Gerenciar Pagamento</Button>
