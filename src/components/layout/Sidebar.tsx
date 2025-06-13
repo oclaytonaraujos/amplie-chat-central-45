@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { LayoutDashboard, Users, MessageSquare, Grid2X2, Settings, Building2, Bot, MessageCircle, ChevronLeft, ChevronRight, X, UserCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
 const menuItems = [{
   title: 'Dashboard',
   icon: LayoutDashboard,
@@ -22,7 +24,7 @@ const menuItems = [{
   title: 'Atendimento',
   icon: MessageSquare,
   href: '/atendimento',
-  color: 'text-purple-400'
+  color: 'text-amplie-magenta'
 }, {
   title: 'Kanban',
   icon: Grid2X2,
@@ -49,12 +51,14 @@ const menuItems = [{
   href: '/setores',
   color: 'text-teal-400'
 }];
+
 interface SidebarProps {
   isMobile?: boolean;
   isOpen?: boolean;
   onClose?: () => void;
   onCollapsedChange?: (collapsed: boolean) => void;
 }
+
 export function Sidebar({
   isMobile = false,
   isOpen = false,
@@ -73,70 +77,130 @@ export function Sidebar({
       onCollapsedChange(collapsed);
     }
   }, [collapsed, onCollapsedChange, isMobile]);
+
   const handleToggleCollapse = () => {
     setCollapsed(!collapsed);
   };
+
   const handleLinkClick = () => {
     if (isMobile && onClose) {
       onClose();
     }
   };
-  return <div className={cn("h-full flex flex-col", isMobile ? "w-64 p-4" : "w-64 p-4")}>
-      <div className={cn("bg-amplie-sidebar flex-1 transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-lg h-full", isMobile ? "w-full" : isCollapsed ? "w-16" : "w-full")}>
+
+  return (
+    <div className={cn("h-full flex flex-col", isMobile ? "w-64 p-4" : "w-64 p-4")}>
+      <div className={cn("bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 flex-1 transition-all duration-300 ease-in-out relative flex flex-col rounded-2xl shadow-xl border border-gray-700/50 h-full", isMobile ? "w-full" : isCollapsed ? "w-16" : "w-full")}>
         {/* Header */}
         <div className="p-6 border-b border-gray-700/30 flex-shrink-0 relative py-[24px] px-[11px]">
           <div className="flex items-center justify-between">
             {/* Mobile close button */}
-            {isMobile && <button onClick={onClose} className="absolute right-4 top-4 p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors z-10">
+            {isMobile && (
+              <button 
+                onClick={onClose} 
+                className="absolute right-4 top-4 p-1.5 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-white transition-colors z-10"
+              >
                 <X className="w-4 h-4" />
-              </button>}
+              </button>
+            )}
 
-            {!isCollapsed && <div className="flex items-center space-x-2">
-                <img src="/lovable-uploads/5b035ca2-6a1b-45db-b6e2-f291736cf358.png" alt="Logo" className="h-8 w-auto" />
-              </div>}
-            {isCollapsed && <div className="w-full flex justify-center">
-                <img src="/lovable-uploads/a2e5cd13-e36f-4dee-b922-d556b4ba1516.png" alt="Logo Icon" className="h-10 w-10 object-contain" />
-              </div>}
+            {!isCollapsed && (
+              <div className="flex items-center space-x-2">
+                <img 
+                  src="/lovable-uploads/5b035ca2-6a1b-45db-b6e2-f291736cf358.png" 
+                  alt="Amplie Chat Logo" 
+                  className="h-8 w-auto filter brightness-0 invert" 
+                />
+              </div>
+            )}
+            
+            {isCollapsed && (
+              <div className="w-full flex justify-center">
+                <img 
+                  src="/lovable-uploads/a2e5cd13-e36f-4dee-b922-d556b4ba1516.png" 
+                  alt="Amplie Chat Icon" 
+                  className="h-10 w-10 object-contain" 
+                />
+              </div>
+            )}
           </div>
           
           {/* Toggle button - only show on desktop */}
-          {!isMobile && <button onClick={handleToggleCollapse} className={cn("p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors", isCollapsed ? "absolute -right-3 top-1/2 -translate-y-1/2 bg-amplie-sidebar border border-gray-700/30 shadow-lg z-10" : "absolute right-6 top-1/2 -translate-y-1/2")}>
+          {!isMobile && (
+            <button 
+              onClick={handleToggleCollapse} 
+              className={cn(
+                "p-1.5 rounded-lg hover:bg-gray-700/50 text-gray-400 hover:text-white transition-colors",
+                isCollapsed 
+                  ? "absolute -right-3 top-1/2 -translate-y-1/2 bg-gray-800 border border-gray-700/50 shadow-lg z-10" 
+                  : "absolute right-6 top-1/2 -translate-y-1/2"
+              )}
+            >
               {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-            </button>}
+            </button>
+          )}
         </div>
 
         {/* Navigation Menu with ScrollArea */}
         <ScrollArea className="flex-1 px-3 py-6">
           <nav className="space-y-1">
             {menuItems.map(item => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.href;
-            return <Link key={item.href} to={item.href} onClick={handleLinkClick} className={cn("flex items-center rounded-lg transition-all duration-200 group", isCollapsed ? "justify-center px-0 py-3 w-full" : "space-x-3 px-3 py-3", isActive ? isCollapsed ? "bg-amplie-sidebar-active text-white shadow-lg w-full" : "bg-amplie-sidebar-active text-white shadow-lg" : "text-gray-300 hover:bg-amplie-sidebar-hover hover:text-white")}>
-                  <div className={cn("p-2 rounded-lg transition-colors", isCollapsed && isActive ? "bg-transparent" : isActive ? "bg-white/20" : "bg-gray-700/30 group-hover:bg-gray-600/50")}>
+              const Icon = item.icon;
+              const isActive = location.pathname === item.href;
+              
+              return (
+                <Link 
+                  key={item.href} 
+                  to={item.href} 
+                  onClick={handleLinkClick} 
+                  className={cn(
+                    "flex items-center rounded-lg transition-all duration-200 group",
+                    isCollapsed ? "justify-center px-0 py-3 w-full" : "space-x-3 px-3 py-3",
+                    isActive 
+                      ? isCollapsed 
+                        ? "bg-gradient-amplie text-white shadow-lg shadow-amplie-primary/25 w-full" 
+                        : "bg-gradient-amplie text-white shadow-lg shadow-amplie-primary/25" 
+                      : "text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                  )}
+                >
+                  <div className={cn(
+                    "p-2 rounded-lg transition-colors",
+                    isCollapsed && isActive 
+                      ? "bg-transparent" 
+                      : isActive 
+                        ? "bg-white/20" 
+                        : "bg-gray-700/30 group-hover:bg-gray-600/50"
+                  )}>
                     <Icon className={cn("w-5 h-5", isActive ? "text-white" : item.color)} />
                   </div>
                   {!isCollapsed && <span className="font-medium text-sm">{item.title}</span>}
-                </Link>;
-          })}
+                </Link>
+              );
+            })}
           </nav>
         </ScrollArea>
 
         {/* Footer */}
         <div className="p-4 border-t border-gray-700/30 flex-shrink-0">
-          {!isCollapsed ? <div className="flex items-center space-x-3 text-gray-400 text-sm">
-              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4" />
+          {!isCollapsed ? (
+            <div className="flex items-center space-x-3 text-gray-400 text-sm">
+              <div className="w-8 h-8 bg-gradient-amplie rounded-full flex items-center justify-center">
+                <Users className="w-4 h-4 text-white" />
               </div>
               <div>
                 <p className="text-white font-medium">Admin User</p>
                 <p className="text-xs">Administrador</p>
               </div>
-            </div> : <div className="flex justify-center">
-              <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                <Users className="w-4 h-4 text-gray-400" />
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <div className="w-8 h-8 bg-gradient-amplie rounded-full flex items-center justify-center">
+                <Users className="w-4 h-4 text-white" />
               </div>
-            </div>}
+            </div>
+          )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 }

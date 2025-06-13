@@ -45,7 +45,7 @@ export function Header({
         ${showMenuButton ? 'left-0 mx-4' : 'ml-4 mr-4'}
         mt-4
         ${isScrolled 
-          ? 'bg-white/80 backdrop-blur-md shadow-lg border border-gray-200/50' 
+          ? 'bg-white/80 backdrop-blur-md shadow-amplie border border-gray-200/50' 
           : 'bg-transparent border-transparent'
         }
         rounded-xl px-4 md:px-6 py-4
@@ -62,19 +62,21 @@ export function Header({
               variant="ghost" 
               size="icon" 
               onClick={onMenuClick}
-              className="md:hidden"
+              className="md:hidden hover:bg-amplie-primary/10"
             >
               <Menu className="w-5 h-5 text-gray-600" />
             </Button>
           )}
           <div className="flex items-center space-x-3">
             {icon && (
-              <div className="p-3 bg-gray-100 rounded-lg">
+              <div className="p-3 bg-gradient-amplie-light rounded-lg shadow-amplie">
                 {icon}
               </div>
             )}
             <div>
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900">{title}</h1>
+              <h1 className="text-xl md:text-2xl font-bold bg-gradient-amplie bg-clip-text text-transparent">
+                {title}
+              </h1>
               {description ? (
                 <p className="text-xs md:text-sm text-gray-500 mt-1">
                   {description}

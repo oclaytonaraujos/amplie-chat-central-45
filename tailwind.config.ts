@@ -64,16 +64,28 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				amplie: {
+					// Cores principais da marca baseadas na logo
+					primary: '#9333ea', // Roxo principal
+					'primary-dark': '#7c3aed', // Roxo mais escuro
+					'primary-light': '#a855f7', // Roxo mais claro
+					magenta: '#e879f9', // Magenta da logo
+					'magenta-dark': '#d946ef', // Magenta escuro
+					'magenta-light': '#f0abfc', // Magenta claro
+					pink: '#ec4899', // Rosa da logo
+					'pink-dark': '#db2777', // Rosa escuro
+					'pink-light': '#f472b6', // Rosa claro
+					// Cores de apoio
 					sidebar: '#1a1d29',
-					'sidebar-hover': '#252a3a',
-					'sidebar-active': '#344ccf',
-					primary: '#344ccf',
-					'primary-light': '#4c63d2',
+					'sidebar-hover': '#2a2d3f',
+					'sidebar-active': '#9333ea',
 					secondary: '#6c7293',
 					success: '#00d25b',
 					warning: '#ffab00',
 					danger: '#ea5455',
-					'card-shadow': 'rgba(0, 0, 0, 0.1)',
+					'card-shadow': 'rgba(147, 51, 234, 0.1)',
+					// Gradientes
+					'gradient-primary': 'linear-gradient(135deg, #9333ea 0%, #e879f9 50%, #ec4899 100%)',
+					'gradient-secondary': 'linear-gradient(135deg, #a855f7 0%, #f0abfc 100%)',
 				}
 			},
 			borderRadius: {
@@ -115,17 +127,32 @@ export default {
 					'100%': {
 						transform: 'translateX(0)'
 					}
+				},
+				'gradient-shift': {
+					'0%, 100%': {
+						backgroundPosition: '0% 50%'
+					},
+					'50%': {
+						backgroundPosition: '100% 50%'
+					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'fade-in': 'fade-in 0.3s ease-out',
-				'slide-in': 'slide-in 0.3s ease-out'
+				'slide-in': 'slide-in 0.3s ease-out',
+				'gradient-shift': 'gradient-shift 3s ease-in-out infinite'
 			},
 			boxShadow: {
-				'amplie': '0 2px 12px rgba(0, 0, 0, 0.1)',
-				'amplie-hover': '0 4px 20px rgba(0, 0, 0, 0.15)'
+				'amplie': '0 2px 12px rgba(147, 51, 234, 0.1)',
+				'amplie-hover': '0 4px 20px rgba(147, 51, 234, 0.2)',
+				'amplie-card': '0 4px 16px rgba(147, 51, 234, 0.08)'
+			},
+			backgroundImage: {
+				'gradient-amplie': 'linear-gradient(135deg, #9333ea 0%, #e879f9 50%, #ec4899 100%)',
+				'gradient-amplie-light': 'linear-gradient(135deg, #a855f7 0%, #f0abfc 100%)',
+				'gradient-amplie-dark': 'linear-gradient(135deg, #7c3aed 0%, #d946ef 100%)'
 			}
 		}
 	},
