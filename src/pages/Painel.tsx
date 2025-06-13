@@ -3,13 +3,13 @@ import { Settings, MessageSquare, Clock, Globe, Shield, Users } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { ZApiConfig } from '@/components/zapi/ZApiConfig';
+import { WhatsAppConnections } from '@/components/whatsapp/WhatsAppConnections';
 
 export default function Painel() {
   return (
     <div className="p-6 space-y-6">
-      {/* Configuração Z-API */}
-      <ZApiConfig />
+      {/* Conexões WhatsApp */}
+      <WhatsAppConnections />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Controle de Atendimentos */}
