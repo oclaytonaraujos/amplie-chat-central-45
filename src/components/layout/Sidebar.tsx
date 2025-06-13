@@ -152,7 +152,7 @@ export function Sidebar({
       willChange: 'transform'
     }}>
         {/* Header */}
-        <div className="p-4 sm:p-6 border-b border-gray-700/30 flex-shrink-0 relative px-[12px]">
+        <div className="p-4 sm:p-6 border-b border-gray-700/30 flex-shrink-0 relative px-[10px]">
           <div className="flex items-center justify-between">
             {/* Mobile close button */}
             {isMobile && <button onClick={onClose} className="absolute right-3 sm:right-4 top-3 sm:top-4 p-1.5 rounded-lg hover:bg-amplie-sidebar-hover text-gray-400 hover:text-white transition-colors z-10 touch-manipulation active:scale-95" style={{
