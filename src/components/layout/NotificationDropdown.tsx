@@ -1,5 +1,5 @@
 
-import { Bell, CheckCircle, AlertCircle, Info, X } from 'lucide-react';
+import { Bell, CheckCircle, AlertCircle, Info, X, ArrowRightLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   DropdownMenu,
@@ -9,12 +9,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import { useTransferNotifications } from '@/hooks/useTransferNotifications';
 
 interface Notification {
   id: string;
   title: string;
   message: string;
-  type: 'info' | 'success' | 'warning';
+  type: 'info' | 'success' | 'warning' | 'transfer';
   time: string;
   read: boolean;
 }
@@ -47,7 +48,24 @@ const mockNotifications: Notification[] = [
 ];
 
 export function NotificationDropdown() {
-  const unreadCount = mockNotifications.filter(n => !n.read).length;
+  const { notifications: transferNotifications, markAsRead, unreadCount: transferUnreadCount } = useTransferNotifications();
+
+  // Combinar notificações regulares com notificações de transferência
+  const allNotifications = [
+    ...transferNotifications.map(transfer => ({
+      id: transfer.id,
+      title: transfer.tipo === 'transferencia_enviada' ? 'Transferência enviada' : 'Transferência recebida',
+      message: transfer.tipo === 'transferencia_enviada' 
+        ? `Atendimento de ${transfer.cliente} transferido para ${transfer.paraUsuario}`
+        : `Atendimento de ${transfer.cliente} recebido de ${transfer.deUsuario}`,
+      type: 'transfer' as const,
+      time: getTimeAgo(transfer.timestamp),
+      read: transfer.lida
+    })),
+    ...mockNotifications
+  ];
+
+  const totalUnreadCount = allNotifications.filter(n => !n.read).length;
 
   const getIcon = (type: Notification['type']) => {
     switch (type) {
@@ -55,19 +73,41 @@ export function NotificationDropdown() {
         return <CheckCircle className="w-4 h-4 text-green-500" />;
       case 'warning':
         return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+      case 'transfer':
+        return <ArrowRightLeft className="w-4 h-4 text-purple-500" />;
       default:
         return <Info className="w-4 h-4 text-blue-500" />;
     }
   };
+
+  const handleNotificationClick = (notification: any) => {
+    if (notification.type === 'transfer' && !notification.read) {
+      markAsRead(notification.id);
+    }
+  };
+
+  function getTimeAgo(timestamp: Date): string {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - timestamp.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 1) return 'agora';
+    if (diffInMinutes < 60) return `${diffInMinutes} min`;
+    
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return `${diffInHours}h`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    return `${diffInDays}d`;
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="w-5 h-5 text-gray-600" />
-          {unreadCount > 0 && (
+          {totalUnreadCount > 0 && (
             <span className="absolute -top-1 -right-1 w-4 h-4 md:w-5 md:h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-              {unreadCount}
+              {totalUnreadCount}
             </span>
           )}
         </Button>
@@ -75,7 +115,7 @@ export function NotificationDropdown() {
       <DropdownMenuContent align="end" className="w-80 bg-white">
         <DropdownMenuLabel className="flex items-center justify-between">
           <span>Notificações</span>
-          {unreadCount > 0 && (
+          {totalUnreadCount > 0 && (
             <Button variant="ghost" size="sm" className="text-xs h-6">
               Marcar todas como lidas
             </Button>
@@ -84,11 +124,14 @@ export function NotificationDropdown() {
         <DropdownMenuSeparator />
         
         <div className="max-h-96 overflow-y-auto">
-          {mockNotifications.map((notification) => (
+          {allNotifications.map((notification) => (
             <DropdownMenuItem key={notification.id} className="p-0">
-              <div className={`w-full p-3 border-l-2 ${
-                notification.read ? 'border-l-transparent' : 'border-l-blue-500'
-              } hover:bg-gray-50`}>
+              <div 
+                className={`w-full p-3 border-l-2 ${
+                  notification.read ? 'border-l-transparent' : 'border-l-blue-500'
+                } hover:bg-gray-50 cursor-pointer`}
+                onClick={() => handleNotificationClick(notification)}
+              >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-start gap-2 flex-1">
                     {getIcon(notification.type)}

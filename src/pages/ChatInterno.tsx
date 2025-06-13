@@ -1,10 +1,12 @@
-
 import { useState } from 'react';
 import { ChatSidebar } from '@/components/chat-interno/ChatSidebar';
 import { ChatArea } from '@/components/chat-interno/ChatArea';
 import { ContactsList } from '@/components/chat-interno/ContactsList';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTransferNotifications } from '@/hooks/useTransferNotifications';
+import { useToast } from '@/hooks/use-toast';
 import { Usuario, Conversa, Mensagem } from '@/types/chat-interno';
+import { ChatInternoTransferService } from '@/services/chatInternoTransfer';
 
 // Dados mockados para demonstração
 const usuariosMock: Usuario[] = [
@@ -81,9 +83,12 @@ const mensagensMock: Mensagem[] = [
 export default function ChatInterno() {
   const [conversaSelecionada, setConversaSelecionada] = useState<Conversa | null>(null);
   const [mensagens, setMensagens] = useState<Mensagem[]>(mensagensMock);
+  const [conversas, setConversas] = useState<Conversa[]>(conversasMock);
   const [showContacts, setShowContacts] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isMobile = useIsMobile();
+  const { addTransferNotification } = useTransferNotifications();
+  const { toast } = useToast();
 
   const handleSelectConversa = (conversa: Conversa) => {
     setConversaSelecionada(conversa);
@@ -96,6 +101,31 @@ export default function ChatInterno() {
     setConversaSelecionada(null);
     if (isMobile) {
       setSidebarOpen(true);
+    }
+  };
+
+  const handleDeleteConversa = (conversaId: number) => {
+    setConversas(prev => prev.filter(c => c.id !== conversaId));
+    
+    // Se a conversa deletada estava selecionada, limpar seleção
+    if (conversaSelecionada?.id === conversaId) {
+      setConversaSelecionada(null);
+    }
+
+    toast({
+      title: "Conversa apagada",
+      description: "A conversa foi removida com sucesso.",
+    });
+  };
+
+  const handleStartCall = (conversaId: number) => {
+    const conversa = conversas.find(c => c.id === conversaId);
+    if (conversa) {
+      toast({
+        title: "Chamada iniciada",
+        description: `Conectando com ${conversa.nome}...`,
+      });
+      // Aqui você implementaria a lógica real de chamada
     }
   };
 
@@ -113,13 +143,74 @@ export default function ChatInterno() {
     setMensagens([...mensagens, novaMensagem]);
   };
 
+  // Simular recebimento de transferência de atendimento
+  const handleTransferReceived = (transferData: {
+    deUsuario: string;
+    paraUsuario: string;
+    cliente: string;
+    motivo: string;
+  }) => {
+    // Adicionar notificação
+    addTransferNotification({
+      tipo: 'transferencia_recebida',
+      deUsuario: transferData.deUsuario,
+      paraUsuario: transferData.paraUsuario,
+      cliente: transferData.cliente,
+      motivo: transferData.motivo,
+    });
+
+    // Criar mensagem no chat interno
+    const autorSistema: Usuario = {
+      id: 0,
+      nome: 'Sistema',
+      email: 'sistema@empresa.com',
+      status: 'online',
+      cargo: 'Sistema'
+    };
+
+    const mensagemTransferencia = ChatInternoTransferService.createTransferMessage(
+      {
+        tipo: 'transferencia',
+        deUsuario: transferData.deUsuario,
+        paraUsuario: transferData.paraUsuario,
+        cliente: transferData.cliente,
+        motivo: transferData.motivo,
+        timestamp: new Date(),
+      },
+      autorSistema
+    );
+
+    // Encontrar ou criar conversa com o usuário que enviou a transferência
+    const usuarioOrigem = usuariosMock.find(u => u.nome === transferData.deUsuario);
+    if (usuarioOrigem) {
+      let conversaTransferencia = conversas.find(c => 
+        c.tipo === 'individual' && 
+        c.participantes.some(p => p.id === usuarioOrigem.id)
+      );
+
+      if (!conversaTransferencia) {
+        conversaTransferencia = {
+          id: Date.now(),
+          tipo: 'individual',
+          nome: usuarioOrigem.nome,
+          participantes: [usuarioOrigem],
+          mensagensNaoLidas: 1
+        };
+        setConversas(prev => [...prev, conversaTransferencia!]);
+      }
+
+      // Adicionar mensagem à conversa
+      setMensagens(prev => [...prev, mensagemTransferencia]);
+    }
+  };
+
   const handleNovaConversa = () => {
     setShowContacts(true);
   };
 
   const handleSelectContact = (usuario: Usuario) => {
     // Verificar se já existe uma conversa com este usuário
-    const conversaExistente = conversasMock.find(
+    const conversaExistente = conversas.find(
       c => c.tipo === 'individual' && c.participantes.some(p => p.id === usuario.id)
     );
 
@@ -128,12 +219,13 @@ export default function ChatInterno() {
     } else {
       // Criar nova conversa
       const novaConversa: Conversa = {
-        id: conversasMock.length + 1,
+        id: conversas.length + 1,
         tipo: 'individual',
         nome: usuario.nome,
         participantes: [usuario],
         mensagensNaoLidas: 0
       };
+      setConversas(prev => [...prev, novaConversa]);
       setConversaSelecionada(novaConversa);
     }
     
@@ -142,6 +234,20 @@ export default function ChatInterno() {
       setSidebarOpen(false);
     }
   };
+
+  // Simular uma transferência para demonstração (remover em produção)
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      handleTransferReceived({
+        deUsuario: 'Ana Silva',
+        paraUsuario: 'Você',
+        cliente: 'Cliente João Silva',
+        motivo: 'Cliente solicitou falar com supervisor'
+      });
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="h-screen flex bg-gray-50 overflow-hidden">
@@ -168,7 +274,7 @@ export default function ChatInterno() {
           />
         ) : (
           <ChatSidebar
-            conversas={conversasMock}
+            conversas={conversas}
             conversaSelecionada={conversaSelecionada}
             onSelectConversa={handleSelectConversa}
             onNovaConversa={handleNovaConversa}
@@ -185,6 +291,8 @@ export default function ChatInterno() {
           onSendMessage={handleSendMessage}
           onOpenSidebar={() => setSidebarOpen(true)}
           onCloseConversa={handleCloseConversa}
+          onDeleteConversa={handleDeleteConversa}
+          onStartCall={handleStartCall}
           showMenuButton={isMobile}
         />
       </div>

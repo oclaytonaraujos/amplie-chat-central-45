@@ -1,10 +1,27 @@
-
 import { useState } from 'react';
-import { Send, Paperclip, Smile, Menu, MoreVertical, Users, User, X } from 'lucide-react';
+import { Send, Paperclip, Smile, Menu, MoreVertical, Users, User, X, Phone, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Usuario {
   id: number;
@@ -48,6 +65,8 @@ interface ChatAreaProps {
   onSendMessage: (texto: string) => void;
   onOpenSidebar?: () => void;
   onCloseConversa?: () => void;
+  onDeleteConversa?: (conversaId: number) => void;
+  onStartCall?: (conversaId: number) => void;
   showMenuButton?: boolean;
 }
 
@@ -57,6 +76,8 @@ export function ChatArea({
   onSendMessage,
   onOpenSidebar,
   onCloseConversa,
+  onDeleteConversa,
+  onStartCall,
   showMenuButton = false
 }: ChatAreaProps) {
   const [novaMensagem, setNovaMensagem] = useState('');
@@ -65,6 +86,21 @@ export function ChatArea({
     if (!novaMensagem.trim()) return;
     onSendMessage(novaMensagem);
     setNovaMensagem('');
+  };
+
+  const handleDeleteConversa = () => {
+    if (conversa && onDeleteConversa) {
+      onDeleteConversa(conversa.id);
+      if (onCloseConversa) {
+        onCloseConversa();
+      }
+    }
+  };
+
+  const handleStartCall = () => {
+    if (conversa && onStartCall) {
+      onStartCall(conversa.id);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -159,14 +195,67 @@ export function ChatArea({
           </div>
           
           <div className="flex items-center space-x-1 flex-shrink-0">
+            {/* Botão de ligação - apenas para conversas individuais */}
+            {conversa.tipo === 'individual' && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleStartCall}
+                title="Iniciar chamada"
+                className="h-8 w-8"
+              >
+                <Phone className="w-4 h-4 text-green-600" />
+              </Button>
+            )}
+
+            {/* Menu de opções */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <MoreVertical className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {onCloseConversa && (
+                  <DropdownMenuItem onClick={onCloseConversa}>
+                    <X className="w-4 h-4 mr-2" />
+                    Sair da conversa
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuSeparator />
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                      <Trash2 className="w-4 h-4 mr-2 text-red-500" />
+                      <span className="text-red-500">Apagar conversa</span>
+                    </DropdownMenuItem>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Apagar conversa</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tem certeza que deseja apagar esta conversa? Esta ação não pode ser desfeita.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction 
+                        onClick={handleDeleteConversa}
+                        className="bg-red-500 hover:bg-red-600"
+                      >
+                        Apagar
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             {onCloseConversa && showMenuButton && (
-              <Button variant="ghost" size="icon" onClick={onCloseConversa} title="Voltar" className="h-8 w-8">
+              <Button variant="ghost" size="icon" onClick={onCloseConversa} title="Voltar" className="h-8 w-8 md:hidden">
                 <X className="w-4 h-4" />
               </Button>
             )}
-            <Button variant="ghost" size="icon" className="h-8 w-8 hidden md:flex">
-              <MoreVertical className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </div>
