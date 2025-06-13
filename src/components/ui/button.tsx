@@ -1,4 +1,3 @@
-
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
@@ -19,11 +18,6 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Amplie brand variants
-        amplie: "bg-gradient-amplie text-white hover:shadow-amplie-hover transition-all duration-200",
-        "amplie-outline": "border border-amplie-primary text-amplie-primary bg-transparent hover:bg-amplie-primary hover:text-white transition-all duration-200",
-        "amplie-ghost": "text-amplie-primary hover:bg-amplie-primary/10 hover:text-amplie-primary transition-all duration-200",
-        "amplie-secondary": "bg-amplie-magenta/10 text-amplie-primary hover:bg-amplie-magenta/20 transition-all duration-200",
       },
       size: {
         default: "h-10 px-4 py-2",

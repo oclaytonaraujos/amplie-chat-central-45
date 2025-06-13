@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system with Amplie Chat brand colors */
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
 
 @layer base {
   :root {
@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 272 80% 56%; /* Amplie primary purple */
-    --primary-foreground: 0 0% 100%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -25,32 +25,30 @@
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
 
-    --accent: 292 84% 71%; /* Amplie magenta accent */
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 272 80% 56%; /* Amplie primary for focus rings */
+    --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 222 20% 11%; /* Dark sidebar with purple undertone */
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 272 80% 56%; /* Amplie primary */
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 272 80% 56%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
 
     /* Amplie brand colors */
-    --amplie-primary: 272 80% 56%;
-    --amplie-primary-light: 272 80% 66%;
-    --amplie-magenta: 292 84% 71%;
-    --amplie-pink: 330 81% 60%;
+    --amplie-primary: 222.2 47.4% 11.2%;
+    --amplie-primary-light: 222.2 47.4% 21.2%;
   }
 
   .dark {
@@ -63,8 +61,8 @@
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 272 80% 56%; /* Keep Amplie primary in dark mode */
-    --primary-foreground: 0 0% 100%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -72,27 +70,26 @@
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
 
-    --accent: 292 84% 71%; /* Keep Amplie magenta accent */
-    --accent-foreground: 0 0% 100%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 272 80% 56%;
-    
-    --sidebar-background: 222 20% 8%;
+    --ring: 212.7 26.8% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 272 80% 56%;
+    --sidebar-primary: 224.3 76.3% 48%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 12%;
+    --sidebar-accent: 240 3.7% 15.9%;
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 272 80% 56%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
-  /* Color scheme variations with Amplie brand */
+  /* Color scheme variations */
   [data-color-scheme="blue"] {
     --amplie-primary: 217 91% 60%;
     --amplie-primary-light: 217 91% 70%;
@@ -104,8 +101,8 @@
   }
 
   [data-color-scheme="purple"] {
-    --amplie-primary: 272 80% 56%;
-    --amplie-primary-light: 272 80% 66%;
+    --amplie-primary: 262 83% 58%;
+    --amplie-primary-light: 262 83% 68%;
   }
 
   [data-color-scheme="orange"] {
@@ -181,7 +178,7 @@
   }
 }
 
-/* Utility classes for Amplie theming */
+/* Utility classes for theming */
 @layer utilities {
   .amplie-primary {
     color: hsl(var(--amplie-primary));
@@ -206,52 +203,4 @@
   .hover\:bg-amplie-primary-light:hover {
     background-color: hsl(var(--amplie-primary-light));
   }
-
-  /* Gradient utilities */
-  .bg-gradient-amplie {
-    background: linear-gradient(135deg, #9333ea 0%, #e879f9 50%, #ec4899 100%);
-  }
-
-  .bg-gradient-amplie-light {
-    background: linear-gradient(135deg, #a855f7 0%, #f0abfc 100%);
-  }
-
-  .text-gradient-amplie {
-    background: linear-gradient(135deg, #9333ea 0%, #e879f9 50%, #ec4899 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  /* Shadow utilities */
-  .shadow-amplie {
-    box-shadow: 0 2px 12px rgba(147, 51, 234, 0.1);
-  }
-
-  .shadow-amplie-hover {
-    box-shadow: 0 4px 20px rgba(147, 51, 234, 0.2);
-  }
-
-  .shadow-amplie-card {
-    box-shadow: 0 4px 16px rgba(147, 51, 234, 0.08);
-  }
-
-  /* Border utilities */
-  .border-gradient-amplie {
-    border-image: linear-gradient(135deg, #9333ea 0%, #e879f9 50%, #ec4899 100%) 1;
-  }
-}
-
-/* Amplie Chat specific animations */
-@keyframes amplie-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(147, 51, 234, 0);
-  }
-}
-
-.amplie-pulse {
-  animation: amplie-pulse 2s infinite;
 }
