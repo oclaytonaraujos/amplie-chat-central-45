@@ -111,9 +111,9 @@ export function ChatArea({
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white h-full">
+    <div className="flex flex-col h-full bg-gray-50 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       {/* Header da conversa */}
-      <div className="p-3 md:p-4 border-b border-gray-200 bg-white flex-shrink-0">
+      <div className="bg-white p-3 md:p-4 border-b border-gray-200 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2 md:space-x-3 min-w-0 flex-1">
             {showMenuButton && (
@@ -171,47 +171,49 @@ export function ChatArea({
         </div>
       </div>
 
-      {/* Área de mensagens */}
-      <ScrollArea className="flex-1 p-3 md:p-4">
-        <div className="space-y-3 md:space-y-4">
-          {mensagens.map((mensagem) => {
-            const isOwnMessage = mensagem.autor.nome === 'Você';
-            
-            return (
-              <div key={mensagem.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] md:max-w-[70%] ${isOwnMessage ? 'order-2' : 'order-1'}`}>
-                  {/* Avatar e nome (apenas para mensagens de outros) */}
-                  {!isOwnMessage && (
-                    <div className="flex items-center space-x-2 mb-1">
-                      <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-                        <User className="w-2 h-2 md:w-3 md:h-3 text-white" />
+      {/* Área de mensagens com altura fixa e rolagem interna */}
+      <div className="flex-grow min-h-0 bg-gray-100">
+        <ScrollArea className="h-full p-3 md:p-4">
+          <div className="space-y-3 md:space-y-4">
+            {mensagens.map((mensagem) => {
+              const isOwnMessage = mensagem.autor.nome === 'Você';
+              
+              return (
+                <div key={mensagem.id} className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[85%] md:max-w-[70%] ${isOwnMessage ? 'order-2' : 'order-1'}`}>
+                    {/* Avatar e nome (apenas para mensagens de outros) */}
+                    {!isOwnMessage && (
+                      <div className="flex items-center space-x-2 mb-1">
+                        <div className="w-5 h-5 md:w-6 md:h-6 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
+                          <User className="w-2 h-2 md:w-3 md:h-3 text-white" />
+                        </div>
+                        <span className="text-xs font-medium text-gray-600 break-words">{mensagem.autor.nome}</span>
                       </div>
-                      <span className="text-xs font-medium text-gray-600 break-words">{mensagem.autor.nome}</span>
-                    </div>
-                  )}
-                  
-                  {/* Balão da mensagem */}
-                  <div className={`px-3 py-2 md:px-4 md:py-2 rounded-lg ${
-                    isOwnMessage 
-                      ? 'bg-blue-500 text-white' 
-                      : 'bg-gray-100 text-gray-900'
-                  }`}>
-                    <p className="text-sm break-words">{mensagem.texto}</p>
-                    <p className={`text-xs mt-1 ${
-                      isOwnMessage ? 'text-blue-100' : 'text-gray-500'
+                    )}
+                    
+                    {/* Balão da mensagem */}
+                    <div className={`px-3 py-2 md:px-4 md:py-2 rounded-lg break-words ${
+                      isOwnMessage 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-white border border-gray-200 text-gray-900'
                     }`}>
-                      {mensagem.tempo}
-                    </p>
+                      <p className="text-sm break-words">{mensagem.texto}</p>
+                      <p className={`text-xs mt-1 ${
+                        isOwnMessage ? 'text-blue-100' : 'text-gray-500'
+                      }`}>
+                        {mensagem.tempo}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </ScrollArea>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      </div>
 
       {/* Input de mensagem */}
-      <div className="p-3 md:p-4 border-t border-gray-200 bg-white flex-shrink-0 safe-area-inset-top">
+      <div className="bg-white p-3 md:p-4 border-t border-gray-200 flex-shrink-0">
         <div className="flex items-end space-x-2">
           <Button variant="ghost" size="icon" className="hidden md:flex h-9 w-9 flex-shrink-0">
             <Paperclip className="w-4 h-4 text-gray-500" />
