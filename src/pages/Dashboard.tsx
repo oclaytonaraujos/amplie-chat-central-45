@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { ChartCard } from '@/components/dashboard/ChartCard';
+import { useSystem } from '@/contexts/SystemContext';
 import { 
   BarChart, 
   Bar, 
@@ -49,13 +50,15 @@ const topAgentes = [
 ];
 
 export default function Dashboard() {
+  const { dashboardMetrics } = useSystem();
+
   return (
     <div className="p-6 space-y-6">
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Atendimentos em Aberto"
-          value={42}
+          value={dashboardMetrics.atendimentosEmAberto}
           subtitle="Aguardando resposta"
           icon={<MessageSquare className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-blue-500 to-blue-600"
@@ -64,7 +67,7 @@ export default function Dashboard() {
         
         <MetricCard
           title="Finalizados Hoje"
-          value={18}
+          value={dashboardMetrics.finalizadosHoje}
           subtitle="Meta: 25 atendimentos"
           icon={<CheckCircle className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-green-500 to-green-600"
@@ -73,7 +76,7 @@ export default function Dashboard() {
         
         <MetricCard
           title="Tempo Médio de Espera"
-          value="2m 34s"
+          value={dashboardMetrics.tempoMedioEspera}
           subtitle="Meta: < 3 minutos"
           icon={<Clock className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-orange-500 to-orange-600"
@@ -82,7 +85,7 @@ export default function Dashboard() {
         
         <MetricCard
           title="Tempo Médio de Atendimento"
-          value="8m 12s"
+          value={dashboardMetrics.tempoMedioAtendimento}
           subtitle="Meta: < 10 minutos"
           icon={<Timer className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-purple-500 to-purple-600"
@@ -137,7 +140,7 @@ export default function Dashboard() {
 
       {/* Status do Kanban e Top Agentes */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Mini Kanban */}
+        {/* Mini Kanban com dados reativos */}
         <div className="bg-white rounded-xl shadow-amplie p-6 hover:shadow-amplie-hover transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold text-gray-900">Status dos Tickets</h3>
@@ -147,19 +150,19 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
-              <p className="text-2xl font-bold text-blue-600">12</p>
+              <p className="text-2xl font-bold text-blue-600">{dashboardMetrics.statusTickets.novos}</p>
               <p className="text-sm text-gray-600">Novos</p>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors">
-              <p className="text-2xl font-bold text-yellow-600">18</p>
+              <p className="text-2xl font-bold text-yellow-600">{dashboardMetrics.statusTickets.emAtendimento}</p>
               <p className="text-sm text-gray-600">Em Atendimento</p>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors">
-              <p className="text-2xl font-bold text-orange-600">8</p>
+              <p className="text-2xl font-bold text-orange-600">{dashboardMetrics.statusTickets.aguardandoCliente}</p>
               <p className="text-sm text-gray-600">Aguardando Cliente</p>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
-              <p className="text-2xl font-bold text-green-600">4</p>
+              <p className="text-2xl font-bold text-green-600">{dashboardMetrics.statusTickets.finalizados}</p>
               <p className="text-sm text-gray-600">Finalizados</p>
             </div>
           </div>
