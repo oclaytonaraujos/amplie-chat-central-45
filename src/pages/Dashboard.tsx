@@ -35,10 +35,10 @@ const atendimentosData = [
 ];
 
 const setoresData = [
-  { nome: 'Vendas', valor: 45, cor: '#344ccf' },
-  { nome: 'Suporte', valor: 32, cor: '#00d25b' },
-  { nome: 'Financeiro', valor: 18, cor: '#ffab00' },
-  { nome: 'RH', valor: 5, cor: '#ea5455' }
+  { nome: 'Vendas', valor: 45, cor: '#4F46E5' },
+  { nome: 'Suporte', valor: 32, cor: '#10B981' },
+  { nome: 'Financeiro', valor: 18, cor: '#F59E0B' },
+  { nome: 'RH', valor: 5, cor: '#EF4444' }
 ];
 
 const topAgentes = [
@@ -47,6 +47,64 @@ const topAgentes = [
   { nome: 'Maria Oliveira', atendimentos: 17, setor: 'Vendas' },
   { nome: 'João Costa', atendimentos: 15, setor: 'Financeiro' }
 ];
+
+// Custom tooltip for bar chart
+const CustomBarTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-200/50">
+        <p className="text-gray-600 text-sm font-medium">{label}</p>
+        <p className="text-indigo-600 font-semibold">
+          <span className="inline-block w-3 h-3 bg-indigo-500 rounded-full mr-2"></span>
+          {payload[0].value} atendimentos
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Custom tooltip for pie chart
+const CustomPieTooltip = ({ active, payload }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/95 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-gray-200/50">
+        <p className="font-semibold text-gray-800">{payload[0].name}</p>
+        <p className="text-gray-600">
+          <span 
+            className="inline-block w-3 h-3 rounded-full mr-2" 
+            style={{ backgroundColor: payload[0].payload.cor }}
+          ></span>
+          {payload[0].value} atendimentos ({((payload[0].value / 100) * 100).toFixed(1)}%)
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
+// Custom label for pie chart
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  if (percent < 0.05) return null; // Don't show labels for slices smaller than 5%
+  
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return (
+    <text 
+      x={x} 
+      y={y} 
+      fill="white" 
+      textAnchor={x > cx ? 'start' : 'end'} 
+      dominantBaseline="central"
+      className="text-sm font-semibold drop-shadow-md"
+    >
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
 
 export default function Dashboard() {
   return (
@@ -99,12 +157,41 @@ export default function Dashboard() {
           iconColor="bg-gradient-to-r from-indigo-500 to-indigo-600"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={atendimentosData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="nome" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="atendimentos" fill="#344ccf" radius={[4, 4, 0, 0]} />
+            <BarChart 
+              data={atendimentosData}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
+              <defs>
+                <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#4F46E5" stopOpacity={0.8}/>
+                  <stop offset="100%" stopColor="#4F46E5" stopOpacity={0.4}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid 
+                strokeDasharray="3 3" 
+                stroke="#E5E7EB" 
+                strokeOpacity={0.5}
+                vertical={false}
+              />
+              <XAxis 
+                dataKey="nome" 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+              />
+              <YAxis 
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#6B7280', fontSize: 12 }}
+                tickFormatter={(value) => `${value}`}
+              />
+              <Tooltip content={<CustomBarTooltip />} />
+              <Bar 
+                dataKey="atendimentos" 
+                fill="url(#barGradient)"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={40}
+              />
             </BarChart>
           </ResponsiveContainer>
         </ChartCard>
@@ -117,21 +204,51 @@ export default function Dashboard() {
         >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
+              <defs>
+                {setoresData.map((entry, index) => (
+                  <linearGradient key={`gradient-${index}`} id={`gradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor={entry.cor} stopOpacity={0.8}/>
+                    <stop offset="100%" stopColor={entry.cor} stopOpacity={1}/>
+                  </linearGradient>
+                ))}
+              </defs>
               <Pie
                 data={setoresData}
                 cx="50%"
                 cy="50%"
-                outerRadius={80}
+                labelLine={false}
+                label={renderCustomizedLabel}
+                outerRadius={90}
+                innerRadius={40}
+                fill="#8884d8"
                 dataKey="valor"
-                label={({ nome, valor }) => `${nome} (${valor})`}
+                stroke="white"
+                strokeWidth={3}
               >
                 {setoresData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.cor} />
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={`url(#gradient-${index})`}
+                    className="hover:opacity-80 transition-opacity duration-200"
+                  />
                 ))}
               </Pie>
-              <Tooltip />
+              <Tooltip content={<CustomPieTooltip />} />
             </PieChart>
           </ResponsiveContainer>
+          
+          {/* Legend for pie chart */}
+          <div className="flex flex-wrap justify-center gap-4 mt-4">
+            {setoresData.map((entry, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: entry.cor }}
+                ></div>
+                <span className="text-sm text-gray-600 font-medium">{entry.nome}</span>
+              </div>
+            ))}
+          </div>
         </ChartCard>
       </div>
 
