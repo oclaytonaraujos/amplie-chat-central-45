@@ -11,6 +11,8 @@ import {
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { ChartCard } from '@/components/dashboard/ChartCard';
+import { useSystemContext } from '@/contexts/SystemContext';
+import { useRealtimeData } from '@/hooks/useRealtimeData';
 import { 
   BarChart, 
   Bar, 
@@ -34,28 +36,30 @@ const atendimentosData = [
   { nome: 'Dom', atendimentos: 18 }
 ];
 
-const setoresData = [
-  { nome: 'Vendas', valor: 45, cor: '#344ccf' },
-  { nome: 'Suporte', valor: 32, cor: '#00d25b' },
-  { nome: 'Financeiro', valor: 18, cor: '#ffab00' },
-  { nome: 'RH', valor: 5, cor: '#ea5455' }
-];
-
-const topAgentes = [
-  { nome: 'Ana Silva', atendimentos: 23, setor: 'Vendas' },
-  { nome: 'Carlos Santos', atendimentos: 19, setor: 'Suporte' },
-  { nome: 'Maria Oliveira', atendimentos: 17, setor: 'Vendas' },
-  { nome: 'João Costa', atendimentos: 15, setor: 'Financeiro' }
-];
-
 export default function Dashboard() {
+  const { state } = useSystemContext();
+  const { lastUpdate, isConnected } = useRealtimeData();
+
   return (
     <div className="p-6 space-y-6">
+      {/* Indicador de conexão em tempo real */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-2">
+          <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
+          <span className="text-sm text-gray-600">
+            {isConnected ? 'Dados em tempo real' : 'Desconectado'}
+          </span>
+          <span className="text-xs text-gray-400">
+            Última atualização: {new Date(lastUpdate).toLocaleTimeString()}
+          </span>
+        </div>
+      </div>
+
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Atendimentos em Aberto"
-          value={42}
+          value={state.metrics.atendimentosAbertos}
           subtitle="Aguardando resposta"
           icon={<MessageSquare className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-blue-500 to-blue-600"
@@ -64,7 +68,7 @@ export default function Dashboard() {
         
         <MetricCard
           title="Finalizados Hoje"
-          value={18}
+          value={state.metrics.finalizadosHoje}
           subtitle="Meta: 25 atendimentos"
           icon={<CheckCircle className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-green-500 to-green-600"
@@ -73,7 +77,7 @@ export default function Dashboard() {
         
         <MetricCard
           title="Tempo Médio de Espera"
-          value="2m 34s"
+          value={state.metrics.tempoMedioEspera}
           subtitle="Meta: < 3 minutos"
           icon={<Clock className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-orange-500 to-orange-600"
@@ -82,7 +86,7 @@ export default function Dashboard() {
         
         <MetricCard
           title="Tempo Médio de Atendimento"
-          value="8m 12s"
+          value={state.metrics.tempoMedioAtendimento}
           subtitle="Meta: < 10 minutos"
           icon={<Timer className="w-6 h-6 text-white" />}
           iconColor="bg-gradient-to-r from-purple-500 to-purple-600"
@@ -118,14 +122,14 @@ export default function Dashboard() {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={setoresData}
+                data={state.setores}
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
                 dataKey="valor"
                 label={({ nome, valor }) => `${nome} (${valor})`}
               >
-                {setoresData.map((entry, index) => (
+                {state.setores.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.cor} />
                 ))}
               </Pie>
@@ -147,19 +151,19 @@ export default function Dashboard() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
-              <p className="text-2xl font-bold text-blue-600">12</p>
+              <p className="text-2xl font-bold text-blue-600">{state.atendimentos.novos}</p>
               <p className="text-sm text-gray-600">Novos</p>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors">
-              <p className="text-2xl font-bold text-yellow-600">18</p>
+              <p className="text-2xl font-bold text-yellow-600">{state.atendimentos.emAtendimento}</p>
               <p className="text-sm text-gray-600">Em Atendimento</p>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors">
-              <p className="text-2xl font-bold text-orange-600">8</p>
+              <p className="text-2xl font-bold text-orange-600">{state.atendimentos.aguardandoCliente}</p>
               <p className="text-sm text-gray-600">Aguardando Cliente</p>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
-              <p className="text-2xl font-bold text-green-600">4</p>
+              <p className="text-2xl font-bold text-green-600">{state.atendimentos.finalizados}</p>
               <p className="text-sm text-gray-600">Finalizados</p>
             </div>
           </div>
@@ -174,7 +178,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="space-y-4">
-            {topAgentes.map((agente, index) => (
+            {state.agentes.map((agente, index) => (
               <div key={agente.nome} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-3">
                   <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
