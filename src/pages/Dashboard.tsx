@@ -1,3 +1,4 @@
+
 import { 
   MessageSquare, 
   Clock, 
@@ -194,7 +195,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Gráfico de Atendimentos por Setor - Removendo labels fixos */}
+        {/* Gráfico de Atendimentos por Setor */}
         <ChartCard
           title="Atendimentos por Setor"
           icon={<Building2 className="w-5 h-5 text-white" />}
@@ -237,7 +238,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </div>
             
-            {/* Responsive legend */}
+            {/* Responsive legend with text wrapping */}
             <div className="flex-shrink-0 pt-4">
               <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-4">
                 {setoresData.map((entry, index) => (
@@ -246,7 +247,7 @@ export default function Dashboard() {
                       className="w-3 h-3 rounded-full flex-shrink-0"
                       style={{ backgroundColor: entry.cor }}
                     ></div>
-                    <span className="text-xs sm:text-sm text-gray-600 font-medium truncate">
+                    <span className="text-xs sm:text-sm text-gray-600 font-medium break-words">
                       {entry.nome}
                     </span>
                     <span className="text-xs text-gray-500 hidden sm:inline">
@@ -265,7 +266,7 @@ export default function Dashboard() {
         {/* Mini Kanban */}
         <div className="bg-white rounded-xl shadow-amplie p-6 hover:shadow-amplie-hover transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Status dos Tickets</h3>
+            <h3 className="text-lg font-semibold text-gray-900 break-words">Status dos Tickets</h3>
             <div className="p-2 rounded-lg bg-gradient-to-r from-pink-500 to-pink-600">
               <Activity className="w-5 h-5 text-white" />
             </div>
@@ -273,19 +274,19 @@ export default function Dashboard() {
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-blue-50 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
               <p className="text-2xl font-bold text-blue-600">12</p>
-              <p className="text-sm text-gray-600">Novos</p>
+              <p className="text-sm text-gray-600 break-words">Novos</p>
             </div>
             <div className="text-center p-4 bg-yellow-50 rounded-lg cursor-pointer hover:bg-yellow-100 transition-colors">
               <p className="text-2xl font-bold text-yellow-600">18</p>
-              <p className="text-sm text-gray-600">Em Atendimento</p>
+              <p className="text-sm text-gray-600 break-words">Em Atendimento</p>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg cursor-pointer hover:bg-orange-100 transition-colors">
               <p className="text-2xl font-bold text-orange-600">8</p>
-              <p className="text-sm text-gray-600">Aguardando Cliente</p>
+              <p className="text-sm text-gray-600 break-words">Aguardando Cliente</p>
             </div>
             <div className="text-center p-4 bg-green-50 rounded-lg cursor-pointer hover:bg-green-100 transition-colors">
               <p className="text-2xl font-bold text-green-600">4</p>
-              <p className="text-sm text-gray-600">Finalizados</p>
+              <p className="text-sm text-gray-600 break-words">Finalizados</p>
             </div>
           </div>
         </div>
@@ -293,7 +294,7 @@ export default function Dashboard() {
         {/* Top Agentes */}
         <div className="bg-white rounded-xl shadow-amplie p-6 hover:shadow-amplie-hover transition-all duration-300">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">Top Agentes Hoje</h3>
+            <h3 className="text-lg font-semibold text-gray-900 break-words">Top Agentes Hoje</h3>
             <div className="p-2 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600">
               <Users className="w-5 h-5 text-white" />
             </div>
@@ -301,18 +302,18 @@ export default function Dashboard() {
           <div className="space-y-4">
             {topAgentes.map((agente, index) => (
               <div key={agente.nome} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center">
+                <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="w-8 h-8 bg-gradient-to-r from-gray-400 to-gray-500 rounded-full flex items-center justify-center flex-shrink-0">
                     <span className="text-white text-sm font-medium">{index + 1}</span>
                   </div>
-                  <div>
-                    <p className="font-medium text-gray-900">{agente.nome}</p>
-                    <p className="text-sm text-gray-500">{agente.setor}</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-gray-900 break-words">{agente.nome}</p>
+                    <p className="text-sm text-gray-500 break-words">{agente.setor}</p>
                   </div>
                 </div>
-                <div className="text-right">
+                <div className="text-right flex-shrink-0">
                   <p className="font-bold text-gray-900">{agente.atendimentos}</p>
-                  <p className="text-sm text-gray-500">atendimentos</p>
+                  <p className="text-sm text-gray-500 break-words">atendimentos</p>
                 </div>
               </div>
             ))}
