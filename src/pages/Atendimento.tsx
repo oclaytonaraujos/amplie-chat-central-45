@@ -236,7 +236,7 @@ export default function Atendimento() {
     }
   };
 
-  const handleSelectContact = (contato: typeof contatosMock[0]) => {
+  const handleSelectContact = (contato: typeof contatos[0]) => {
     if (!podeIniciarNovoAtendimento) {
       toast({
         title: "Limite atingido",
@@ -318,7 +318,7 @@ export default function Atendimento() {
         ) : showContacts ? (
           // Mostra lista de contatos
           <ContactsList
-            contatos={contatosMock}
+            contatos={contatos}
             onSelectContact={handleSelectContact}
             onBack={handleReturnToList}
           />
@@ -396,7 +396,7 @@ export default function Atendimento() {
           <div className="flex-1 mt-4">
             {showContacts ? (
               <ContactsList
-                contatos={contatosMock}
+                contatos={contatos}
                 onSelectContact={handleSelectContact}
                 onBack={() => setShowContacts(false)}
               />
