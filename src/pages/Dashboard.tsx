@@ -83,14 +83,17 @@ const CustomPieTooltip = ({ active, payload }: any) => {
   return null;
 };
 
-// Custom label for pie chart
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+// Custom label for pie chart with responsive sizing
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, viewBox }: any) => {
   if (percent < 0.05) return null; // Don't show labels for slices smaller than 5%
   
   const RADIAN = Math.PI / 180;
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  // Responsive font size based on chart size
+  const fontSize = viewBox?.width < 300 ? '10px' : viewBox?.width < 400 ? '12px' : '14px';
 
   return (
     <text 
@@ -99,7 +102,8 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
       fill="white" 
       textAnchor={x > cx ? 'start' : 'end'} 
       dominantBaseline="central"
-      className="text-sm font-semibold drop-shadow-md"
+      className="font-semibold drop-shadow-md"
+      style={{ fontSize }}
     >
       {`${(percent * 100).toFixed(0)}%`}
     </text>
@@ -196,58 +200,70 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Gráfico de Atendimentos por Setor */}
+        {/* Gráfico de Atendimentos por Setor - Melhorado para responsividade */}
         <ChartCard
           title="Atendimentos por Setor"
           icon={<Building2 className="w-5 h-5 text-white" />}
           iconColor="bg-gradient-to-r from-teal-500 to-teal-600"
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <defs>
+          <div className="flex flex-col h-full">
+            {/* Chart container with responsive sizing */}
+            <div className="flex-1 min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <defs>
+                    {setoresData.map((entry, index) => (
+                      <linearGradient key={`gradient-${index}`} id={`gradient-${index}`} x1="0" y1="0" x2="1" y2="1">
+                        <stop offset="0%" stopColor={entry.cor} stopOpacity={0.8}/>
+                        <stop offset="100%" stopColor={entry.cor} stopOpacity={1}/>
+                      </linearGradient>
+                    ))}
+                  </defs>
+                  <Pie
+                    data={setoresData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={renderCustomizedLabel}
+                    outerRadius="80%"
+                    innerRadius="40%"
+                    fill="#8884d8"
+                    dataKey="valor"
+                    stroke="white"
+                    strokeWidth={2}
+                  >
+                    {setoresData.map((entry, index) => (
+                      <Cell 
+                        key={`cell-${index}`} 
+                        fill={`url(#gradient-${index})`}
+                        className="hover:opacity-80 transition-opacity duration-200"
+                      />
+                    ))}
+                  </Pie>
+                  <Tooltip content={<CustomPieTooltip />} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            
+            {/* Responsive legend */}
+            <div className="flex-shrink-0 pt-4">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-4">
                 {setoresData.map((entry, index) => (
-                  <linearGradient key={`gradient-${index}`} id={`gradient-${index}`} x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor={entry.cor} stopOpacity={0.8}/>
-                    <stop offset="100%" stopColor={entry.cor} stopOpacity={1}/>
-                  </linearGradient>
+                  <div key={index} className="flex items-center space-x-2 min-w-0">
+                    <div 
+                      className="w-3 h-3 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: entry.cor }}
+                    ></div>
+                    <span className="text-xs sm:text-sm text-gray-600 font-medium truncate">
+                      {entry.nome}
+                    </span>
+                    <span className="text-xs text-gray-500 hidden sm:inline">
+                      ({entry.valor})
+                    </span>
+                  </div>
                 ))}
-              </defs>
-              <Pie
-                data={setoresData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                label={renderCustomizedLabel}
-                outerRadius={90}
-                innerRadius={40}
-                fill="#8884d8"
-                dataKey="valor"
-                stroke="white"
-                strokeWidth={3}
-              >
-                {setoresData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
-                    fill={`url(#gradient-${index})`}
-                    className="hover:opacity-80 transition-opacity duration-200"
-                  />
-                ))}
-              </Pie>
-              <Tooltip content={<CustomPieTooltip />} />
-            </PieChart>
-          </ResponsiveContainer>
-          
-          {/* Legend for pie chart */}
-          <div className="flex flex-wrap justify-center gap-4 mt-4">
-            {setoresData.map((entry, index) => (
-              <div key={index} className="flex items-center space-x-2">
-                <div 
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: entry.cor }}
-                ></div>
-                <span className="text-sm text-gray-600 font-medium">{entry.nome}</span>
               </div>
-            ))}
+            </div>
           </div>
         </ChartCard>
       </div>
