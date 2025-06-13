@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Plus, Smartphone, CheckCircle, XCircle, Clock, Loader2 } from 'lucide-react';
+import { Plus, Smartphone, CheckCircle, XCircle, Clock, Loader2, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface WhatsAppConnection {
@@ -79,6 +79,14 @@ export function WhatsAppConnections() {
     setConnections(prev => [...prev, newConnection]);
   };
 
+  const deleteConnection = (connectionId: string) => {
+    setConnections(prev => prev.filter(conn => conn.id !== connectionId));
+    toast({
+      title: "Conexão excluída",
+      description: "A conexão WhatsApp foi removida com sucesso",
+    });
+  };
+
   const getStatusIcon = (status: WhatsAppConnection['status']) => {
     switch (status) {
       case 'connected':
@@ -109,6 +117,11 @@ export function WhatsAppConnections() {
     }
   };
 
+  // Exportar estado das conexões para uso em outros componentes
+  useEffect(() => {
+    localStorage.setItem('whatsapp-connections', JSON.stringify(connections));
+  }, [connections]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -138,7 +151,17 @@ export function WhatsAppConnections() {
                     </CardDescription>
                   </div>
                 </div>
-                {getStatusBadge(connection)}
+                <div className="flex items-center space-x-2">
+                  {getStatusBadge(connection)}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => deleteConnection(connection.id)}
+                    className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">

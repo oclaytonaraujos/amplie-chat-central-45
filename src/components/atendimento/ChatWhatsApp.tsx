@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock, Image, FileText, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useZApi } from '@/hooks/useZApi';
+import { useWhatsAppConnections } from '@/hooks/useWhatsAppConnections';
 import { useToast } from '@/hooks/use-toast';
 
 interface Message {
@@ -61,16 +61,17 @@ export function ChatWhatsApp({
   const [isTyping, setIsTyping] = useState(false);
   const [anexoSelecionado, setAnexoSelecionado] = useState<File | null>(null);
   
-  const { sendMessage, sendImageMessage, sendDocumentMessage, sendAudioMessage, isConfigured } = useZApi();
+  const { sendMessage, sendImageMessage, sendDocumentMessage, sendAudioMessage } = useZApi();
+  const { hasConnectedWhatsApp } = useWhatsAppConnections();
   const { toast } = useToast();
   
   const handleEnviarMensagem = async () => {
     if (!novaMensagem.trim() && !anexoSelecionado) return;
     
-    if (!isConfigured) {
+    if (!hasConnectedWhatsApp) {
       toast({
-        title: "Z-API não configurada",
-        description: "Configure a integração Z-API no painel primeiro",
+        title: "WhatsApp Desconectado",
+        description: "Configure uma conexão WhatsApp no painel primeiro",
         variant: "destructive",
       });
       return;
@@ -217,9 +218,9 @@ export function ChatWhatsApp({
                   {cliente.status === 'online' ? 'Online' : 'Offline'}
                 </Badge>
               )}
-              {!isConfigured && (
+              {!hasConnectedWhatsApp && (
                 <Badge variant="destructive" className="text-xs">
-                  Z-API não configurada
+                  WhatsApp Desconectado
                 </Badge>
               )}
             </div>
@@ -383,7 +384,7 @@ export function ChatWhatsApp({
             <Button 
               size="icon" 
               className="bg-green-500 hover:bg-green-600 text-white"
-              disabled={(!novaMensagem.trim() && !anexoSelecionado) || !isConfigured}
+              disabled={(!novaMensagem.trim() && !anexoSelecionado) || !hasConnectedWhatsApp}
               onClick={handleEnviarMensagem}
             >
               <Send className="w-4 h-4" />
