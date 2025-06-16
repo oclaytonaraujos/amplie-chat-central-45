@@ -52,6 +52,11 @@ export function useSupabaseProfile() {
         } else {
           console.log('Perfil encontrado:', data);
           setProfile(data);
+          
+          // Log adicional para super_admin
+          if (data.cargo === 'super_admin') {
+            console.log('✅ Usuário identificado como Super Admin:', data.email);
+          }
         }
       } catch (error) {
         console.error('Erro inesperado ao buscar perfil:', error);

@@ -1,33 +1,38 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Settings, Smartphone, BarChart3 } from 'lucide-react';
+import { Building2, Users, Settings, Smartphone, BarChart3, Loader2 } from 'lucide-react';
 import EmpresasTab from '@/components/admin/EmpresasTab';
 import PlanosTab from '@/components/admin/PlanosTab';
 import WhatsAppTab from '@/components/admin/WhatsAppTab';
 import UsuariosTab from '@/components/admin/UsuariosTab';
 import RelatoriosEstatisticasCard from '@/components/admin/RelatoriosEstatisticasCard';
-import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function SuperAdmin() {
   const { user } = useAuth();
-  const { profile, loading } = useSupabaseProfile();
+  const { isSuperAdmin, loading } = useUserRole();
+
+  console.log('SuperAdmin - User:', user?.email);
+  console.log('SuperAdmin - isSuperAdmin:', isSuperAdmin);
+  console.log('SuperAdmin - loading:', loading);
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando...</p>
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Verificando permissões...</p>
         </div>
       </div>
     );
   }
 
-  if (!user || !profile || profile.cargo !== 'super_admin') {
+  if (!user || !isSuperAdmin) {
+    console.log('Acesso negado - redirecionando para painel');
     return <Navigate to="/painel" replace />;
   }
 
@@ -37,6 +42,9 @@ export default function SuperAdmin() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Painel Super Administrador</h1>
           <p className="text-gray-600 mt-2">Gerencie todas as empresas, usuários e configurações da plataforma</p>
+          <div className="mt-2 text-sm text-green-600">
+            Acesso autorizado para: {user.email}
+          </div>
         </div>
 
         {/* Estatísticas gerais */}
