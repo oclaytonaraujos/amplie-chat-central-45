@@ -128,7 +128,11 @@ export type Database = {
           email: string | null
           endereco: string | null
           id: string
+          limite_armazenamento_gb: number | null
+          limite_contatos: number | null
+          limite_usuarios: number | null
           nome: string
+          plano_id: string | null
           telefone: string | null
           updated_at: string | null
         }
@@ -139,7 +143,11 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           id?: string
+          limite_armazenamento_gb?: number | null
+          limite_contatos?: number | null
+          limite_usuarios?: number | null
           nome: string
+          plano_id?: string | null
           telefone?: string | null
           updated_at?: string | null
         }
@@ -150,11 +158,23 @@ export type Database = {
           email?: string | null
           endereco?: string | null
           id?: string
+          limite_armazenamento_gb?: number | null
+          limite_contatos?: number | null
+          limite_usuarios?: number | null
           nome?: string
+          plano_id?: string | null
           telefone?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "empresas_plano_id_fkey"
+            columns: ["plano_id"]
+            isOneToOne: false
+            referencedRelation: "planos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       mensagens: {
         Row: {
@@ -199,6 +219,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      planos: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          limite_armazenamento_gb: number | null
+          limite_contatos: number | null
+          limite_usuarios: number | null
+          nome: string
+          pode_usar_api: boolean | null
+          pode_usar_automacao: boolean | null
+          pode_usar_chat_interno: boolean | null
+          pode_usar_chatbot: boolean | null
+          pode_usar_kanban: boolean | null
+          pode_usar_relatorios: boolean | null
+          preco_mensal: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          limite_armazenamento_gb?: number | null
+          limite_contatos?: number | null
+          limite_usuarios?: number | null
+          nome: string
+          pode_usar_api?: boolean | null
+          pode_usar_automacao?: boolean | null
+          pode_usar_chat_interno?: boolean | null
+          pode_usar_chatbot?: boolean | null
+          pode_usar_kanban?: boolean | null
+          pode_usar_relatorios?: boolean | null
+          preco_mensal?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          limite_armazenamento_gb?: number | null
+          limite_contatos?: number | null
+          limite_usuarios?: number | null
+          nome?: string
+          pode_usar_api?: boolean | null
+          pode_usar_automacao?: boolean | null
+          pode_usar_chat_interno?: boolean | null
+          pode_usar_chatbot?: boolean | null
+          pode_usar_kanban?: boolean | null
+          pode_usar_relatorios?: boolean | null
+          preco_mensal?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -333,6 +410,53 @@ export type Database = {
             columns: ["para_agente_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      whatsapp_connections: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          empresa_id: string | null
+          id: string
+          nome: string
+          numero: string
+          qr_code: string | null
+          status: string | null
+          ultimo_ping: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome: string
+          numero: string
+          qr_code?: string | null
+          status?: string | null
+          ultimo_ping?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          empresa_id?: string | null
+          id?: string
+          nome?: string
+          numero?: string
+          qr_code?: string | null
+          status?: string | null
+          ultimo_ping?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "whatsapp_connections_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
             referencedColumns: ["id"]
           },
         ]

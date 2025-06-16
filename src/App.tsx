@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/layout/Layout";
 import Auth from "@/pages/Auth";
+import SuperAdmin from "@/pages/SuperAdmin";
 import Dashboard from "./pages/Dashboard";
 import Atendimento from "./pages/Atendimento";
 import ChatInterno from "./pages/ChatInterno";
@@ -42,6 +42,13 @@ const App = () => (
             
             {/* Redirecionar página inicial para login */}
             <Route path="/" element={<Navigate to="/auth" replace />} />
+            
+            {/* Rota Super Admin */}
+            <Route path="/admin" element={
+              <ProtectedRoute>
+                <SuperAdmin />
+              </ProtectedRoute>
+            } />
             
             {/* Rotas protegidas */}
             <Route path="/painel" element={
