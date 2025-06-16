@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -61,12 +62,14 @@ export default function EditarUsuarioSuperAdminDialog({
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
+    novaSenha: '',
     empresa_id: '',
     cargo: 'usuario',
     setor: '',
     status: 'online',
     permissoes: [] as string[]
   });
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -88,6 +91,7 @@ export default function EditarUsuarioSuperAdminDialog({
       setFormData({
         nome: usuario.nome,
         email: usuario.email,
+        novaSenha: '',
         empresa_id: usuario.empresa_id,
         cargo: usuario.cargo,
         setor: usuario.setor || '',
@@ -151,9 +155,14 @@ export default function EditarUsuarioSuperAdminDialog({
 
       if (error) throw error;
 
+      let toastMessage = "Usuário atualizado com sucesso";
+      if (formData.novaSenha.trim() !== '') {
+        toastMessage += `. Nova senha: ${formData.novaSenha}`;
+      }
+
       toast({
         title: "Sucesso",
-        description: "Usuário atualizado com sucesso",
+        description: toastMessage,
       });
 
       onUsuarioUpdated();
@@ -196,6 +205,34 @@ export default function EditarUsuarioSuperAdminDialog({
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="novaSenha">Nova Senha</Label>
+            <div className="relative">
+              <Input
+                id="novaSenha"
+                type={showPassword ? "text" : "password"}
+                value={formData.novaSenha}
+                onChange={(e) => setFormData({ ...formData, novaSenha: e.target.value })}
+                className="pr-10"
+                placeholder="Deixe em branco para manter a senha atual"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-400" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-400" />
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Deixe em branco se não quiser alterar a senha
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

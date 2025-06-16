@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
@@ -48,12 +49,14 @@ export default function NovoUsuarioSuperAdminDialog({
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
+    senha: '',
     empresa_id: '',
     cargo: 'usuario',
     setor: '',
     status: 'online',
     permissoes: [] as string[]
   });
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
 
   const handlePermissaoChange = (permissaoId: string, checked: boolean) => {
@@ -122,12 +125,13 @@ export default function NovoUsuarioSuperAdminDialog({
 
       toast({
         title: "Sucesso",
-        description: "Usuário criado com sucesso.",
+        description: `Usuário criado com sucesso. Senha: ${formData.senha}`,
       });
 
       setFormData({
         nome: '',
         email: '',
+        senha: '',
         empresa_id: '',
         cargo: 'usuario',
         setor: '',
@@ -173,6 +177,32 @@ export default function NovoUsuarioSuperAdminDialog({
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
               />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="senha">Senha de Acesso *</Label>
+            <div className="relative">
+              <Input
+                id="senha"
+                type={showPassword ? "text" : "password"}
+                value={formData.senha}
+                onChange={(e) => setFormData({ ...formData, senha: e.target.value })}
+                required
+                className="pr-10"
+                placeholder="Digite a senha do usuário"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-400" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-400" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -275,7 +305,7 @@ export default function NovoUsuarioSuperAdminDialog({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading || !formData.empresa_id}>
+            <Button type="submit" disabled={loading || !formData.empresa_id || !formData.senha}>
               {loading ? 'Criando...' : 'Criar Usuário'}
             </Button>
           </div>

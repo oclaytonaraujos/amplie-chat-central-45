@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface NovoUsuario {
   nome: string;
   email: string;
+  senha: string;
   setor: string;
   cargo: string;
   status: string;
@@ -42,11 +44,13 @@ export function NovoUsuarioDialog({ open, onOpenChange, onUsuarioAdicionado }: N
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
+    senha: '',
     setor: '',
     cargo: 'usuario',
     status: 'online',
     permissoes: [] as string[]
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   const handlePermissaoChange = (permissaoId: string, checked: boolean) => {
     setFormData(prev => ({
@@ -86,6 +90,7 @@ export function NovoUsuarioDialog({ open, onOpenChange, onUsuarioAdicionado }: N
     const novoUsuario: NovoUsuario = {
       nome: formData.nome,
       email: formData.email,
+      senha: formData.senha,
       setor: formData.setor,
       cargo: formData.cargo,
       status: formData.status,
@@ -98,6 +103,7 @@ export function NovoUsuarioDialog({ open, onOpenChange, onUsuarioAdicionado }: N
     setFormData({
       nome: '',
       email: '',
+      senha: '',
       setor: '',
       cargo: 'usuario',
       status: 'online',
@@ -134,6 +140,32 @@ export function NovoUsuarioDialog({ open, onOpenChange, onUsuarioAdicionado }: N
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 required
               />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="senha">Senha de Acesso *</Label>
+            <div className="relative">
+              <Input
+                id="senha"
+                type={showPassword ? "text" : "password"}
+                value={formData.senha}
+                onChange={(e) => setFormData(prev => ({ ...prev, senha: e.target.value }))}
+                required
+                className="pr-10"
+                placeholder="Digite a senha do usuário"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-400" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-400" />
+                )}
+              </button>
             </div>
           </div>
 
@@ -209,7 +241,7 @@ export function NovoUsuarioDialog({ open, onOpenChange, onUsuarioAdicionado }: N
             </Button>
             <Button 
               type="submit" 
-              disabled={!formData.nome || !formData.email || !formData.setor || !formData.cargo}
+              disabled={!formData.nome || !formData.email || !formData.senha || !formData.setor || !formData.cargo}
             >
               Criar Usuário
             </Button>

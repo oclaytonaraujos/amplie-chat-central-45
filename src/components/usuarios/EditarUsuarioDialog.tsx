@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Eye, EyeOff } from 'lucide-react';
 
 interface Usuario {
   id: string;
@@ -25,7 +26,7 @@ interface EditarUsuarioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   usuario: Usuario | null;
-  onUsuarioEditado: (usuario: Usuario) => void;
+  onUsuarioEditado: (usuario: Usuario & { novaSenha?: string }) => void;
 }
 
 const setoresDisponiveis = ['Vendas', 'Suporte', 'Marketing', 'Financeiro', 'RH', 'Administração', 'TI'];
@@ -48,11 +49,13 @@ export function EditarUsuarioDialog({ open, onOpenChange, usuario, onUsuarioEdit
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
+    novaSenha: '',
     setor: '',
     cargo: 'usuario',
     status: 'online',
     permissoes: [] as string[]
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (usuario) {
@@ -73,6 +76,7 @@ export function EditarUsuarioDialog({ open, onOpenChange, usuario, onUsuarioEdit
       setFormData({
         nome: usuario.nome,
         email: usuario.email,
+        novaSenha: '',
         setor: usuario.setor || '',
         cargo: usuario.cargo || 'usuario',
         status: usuario.status,
@@ -117,7 +121,7 @@ export function EditarUsuarioDialog({ open, onOpenChange, usuario, onUsuarioEdit
     e.preventDefault();
     
     if (usuario) {
-      const usuarioEditado: Usuario = {
+      const usuarioEditado: Usuario & { novaSenha?: string } = {
         ...usuario,
         nome: formData.nome,
         email: formData.email,
@@ -126,6 +130,11 @@ export function EditarUsuarioDialog({ open, onOpenChange, usuario, onUsuarioEdit
         status: formData.status,
         permissoes: formData.permissoes
       };
+
+      // Adicionar nova senha se foi fornecida
+      if (formData.novaSenha.trim() !== '') {
+        usuarioEditado.novaSenha = formData.novaSenha;
+      }
 
       onUsuarioEditado(usuarioEditado);
     }
@@ -162,6 +171,34 @@ export function EditarUsuarioDialog({ open, onOpenChange, usuario, onUsuarioEdit
                 required
               />
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="novaSenha">Nova Senha</Label>
+            <div className="relative">
+              <Input
+                id="novaSenha"
+                type={showPassword ? "text" : "password"}
+                value={formData.novaSenha}
+                onChange={(e) => setFormData(prev => ({ ...prev, novaSenha: e.target.value }))}
+                className="pr-10"
+                placeholder="Deixe em branco para manter a senha atual"
+              />
+              <button
+                type="button"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-gray-400" />
+                ) : (
+                  <Eye className="h-4 w-4 text-gray-400" />
+                )}
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Deixe em branco se não quiser alterar a senha
+            </p>
           </div>
 
           <div className="grid grid-cols-2 gap-4">

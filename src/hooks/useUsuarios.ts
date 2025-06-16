@@ -22,6 +22,7 @@ export interface Usuario {
 interface NovoUsuario {
   nome: string;
   email: string;
+  senha: string;
   setor: string;
   cargo: string;
   status: string;
@@ -170,7 +171,7 @@ export function useUsuarios() {
       setUsuarios(prev => [data, ...prev]);
       toast({
         title: "Usuário criado",
-        description: `${usuario.nome} foi adicionado com sucesso.`,
+        description: `${usuario.nome} foi adicionado com sucesso. Senha: ${usuario.senha}`,
       });
       return data;
     } catch (error) {
@@ -184,7 +185,7 @@ export function useUsuarios() {
     }
   };
 
-  const editarUsuario = async (usuario: Usuario) => {
+  const editarUsuario = async (usuario: Usuario & { novaSenha?: string }) => {
     try {
       console.log('Editando usuário:', usuario);
       
@@ -215,9 +216,15 @@ export function useUsuarios() {
 
       console.log('Usuário editado com sucesso:', data);
       setUsuarios(prev => prev.map(u => u.id === usuario.id ? data : u));
+      
+      let toastMessage = `As informações de ${usuario.nome} foram atualizadas.`;
+      if (usuario.novaSenha && usuario.novaSenha.trim() !== '') {
+        toastMessage += ` Nova senha: ${usuario.novaSenha}`;
+      }
+      
       toast({
         title: "Usuário atualizado",
-        description: `As informações de ${usuario.nome} foram atualizadas.`,
+        description: toastMessage,
       });
       return true;
     } catch (error) {
