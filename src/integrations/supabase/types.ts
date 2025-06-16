@@ -9,7 +9,296 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      contatos: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          empresa: string | null
+          id: string
+          nome: string
+          observacoes: string | null
+          tags: string[] | null
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          empresa?: string | null
+          id?: string
+          nome: string
+          observacoes?: string | null
+          tags?: string[] | null
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          empresa?: string | null
+          id?: string
+          nome?: string
+          observacoes?: string | null
+          tags?: string[] | null
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      conversas: {
+        Row: {
+          agente_id: string | null
+          canal: string | null
+          contato_id: string | null
+          created_at: string | null
+          id: string
+          prioridade: string | null
+          setor: string | null
+          status: string | null
+          tags: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          agente_id?: string | null
+          canal?: string | null
+          contato_id?: string | null
+          created_at?: string | null
+          id?: string
+          prioridade?: string | null
+          setor?: string | null
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          agente_id?: string | null
+          canal?: string | null
+          contato_id?: string | null
+          created_at?: string | null
+          id?: string
+          prioridade?: string | null
+          setor?: string | null
+          status?: string | null
+          tags?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversas_agente_id_fkey"
+            columns: ["agente_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversas_contato_id_fkey"
+            columns: ["contato_id"]
+            isOneToOne: false
+            referencedRelation: "contatos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensagens: {
+        Row: {
+          conteudo: string
+          conversa_id: string | null
+          created_at: string | null
+          id: string
+          lida: boolean | null
+          metadata: Json | null
+          remetente_id: string | null
+          remetente_tipo: string
+          tipo_mensagem: string | null
+        }
+        Insert: {
+          conteudo: string
+          conversa_id?: string | null
+          created_at?: string | null
+          id?: string
+          lida?: boolean | null
+          metadata?: Json | null
+          remetente_id?: string | null
+          remetente_tipo: string
+          tipo_mensagem?: string | null
+        }
+        Update: {
+          conteudo?: string
+          conversa_id?: string | null
+          created_at?: string | null
+          id?: string
+          lida?: boolean | null
+          metadata?: Json | null
+          remetente_id?: string | null
+          remetente_tipo?: string
+          tipo_mensagem?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          cargo: string | null
+          created_at: string | null
+          email: string
+          id: string
+          nome: string
+          setor: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          cargo?: string | null
+          created_at?: string | null
+          email: string
+          id: string
+          nome: string
+          setor?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          cargo?: string | null
+          created_at?: string | null
+          email?: string
+          id?: string
+          nome?: string
+          setor?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      setores: {
+        Row: {
+          ativo: boolean | null
+          cor: string | null
+          created_at: string | null
+          descricao: string | null
+          id: string
+          nome: string
+        }
+        Insert: {
+          ativo?: boolean | null
+          cor?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+        }
+        Update: {
+          ativo?: boolean | null
+          cor?: string | null
+          created_at?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+        }
+        Relationships: []
+      }
+      transferencias: {
+        Row: {
+          conversa_id: string | null
+          created_at: string | null
+          de_agente_id: string | null
+          id: string
+          motivo: string | null
+          para_agente_id: string | null
+          status: string | null
+        }
+        Insert: {
+          conversa_id?: string | null
+          created_at?: string | null
+          de_agente_id?: string | null
+          id?: string
+          motivo?: string | null
+          para_agente_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          conversa_id?: string | null
+          created_at?: string | null
+          de_agente_id?: string | null
+          id?: string
+          motivo?: string | null
+          para_agente_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transferencias_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: false
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transferencias_de_agente_id_fkey"
+            columns: ["de_agente_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transferencias_para_agente_id_fkey"
+            columns: ["para_agente_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      zapi_config: {
+        Row: {
+          ativo: boolean | null
+          created_at: string | null
+          id: string
+          instance_id: string
+          token: string
+          updated_at: string | null
+          user_id: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          instance_id: string
+          token: string
+          updated_at?: string | null
+          user_id?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          created_at?: string | null
+          id?: string
+          instance_id?: string
+          token?: string
+          updated_at?: string | null
+          user_id?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "zapi_config_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
