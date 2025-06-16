@@ -1,3 +1,4 @@
+
 import { 
   MessageSquare, 
   Clock, 
@@ -6,10 +7,12 @@ import {
   Users,
   TrendingUp,
   Building2,
-  Activity
+  Activity,
+  AlertTriangle
 } from 'lucide-react';
 import { MetricCard } from '@/components/dashboard/MetricCard';
 import { ChartCard } from '@/components/dashboard/ChartCard';
+import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
 import { 
   BarChart, 
   Bar, 
@@ -113,8 +116,54 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export default function Dashboard() {
+  const { profile, loading } = useSupabaseProfile();
+
+  console.log('Dashboard - Profile:', profile);
+  console.log('Dashboard - Loading:', loading);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-8 bg-white rounded-lg shadow-lg max-w-md">
+          <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Perfil não encontrado</h2>
+          <p className="text-gray-600 mb-4">
+            Não foi possível carregar seu perfil. Entre em contato com o administrador.
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Tentar novamente
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
+      {/* Welcome Message */}
+      <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-xl">
+        <h1 className="text-2xl font-bold mb-2">
+          Bem-vindo, {profile.nome}!
+        </h1>
+        <p className="opacity-90">
+          Aqui está um resumo das suas métricas de atendimento
+        </p>
+      </div>
+
       {/* Métricas Principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
@@ -194,14 +243,13 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </ChartCard>
 
-        {/* Gráfico de Atendimentos por Setor - Removendo labels fixos */}
+        {/* Gráfico de Atendimentos por Setor */}
         <ChartCard
           title="Atendimentos por Setor"
           icon={<Building2 className="w-5 h-5 text-white" />}
           iconColor="bg-gradient-to-r from-teal-500 to-teal-600"
         >
           <div className="flex flex-col h-full">
-            {/* Chart container with responsive sizing */}
             <div className="flex-1 min-h-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -237,7 +285,6 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </div>
             
-            {/* Responsive legend */}
             <div className="flex-shrink-0 pt-4">
               <div className="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-2 sm:gap-4">
                 {setoresData.map((entry, index) => (
