@@ -17,6 +17,9 @@ interface Empresa {
   nome: string;
   email: string;
   plano_id: string;
+  limite_usuarios: number;
+  limite_armazenamento_gb: number;
+  limite_contatos: number;
   ativo: boolean;
   created_at: string;
   planos?: {
