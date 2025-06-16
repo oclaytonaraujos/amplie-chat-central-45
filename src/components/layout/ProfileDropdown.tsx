@@ -1,95 +1,65 @@
 
-import { User, Settings, HelpCircle, LogOut, CreditCard, Users } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { 
+import React from 'react';
+import { LogOut, User, Settings } from 'lucide-react';
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger 
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 export function ProfileDropdown() {
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  
-  const userInfo = {
-    name: 'João Silva',
-    email: 'joao.silva@amplie.com',
-    role: 'Administrador',
-    avatar: null
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
   };
 
-  const handleNavigateToProfile = () => {
-    navigate('/meu-perfil');
-  };
-
-  const handleNavigateToPlano = () => {
-    navigate('/plano-faturamento');
-  };
-
-  const handleNavigateToEquipe = () => {
-    navigate('/gerenciar-equipe');
+  const getInitials = (email: string) => {
+    return email.substring(0, 2).toUpperCase();
   };
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
-          <div className="w-8 h-8 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-white" />
-          </div>
-        </Button>
+      <DropdownMenuTrigger className="outline-none">
+        <Avatar className="h-8 w-8">
+          <AvatarImage src={user?.user_metadata?.avatar_url} />
+          <AvatarFallback>
+            {user?.email ? getInitials(user.email) : 'U'}
+          </AvatarFallback>
+        </Avatar>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64 bg-white">
-        <DropdownMenuLabel className="pb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-amplie-primary to-amplie-primary-light rounded-full flex items-center justify-center">
-              <User className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-gray-900 truncate">{userInfo.name}</p>
-              <p className="text-xs text-gray-500 truncate">{userInfo.email}</p>
-              <p className="text-xs text-gray-400">{userInfo.role}</p>
-            </div>
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuLabel>
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {user?.user_metadata?.nome || user?.email?.split('@')[0]}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground">
+              {user?.email}
+            </p>
           </div>
         </DropdownMenuLabel>
-        
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem onClick={handleNavigateToProfile} className="cursor-pointer">
+        <DropdownMenuItem onClick={() => navigate('/meu-perfil')}>
           <User className="mr-2 h-4 w-4" />
-          Meu Perfil
+          <span>Meu Perfil</span>
         </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={handleNavigateToPlano} className="cursor-pointer">
-          <CreditCard className="mr-2 h-4 w-4" />
-          Plano e Faturamento
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem onClick={handleNavigateToEquipe} className="cursor-pointer">
-          <Users className="mr-2 h-4 w-4" />
-          Gerenciar Equipe
-        </DropdownMenuItem>
-        
-        <DropdownMenuItem className="sm:hidden">
+        <DropdownMenuItem onClick={() => navigate('/configuracoes/gerais')}>
           <Settings className="mr-2 h-4 w-4" />
-          Configurações
+          <span>Configurações</span>
         </DropdownMenuItem>
-        
         <DropdownMenuSeparator />
-        
-        <DropdownMenuItem>
-          <HelpCircle className="mr-2 h-4 w-4" />
-          Ajuda e Suporte
-        </DropdownMenuItem>
-        
-        <DropdownMenuSeparator />
-        
-        <DropdownMenuItem className="text-red-600 hover:text-red-700 hover:bg-red-50">
+        <DropdownMenuItem onClick={handleSignOut}>
           <LogOut className="mr-2 h-4 w-4" />
-          Sair
+          <span>Sair</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
