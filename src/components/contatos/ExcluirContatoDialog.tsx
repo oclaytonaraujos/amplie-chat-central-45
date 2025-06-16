@@ -4,27 +4,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertTriangle } from 'lucide-react';
 
 interface Contato {
-  id: number;
+  id: string;
   nome: string;
-  telefone: string;
+  telefone?: string;
   email?: string;
-  ultimoAtendente: string;
-  setorUltimoAtendimento: string;
-  dataUltimaInteracao: string;
-  tags: string[];
-  status: 'ativo' | 'inativo' | 'bloqueado';
-  totalAtendimentos: number;
-  atendentesAssociados: {
-    setor: string;
-    atendente: string;
-  }[];
+  empresa?: string;
+  tags?: string[];
+  observacoes?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface ExcluirContatoDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   contato: Contato | null;
-  onContatoExcluido: (id: number) => void;
+  onContatoExcluido: (id: string) => void;
 }
 
 export function ExcluirContatoDialog({ open, onOpenChange, contato, onContatoExcluido }: ExcluirContatoDialogProps) {

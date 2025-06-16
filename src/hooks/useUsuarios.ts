@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -50,7 +49,7 @@ export function useUsuarios() {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .insert([usuario])
+        .insert(usuario)
         .select()
         .single();
 
