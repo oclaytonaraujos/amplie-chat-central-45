@@ -42,33 +42,25 @@ export default function NovoUsuarioSuperAdminDialog({
     setLoading(true);
 
     try {
-      // Primeiro, criar o usuário na autenticação
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: formData.email,
-        password: 'temporaria123', // Senha temporária
-        email_confirm: true
-      });
-
-      if (authError) throw authError;
-
-      // Depois, criar o perfil
+      // Criar o usuário diretamente no profiles (sem criar na auth)
+      // Isso permite que super admins criem usuários que podem ser ativados posteriormente
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: authData.user.id,
+          id: crypto.randomUUID(), // Gerar um UUID temporário
           nome: formData.nome,
           email: formData.email,
           empresa_id: formData.empresa_id,
           cargo: formData.cargo,
           setor: formData.setor,
-          status: formData.status
+          status: 'pendente' // Status especial para usuários criados por admin
         });
 
       if (profileError) throw profileError;
 
       toast({
         title: "Sucesso",
-        description: "Usuário criado com sucesso",
+        description: "Usuário criado com sucesso. O usuário receberá um convite por email para ativar a conta.",
       });
 
       setFormData({
@@ -100,7 +92,7 @@ export default function NovoUsuarioSuperAdminDialog({
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="nome">Nome</Label>
+            <Label htmlFor="nome">Nome *</Label>
             <Input
               id="nome"
               value={formData.nome}
@@ -109,7 +101,7 @@ export default function NovoUsuarioSuperAdminDialog({
             />
           </div>
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">Email *</Label>
             <Input
               id="email"
               type="email"
@@ -119,7 +111,7 @@ export default function NovoUsuarioSuperAdminDialog({
             />
           </div>
           <div>
-            <Label htmlFor="empresa">Empresa</Label>
+            <Label htmlFor="empresa">Empresa *</Label>
             <Select
               value={formData.empresa_id}
               onValueChange={(value) => setFormData({ ...formData, empresa_id: value })}
@@ -137,7 +129,7 @@ export default function NovoUsuarioSuperAdminDialog({
             </Select>
           </div>
           <div>
-            <Label htmlFor="cargo">Cargo</Label>
+            <Label htmlFor="cargo">Cargo *</Label>
             <Select
               value={formData.cargo}
               onValueChange={(value) => setFormData({ ...formData, cargo: value })}
@@ -159,29 +151,14 @@ export default function NovoUsuarioSuperAdminDialog({
               id="setor"
               value={formData.setor}
               onChange={(e) => setFormData({ ...formData, setor: e.target.value })}
+              placeholder="Ex: Vendas, Suporte, Marketing"
             />
           </div>
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value) => setFormData({ ...formData, status: value })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="online">Online</SelectItem>
-                <SelectItem value="offline">Offline</SelectItem>
-                <SelectItem value="ausente">Ausente</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancelar
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !formData.empresa_id}>
               {loading ? 'Criando...' : 'Criar Usuário'}
             </Button>
           </div>

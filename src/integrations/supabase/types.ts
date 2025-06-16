@@ -131,6 +131,7 @@ export type Database = {
           limite_armazenamento_gb: number | null
           limite_contatos: number | null
           limite_usuarios: number | null
+          limite_whatsapp_conexoes: number | null
           nome: string
           plano_id: string | null
           telefone: string | null
@@ -146,6 +147,7 @@ export type Database = {
           limite_armazenamento_gb?: number | null
           limite_contatos?: number | null
           limite_usuarios?: number | null
+          limite_whatsapp_conexoes?: number | null
           nome: string
           plano_id?: string | null
           telefone?: string | null
@@ -161,6 +163,7 @@ export type Database = {
           limite_armazenamento_gb?: number | null
           limite_contatos?: number | null
           limite_usuarios?: number | null
+          limite_whatsapp_conexoes?: number | null
           nome?: string
           plano_id?: string | null
           telefone?: string | null
