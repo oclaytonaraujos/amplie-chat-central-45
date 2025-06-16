@@ -42,25 +42,33 @@ export default function NovoUsuarioSuperAdminDialog({
     setLoading(true);
 
     try {
-      // Criar o usuário diretamente no profiles (sem criar na auth)
-      // Isso permite que super admins criem usuários que podem ser ativados posteriormente
-      const { error: profileError } = await supabase
+      console.log('Criando usuário com dados:', formData);
+
+      // Inserir o usuário diretamente na tabela profiles
+      const { data, error } = await supabase
         .from('profiles')
         .insert({
-          id: crypto.randomUUID(), // Gerar um UUID temporário
+          id: crypto.randomUUID(),
           nome: formData.nome,
           email: formData.email,
           empresa_id: formData.empresa_id,
           cargo: formData.cargo,
           setor: formData.setor,
-          status: 'pendente' // Status especial para usuários criados por admin
-        });
+          status: formData.status
+        })
+        .select()
+        .single();
 
-      if (profileError) throw profileError;
+      if (error) {
+        console.error('Erro ao criar usuário:', error);
+        throw error;
+      }
+
+      console.log('Usuário criado com sucesso:', data);
 
       toast({
         title: "Sucesso",
-        description: "Usuário criado com sucesso. O usuário receberá um convite por email para ativar a conta.",
+        description: "Usuário criado com sucesso.",
       });
 
       setFormData({
@@ -72,11 +80,11 @@ export default function NovoUsuarioSuperAdminDialog({
         status: 'online'
       });
       onUsuarioCreated();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao criar usuário:', error);
       toast({
         title: "Erro",
-        description: "Erro ao criar usuário",
+        description: error.message || "Erro ao criar usuário",
         variant: "destructive",
       });
     } finally {

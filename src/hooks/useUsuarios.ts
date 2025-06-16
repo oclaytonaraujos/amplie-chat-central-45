@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
-import type { Database } from '@/integrations/supabase/types';
 
 export interface Usuario {
   id: string;
@@ -19,7 +18,13 @@ export interface Usuario {
   updated_at: string;
 }
 
-type NovoUsuario = Database['public']['Tables']['profiles']['Insert'];
+interface NovoUsuario {
+  nome: string;
+  email: string;
+  setor: string;
+  cargo: string;
+  status: string;
+}
 
 export function useUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
@@ -105,11 +110,13 @@ export function useUsuarios() {
 
   const criarUsuario = async (usuario: NovoUsuario) => {
     try {
+      console.log('Criando usuário:', usuario);
+      
       let empresaId;
       
-      if (isSuperAdmin && usuario.empresa_id) {
+      if (isSuperAdmin && 'empresa_id' in usuario) {
         // Super admin pode especificar a empresa
-        empresaId = usuario.empresa_id;
+        empresaId = (usuario as any).empresa_id;
       } else {
         // Usuário normal - usar sua própria empresa
         const { data: currentProfile } = await supabase
@@ -132,13 +139,19 @@ export function useUsuarios() {
       const { data, error } = await supabase
         .from('profiles')
         .insert({
-          ...usuario,
-          empresa_id: empresaId
+          id: crypto.randomUUID(),
+          nome: usuario.nome,
+          email: usuario.email,
+          empresa_id: empresaId,
+          cargo: usuario.cargo,
+          setor: usuario.setor,
+          status: usuario.status
         })
         .select()
         .single();
 
       if (error) {
+        console.error('Erro ao criar usuário:', error);
         toast({
           title: "Erro ao criar usuário",
           description: error.message,
@@ -147,6 +160,7 @@ export function useUsuarios() {
         return null;
       }
 
+      console.log('Usuário criado com sucesso:', data);
       setUsuarios(prev => [data, ...prev]);
       toast({
         title: "Usuário criado",
