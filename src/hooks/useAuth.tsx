@@ -111,6 +111,11 @@ const createUserProfile = async (user: User) => {
 };
 
 const createProfile = async (user: User, empresaId: string) => {
+  if (!user.email) {
+    console.error('Usuário sem email, não é possível criar perfil');
+    return;
+  }
+
   // Determinar se é o usuário admin
   const isAdmin = user.email === 'ampliemarketing.mkt@gmail.com';
   const isSuperAdmin = user.email === 'amplie-admin@ampliemarketing.com';
@@ -118,8 +123,8 @@ const createProfile = async (user: User, empresaId: string) => {
   // Criar o perfil do usuário
   const profileData = {
     id: user.id,
-    nome: isSuperAdmin ? 'Amplie Admin' : isAdmin ? 'Administrador' : user.email?.split('@')[0] || 'Usuário',
-    email: user.email || '',
+    nome: isSuperAdmin ? 'Amplie Admin' : isAdmin ? 'Administrador' : user.email.split('@')[0] || 'Usuário',
+    email: user.email,
     empresa_id: empresaId,
     cargo: isSuperAdmin ? 'super_admin' : isAdmin ? 'admin' : 'usuario',
     setor: isSuperAdmin || isAdmin ? 'Administração' : 'Geral',
