@@ -171,7 +171,7 @@ export function useUsuarios() {
       setUsuarios(prev => [data, ...prev]);
       toast({
         title: "Usuário criado",
-        description: `${usuario.nome} foi adicionado com sucesso. Senha padrão: 0000`,
+        description: `${usuario.nome} foi adicionado com sucesso. Senha: ${usuario.senha}`,
       });
       return data;
     } catch (error) {
