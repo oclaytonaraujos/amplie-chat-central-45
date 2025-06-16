@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -7,12 +6,13 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -102,11 +102,21 @@ export default function Auth() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-            <div className="bg-blue-600 p-3 rounded-full">
-              <MessageSquare className="h-8 w-8 text-white" />
+            <div className="bg-white p-3 rounded-full shadow-lg">
+              <img 
+                src="/lovable-uploads/69878f6a-055d-47cf-953a-4872955aa2e5.png" 
+                alt="Amplie Lion Icon" 
+                className="h-12 w-12 object-contain"
+              />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Amplie Chat</CardTitle>
+          <div className="flex justify-center mb-2">
+            <img 
+              src="/lovable-uploads/3b942df5-c321-4ec0-ac1e-6e82d2ee21d1.png" 
+              alt="Amplie Chat Logo" 
+              className="h-8 object-contain"
+            />
+          </div>
           <CardDescription>
             Faça login para acessar a plataforma
           </CardDescription>
@@ -126,13 +136,27 @@ export default function Auth() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-400" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-400" />
+                  )}
+                </button>
+              </div>
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? (
