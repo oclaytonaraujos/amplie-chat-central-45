@@ -17,6 +17,8 @@ export function useUserRole() {
       }
 
       try {
+        console.log('Buscando role para usuário:', user.email);
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('cargo')
@@ -27,7 +29,8 @@ export function useUserRole() {
           console.error('Erro ao buscar cargo do usuário:', error);
           setRole(null);
         } else {
-          setRole(data.cargo);
+          console.log('Cargo encontrado:', data?.cargo);
+          setRole(data?.cargo || null);
         }
       } catch (error) {
         console.error('Erro inesperado ao buscar cargo:', error);

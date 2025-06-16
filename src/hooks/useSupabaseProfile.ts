@@ -38,10 +38,9 @@ export function useSupabaseProfile() {
         if (error) {
           console.error('Erro ao buscar perfil:', error);
           
-          // Se o perfil não existe, vamos tentar criá-lo
+          // Se o perfil não existe, aguardar um pouco e tentar novamente
           if (error.code === 'PGRST116') {
             console.log('Perfil não encontrado, aguardando criação...');
-            // Aguardar um pouco e tentar novamente
             setTimeout(() => {
               fetchProfile();
             }, 2000);

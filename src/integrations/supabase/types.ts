@@ -520,6 +520,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_profile: {
+        Args: { profile_id: string }
+        Returns: boolean
+      }
       create_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -527,6 +531,10 @@ export type Database = {
       create_super_admin_profile: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      is_super_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       setup_admin_user: {
         Args: Record<PropertyKey, never>

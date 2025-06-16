@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserRole } from '@/hooks/useUserRole';
 import type { Database } from '@/integrations/supabase/types';
 
 export interface Usuario {
@@ -18,7 +19,6 @@ export interface Usuario {
   updated_at: string;
 }
 
-// Use Supabase's generated insert type for profiles table
 type NovoUsuario = Database['public']['Tables']['profiles']['Insert'];
 
 export function useUsuarios() {
@@ -26,42 +26,78 @@ export function useUsuarios() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { isSuperAdmin, loading: roleLoading } = useUserRole();
 
   const loadUsuarios = async () => {
     try {
       setLoading(true);
+      console.log('Carregando usuários...');
+      console.log('User:', user?.email);
+      console.log('IsSuperAdmin:', isSuperAdmin);
       
-      // Primeiro, obter a empresa_id do usuário atual
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('empresa_id')
-        .eq('id', user?.id)
-        .single();
+      if (isSuperAdmin) {
+        // Super admin pode ver todos os usuários
+        console.log('Carregando todos os usuários (super admin)');
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
 
-      if (!currentProfile?.empresa_id) {
-        console.error('Usuário não está associado a uma empresa');
-        return;
+        if (error) {
+          console.error('Erro ao carregar usuários (super admin):', error);
+          toast({
+            title: "Erro ao carregar usuários",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        console.log('Usuários carregados (super admin):', data?.length);
+        setUsuarios(data || []);
+      } else {
+        // Usuário normal - carrega apenas da sua empresa
+        console.log('Carregando usuários da empresa');
+        
+        // Primeiro, obter a empresa_id do usuário atual
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('empresa_id')
+          .eq('id', user?.id)
+          .single();
+
+        if (!currentProfile?.empresa_id) {
+          console.error('Usuário não está associado a uma empresa');
+          setUsuarios([]);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('empresa_id', currentProfile.empresa_id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Erro ao carregar usuários da empresa:', error);
+          toast({
+            title: "Erro ao carregar usuários",
+            description: error.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        console.log('Usuários da empresa carregados:', data?.length);
+        setUsuarios(data || []);
       }
-
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('empresa_id', currentProfile.empresa_id)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('Erro ao carregar usuários:', error);
-        toast({
-          title: "Erro ao carregar usuários",
-          description: error.message,
-          variant: "destructive",
-        });
-        return;
-      }
-
-      setUsuarios(data || []);
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao carregar usuários",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -69,27 +105,35 @@ export function useUsuarios() {
 
   const criarUsuario = async (usuario: NovoUsuario) => {
     try {
-      // Obter a empresa_id do usuário atual
-      const { data: currentProfile } = await supabase
-        .from('profiles')
-        .select('empresa_id')
-        .eq('id', user?.id)
-        .single();
+      let empresaId;
+      
+      if (isSuperAdmin && usuario.empresa_id) {
+        // Super admin pode especificar a empresa
+        empresaId = usuario.empresa_id;
+      } else {
+        // Usuário normal - usar sua própria empresa
+        const { data: currentProfile } = await supabase
+          .from('profiles')
+          .select('empresa_id')
+          .eq('id', user?.id)
+          .single();
 
-      if (!currentProfile?.empresa_id) {
-        toast({
-          title: "Erro",
-          description: "Usuário não está associado a uma empresa.",
-          variant: "destructive",
-        });
-        return null;
+        if (!currentProfile?.empresa_id) {
+          toast({
+            title: "Erro",
+            description: "Usuário não está associado a uma empresa.",
+            variant: "destructive",
+          });
+          return null;
+        }
+        empresaId = currentProfile.empresa_id;
       }
 
       const { data, error } = await supabase
         .from('profiles')
         .insert({
           ...usuario,
-          empresa_id: currentProfile.empresa_id
+          empresa_id: empresaId
         })
         .select()
         .single();
@@ -183,10 +227,10 @@ export function useUsuarios() {
   };
 
   useEffect(() => {
-    if (user) {
+    if (user && !roleLoading) {
       loadUsuarios();
     }
-  }, [user]);
+  }, [user, isSuperAdmin, roleLoading]);
 
   return {
     usuarios,

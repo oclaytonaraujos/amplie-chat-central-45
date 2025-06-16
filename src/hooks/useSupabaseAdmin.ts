@@ -90,6 +90,10 @@ export function useSupabaseAdmin() {
       });
 
       console.log('Dados administrativos carregados com sucesso');
+      console.log('Empresas:', empresas?.length);
+      console.log('Usuários:', usuarios?.length);
+      console.log('Planos:', planos?.length);
+      console.log('Conexões WhatsApp:', whatsappConnections?.length);
     } catch (error) {
       console.error('Erro ao carregar dados administrativos:', error);
       toast({
