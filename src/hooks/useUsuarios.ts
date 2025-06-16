@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import type { Database } from '@/integrations/supabase/types';
 
 export interface Usuario {
   id: string;
@@ -14,15 +15,8 @@ export interface Usuario {
   updated_at: string;
 }
 
-// Type for creating a new user (making id optional since it has a default value)
-interface NovoUsuario {
-  nome: string;
-  email: string;
-  setor?: string;
-  cargo?: string;
-  status: string;
-  avatar_url?: string;
-}
+// Use Supabase's generated insert type for profiles table
+type NovoUsuario = Database['public']['Tables']['profiles']['Insert'];
 
 export function useUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
