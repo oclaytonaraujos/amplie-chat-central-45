@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -139,47 +138,15 @@ export function useUsuarios() {
         empresaId = currentProfile.empresa_id;
       }
 
-      // Primeiro, criar o usuário no Supabase Auth
-      console.log('Criando usuário no Supabase Auth...');
-      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-        email: usuario.email,
-        password: usuario.senha,
-        email_confirm: true, // Auto-confirmar email para evitar problemas
-        user_metadata: {
-          nome: usuario.nome
-        }
-      });
+      // Gerar um ID único para o novo usuário
+      const novoId = crypto.randomUUID();
 
-      if (authError) {
-        console.error('Erro ao criar usuário no Auth:', authError);
-        
-        // Verificar se é erro de usuário já existente
-        if (authError.message.includes('already registered')) {
-          toast({
-            title: "Erro ao criar usuário",
-            description: "Este email já está cadastrado no sistema.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Erro ao criar usuário",
-            description: authError.message,
-            variant: "destructive",
-          });
-        }
-        return null;
-      }
-
-      console.log('Usuário criado no Auth:', authData.user?.id);
-
-      // Aguardar um pouco para garantir que o usuário foi criado
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Depois, criar o perfil do usuário
+      // Criar diretamente o perfil do usuário
+      console.log('Criando perfil do usuário...');
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: authData.user.id,
+          id: novoId,
           nome: usuario.nome,
           email: usuario.email,
           empresa_id: empresaId,
@@ -194,26 +161,27 @@ export function useUsuarios() {
       if (profileError) {
         console.error('Erro ao criar perfil:', profileError);
         
-        // Se falhou ao criar o perfil, tentar deletar o usuário do Auth
-        try {
-          await supabase.auth.admin.deleteUser(authData.user.id);
-        } catch (deleteError) {
-          console.error('Erro ao deletar usuário após falha no perfil:', deleteError);
+        if (profileError.code === '23505') {
+          toast({
+            title: "Erro ao criar usuário",
+            description: "Este email já está cadastrado no sistema.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro ao criar usuário",
+            description: profileError.message,
+            variant: "destructive",
+          });
         }
-        
-        toast({
-          title: "Erro ao criar perfil do usuário",
-          description: profileError.message,
-          variant: "destructive",
-        });
         return null;
       }
 
-      console.log('Usuário e perfil criados com sucesso:', profileData);
+      console.log('Usuário criado com sucesso:', profileData);
       setUsuarios(prev => [profileData, ...prev]);
       toast({
         title: "Usuário criado",
-        description: `${usuario.nome} foi adicionado com sucesso. Email: ${usuario.email}`,
+        description: `${usuario.nome} foi adicionado com sucesso. Senha temporária: ${usuario.senha}`,
       });
       return profileData;
     } catch (error) {
