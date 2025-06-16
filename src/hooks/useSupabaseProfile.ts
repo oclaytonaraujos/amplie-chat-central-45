@@ -27,6 +27,8 @@ export function useSupabaseProfile() {
       }
 
       try {
+        console.log('Buscando perfil para usuário:', user.email);
+        
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
@@ -35,12 +37,24 @@ export function useSupabaseProfile() {
 
         if (error) {
           console.error('Erro ao buscar perfil:', error);
+          
+          // Se o perfil não existe, vamos tentar criá-lo
+          if (error.code === 'PGRST116') {
+            console.log('Perfil não encontrado, aguardando criação...');
+            // Aguardar um pouco e tentar novamente
+            setTimeout(() => {
+              fetchProfile();
+            }, 2000);
+            return;
+          }
+          
           setProfile(null);
         } else {
+          console.log('Perfil encontrado:', data);
           setProfile(data);
         }
       } catch (error) {
-        console.error('Erro inesperado:', error);
+        console.error('Erro inesperado ao buscar perfil:', error);
         setProfile(null);
       } finally {
         setLoading(false);

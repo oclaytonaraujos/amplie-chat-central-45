@@ -17,13 +17,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Carregando...</p>
+          <p className="text-gray-600">Verificando autenticação...</p>
         </div>
       </div>
     );
   }
 
   if (!user) {
+    console.log('Usuário não autenticado, redirecionando para /auth');
     return <Navigate to="/auth" state={{ from: location }} replace />;
   }
 
