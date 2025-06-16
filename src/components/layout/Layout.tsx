@@ -65,7 +65,7 @@ export function Layout({ children, title, description, icon }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden transition-colors duration-300">
       {/* Mobile sidebar overlay with touch gestures */}
       {isMobile && (
         <div 
@@ -120,7 +120,7 @@ export function Layout({ children, title, description, icon }: LayoutProps) {
         
         {/* Main content with pull-to-refresh support */}
         <main 
-          className={`flex-1 transition-all duration-200 ease-out ${
+          className={`flex-1 transition-all duration-200 ease-out bg-gray-50 dark:bg-gray-900 ${
             isMobile 
               ? 'p-3 pt-20 pb-safe' 
               : 'p-4 md:p-6 pt-24 md:pt-28'
