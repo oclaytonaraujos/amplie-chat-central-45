@@ -14,6 +14,9 @@ export interface Usuario {
   updated_at: string;
 }
 
+// Type for creating a new user (without auto-generated fields)
+type NovoUsuario = Omit<Usuario, 'id' | 'created_at' | 'updated_at'>;
+
 export function useUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +48,7 @@ export function useUsuarios() {
     }
   };
 
-  const criarUsuario = async (usuario: Omit<Usuario, 'id' | 'created_at' | 'updated_at'>) => {
+  const criarUsuario = async (usuario: NovoUsuario) => {
     try {
       const { data, error } = await supabase
         .from('profiles')
