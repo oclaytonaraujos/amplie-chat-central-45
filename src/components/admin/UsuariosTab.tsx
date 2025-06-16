@@ -5,7 +5,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { Edit, Trash2, UserPlus } from 'lucide-react';
+import NovoUsuarioSuperAdminDialog from './NovoUsuarioSuperAdminDialog';
+import EditarUsuarioSuperAdminDialog from './EditarUsuarioSuperAdminDialog';
+import ExcluirUsuarioSuperAdminDialog from './ExcluirUsuarioSuperAdminDialog';
 
 interface Usuario {
   id: string;
@@ -25,7 +30,13 @@ export default function UsuariosTab() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [filtroEmpresa, setFiltroEmpresa] = useState('');
+  const [filtroCargo, setFiltroCargo] = useState('');
+  const [busca, setBusca] = useState('');
   const [empresas, setEmpresas] = useState<{id: string, nome: string}[]>([]);
+  const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
+  const [novoUsuarioOpen, setNovoUsuarioOpen] = useState(false);
+  const [editarUsuarioOpen, setEditarUsuarioOpen] = useState(false);
+  const [excluirUsuarioOpen, setExcluirUsuarioOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -72,6 +83,23 @@ export default function UsuariosTab() {
     }
   };
 
+  const handleUsuarioCreated = () => {
+    fetchUsuarios();
+    setNovoUsuarioOpen(false);
+  };
+
+  const handleUsuarioUpdated = () => {
+    fetchUsuarios();
+    setEditarUsuarioOpen(false);
+    setSelectedUsuario(null);
+  };
+
+  const handleUsuarioDeleted = () => {
+    fetchUsuarios();
+    setExcluirUsuarioOpen(false);
+    setSelectedUsuario(null);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusMap = {
       'online': { variant: 'default' as const, label: 'Online' },
@@ -105,9 +133,15 @@ export default function UsuariosTab() {
     );
   };
 
-  const usuariosFiltrados = filtroEmpresa 
-    ? usuarios.filter(usuario => usuario.empresa_id === filtroEmpresa)
-    : usuarios;
+  const usuariosFiltrados = usuarios.filter(usuario => {
+    const matchEmpresa = !filtroEmpresa || usuario.empresa_id === filtroEmpresa;
+    const matchCargo = !filtroCargo || usuario.cargo === filtroCargo;
+    const matchBusca = !busca || 
+      usuario.nome.toLowerCase().includes(busca.toLowerCase()) ||
+      usuario.email.toLowerCase().includes(busca.toLowerCase());
+    
+    return matchEmpresa && matchCargo && matchBusca;
+  });
 
   if (loading) {
     return <div className="text-center">Carregando usuários...</div>;
@@ -117,21 +151,45 @@ export default function UsuariosTab() {
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Usuários do Sistema</h3>
-        <div className="flex items-center gap-4">
-          <Select value={filtroEmpresa} onValueChange={setFiltroEmpresa}>
-            <SelectTrigger className="w-64">
-              <SelectValue placeholder="Filtrar por empresa" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">Todas as empresas</SelectItem>
-              {empresas.map((empresa) => (
-                <SelectItem key={empresa.id} value={empresa.id}>
-                  {empresa.nome}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        <Button onClick={() => setNovoUsuarioOpen(true)}>
+          <UserPlus className="h-4 w-4 mr-2" />
+          Novo Usuário
+        </Button>
+      </div>
+
+      {/* Filtros */}
+      <div className="flex gap-4 items-center">
+        <Input
+          placeholder="Buscar por nome ou email..."
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          className="max-w-sm"
+        />
+        <Select value={filtroEmpresa} onValueChange={setFiltroEmpresa}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filtrar por empresa" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Todas as empresas</SelectItem>
+            {empresas.map((empresa) => (
+              <SelectItem key={empresa.id} value={empresa.id}>
+                {empresa.nome}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={filtroCargo} onValueChange={setFiltroCargo}>
+          <SelectTrigger className="w-48">
+            <SelectValue placeholder="Filtrar por cargo" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="">Todos os cargos</SelectItem>
+            <SelectItem value="super_admin">Super Admin</SelectItem>
+            <SelectItem value="admin">Administrador</SelectItem>
+            <SelectItem value="agente">Agente</SelectItem>
+            <SelectItem value="usuario">Usuário</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="border rounded-lg">
@@ -145,12 +203,13 @@ export default function UsuariosTab() {
               <TableHead>Setor</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Data Cadastro</TableHead>
+              <TableHead>Ações</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {usuariosFiltrados.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center text-gray-500 py-8">
+                <TableCell colSpan={8} className="text-center text-gray-500 py-8">
                   Nenhum usuário encontrado
                 </TableCell>
               </TableRow>
@@ -166,12 +225,63 @@ export default function UsuariosTab() {
                   <TableCell>
                     {new Date(usuario.created_at).toLocaleDateString('pt-BR')}
                   </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedUsuario(usuario);
+                          setEditarUsuarioOpen(true);
+                        }}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedUsuario(usuario);
+                          setExcluirUsuarioOpen(true);
+                        }}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
               ))
             )}
           </TableBody>
         </Table>
       </div>
+
+      {/* Dialogs */}
+      <NovoUsuarioSuperAdminDialog
+        open={novoUsuarioOpen}
+        onOpenChange={setNovoUsuarioOpen}
+        onUsuarioCreated={handleUsuarioCreated}
+        empresas={empresas}
+      />
+
+      {selectedUsuario && (
+        <>
+          <EditarUsuarioSuperAdminDialog
+            open={editarUsuarioOpen}
+            onOpenChange={setEditarUsuarioOpen}
+            usuario={selectedUsuario}
+            onUsuarioUpdated={handleUsuarioUpdated}
+            empresas={empresas}
+          />
+          <ExcluirUsuarioSuperAdminDialog
+            open={excluirUsuarioOpen}
+            onOpenChange={setExcluirUsuarioOpen}
+            usuario={selectedUsuario}
+            onUsuarioDeleted={handleUsuarioDeleted}
+          />
+        </>
+      )}
     </div>
   );
 }

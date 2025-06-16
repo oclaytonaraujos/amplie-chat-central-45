@@ -4,11 +4,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building2, Users, Settings, Smartphone } from 'lucide-react';
+import { Building2, Users, Settings, Smartphone, BarChart3 } from 'lucide-react';
 import EmpresasTab from '@/components/admin/EmpresasTab';
 import PlanosTab from '@/components/admin/PlanosTab';
 import WhatsAppTab from '@/components/admin/WhatsAppTab';
 import UsuariosTab from '@/components/admin/UsuariosTab';
+import RelatoriosEstatisticasCard from '@/components/admin/RelatoriosEstatisticasCard';
 import { useSupabaseProfile } from '@/hooks/useSupabaseProfile';
 
 export default function SuperAdmin() {
@@ -38,8 +39,13 @@ export default function SuperAdmin() {
           <p className="text-gray-600 mt-2">Gerencie todas as empresas, usuários e configurações da plataforma</p>
         </div>
 
+        {/* Estatísticas gerais */}
+        <div className="mb-8">
+          <RelatoriosEstatisticasCard />
+        </div>
+
         <Tabs defaultValue="empresas" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="empresas" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Empresas
@@ -55,6 +61,10 @@ export default function SuperAdmin() {
             <TabsTrigger value="whatsapp" className="flex items-center gap-2">
               <Smartphone className="h-4 w-4" />
               WhatsApp
+            </TabsTrigger>
+            <TabsTrigger value="relatorios" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Relatórios
             </TabsTrigger>
           </TabsList>
 
@@ -110,6 +120,22 @@ export default function SuperAdmin() {
               </CardHeader>
               <CardContent>
                 <WhatsAppTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="relatorios">
+            <Card>
+              <CardHeader>
+                <CardTitle>Relatórios e Análises</CardTitle>
+                <CardDescription>
+                  Visualize relatórios detalhados da plataforma
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8">
+                  <p className="text-gray-500">Relatórios detalhados em desenvolvimento</p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
