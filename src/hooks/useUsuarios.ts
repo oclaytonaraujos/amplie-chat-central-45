@@ -136,10 +136,13 @@ export function useUsuarios() {
         empresaId = currentProfile.empresa_id;
       }
 
+      // Gerar um ID único para o novo usuário
+      const novoId = crypto.randomUUID();
+
       const { data, error } = await supabase
         .from('profiles')
         .insert({
-          id: crypto.randomUUID(),
+          id: novoId,
           nome: usuario.nome,
           email: usuario.email,
           empresa_id: empresaId,
@@ -169,6 +172,11 @@ export function useUsuarios() {
       return data;
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao criar usuário",
+        variant: "destructive",
+      });
       return null;
     }
   };

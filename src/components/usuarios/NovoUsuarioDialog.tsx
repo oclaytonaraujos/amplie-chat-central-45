@@ -21,7 +21,6 @@ interface NovoUsuarioDialogProps {
 }
 
 const setoresDisponiveis = ['Vendas', 'Suporte', 'Marketing', 'Financeiro', 'RH'];
-const cargosDisponiveis = ['usuario', 'agente', 'admin'];
 
 export function NovoUsuarioDialog({ open, onOpenChange, onUsuarioAdicionado }: NovoUsuarioDialogProps) {
   const [formData, setFormData] = useState({
@@ -108,6 +107,7 @@ export function NovoUsuarioDialog({ open, onOpenChange, onUsuarioAdicionado }: N
               <SelectContent>
                 <SelectItem value="usuario">Usuário</SelectItem>
                 <SelectItem value="agente">Agente</SelectItem>
+                <SelectItem value="supervisor">Supervisor</SelectItem>
                 <SelectItem value="admin">Administrador</SelectItem>
               </SelectContent>
             </Select>
