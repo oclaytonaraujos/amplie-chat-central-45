@@ -105,8 +105,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const applyTheme = () => {
     const root = document.documentElement;
     
-    // Apply theme - sempre light
-    root.classList.remove('dark');
+    // Apply theme - agora suporta dark mode
+    if (themeSettings.theme === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
 
     // Apply color scheme
     root.setAttribute('data-color-scheme', themeSettings.colorScheme);
@@ -125,7 +129,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.toggle('reduced-motion', accessibilitySettings.reducedMotion);
     root.classList.toggle('no-animations', !themeSettings.animations || accessibilitySettings.reducedMotion);
 
-    console.log('Tema aplicado (sempre claro):', { themeSettings, layoutSettings, accessibilitySettings });
+    console.log('Tema aplicado:', { themeSettings, layoutSettings, accessibilitySettings });
   };
 
   useEffect(() => {

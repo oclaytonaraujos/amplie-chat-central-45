@@ -1,5 +1,5 @@
 
-import { Monitor, Palette, Eye, Settings } from 'lucide-react';
+import { Monitor, Palette, Eye, Settings, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -50,8 +50,8 @@ export default function Aparencia() {
     <div className="p-6 space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Aparência</h1>
-          <p className="text-gray-500">Personalize a aparência e o layout da interface</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Aparência</h1>
+          <p className="text-gray-500 dark:text-gray-400">Personalize a aparência e o layout da interface</p>
         </div>
         <Button 
           onClick={handleSave}
@@ -62,6 +62,44 @@ export default function Aparencia() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Modo Noturno */}
+        <Card className="p-6 lg:col-span-2">
+          <h3 className="text-lg font-semibold mb-4 flex items-center">
+            <Monitor className="w-5 h-5 mr-2 text-amplie-primary" />
+            Modo de Exibição
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => updateThemeSettings({ theme: 'light' })}
+              className={`p-4 rounded-lg border-2 transition-all flex items-center space-x-3 ${
+                themeSettings.theme === 'light'
+                  ? 'border-amplie-primary bg-amplie-primary/10'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+            >
+              <Sun className="w-5 h-5 text-yellow-500" />
+              <div className="text-left">
+                <div className="font-medium">Modo Claro</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Interface com fundo claro</div>
+              </div>
+            </button>
+            <button
+              onClick={() => updateThemeSettings({ theme: 'dark' })}
+              className={`p-4 rounded-lg border-2 transition-all flex items-center space-x-3 ${
+                themeSettings.theme === 'dark'
+                  ? 'border-amplie-primary bg-amplie-primary/10'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+              }`}
+            >
+              <Moon className="w-5 h-5 text-blue-500" />
+              <div className="text-left">
+                <div className="font-medium">Modo Noturno</div>
+                <div className="text-sm text-gray-500 dark:text-gray-400">Interface com fundo escuro</div>
+              </div>
+            </button>
+          </div>
+        </Card>
+
         {/* Esquema de Cores */}
         <Card className="p-6">
           <h3 className="text-lg font-semibold mb-4 flex items-center">
@@ -76,7 +114,7 @@ export default function Aparencia() {
                 className={`p-3 rounded-lg border-2 transition-all flex items-center space-x-3 ${
                   themeSettings.colorScheme === scheme.id
                     ? 'border-amplie-primary bg-amplie-primary/10'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 <div className={`w-4 h-4 rounded-full ${scheme.color}`}></div>
@@ -101,7 +139,7 @@ export default function Aparencia() {
                 className={`w-full p-3 text-left rounded-lg border-2 transition-all ${
                   themeSettings.fontSize === size.id
                     ? 'border-amplie-primary bg-amplie-primary/10'
-                    : 'border-gray-200 hover:border-gray-300'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 <span className={`font-medium ${
@@ -132,7 +170,7 @@ export default function Aparencia() {
                     className={`w-full p-2 text-left rounded border transition-all ${
                       layoutSettings.densityMode === mode.id
                         ? 'border-amplie-primary bg-amplie-primary/10'
-                        : 'border-gray-200 hover:border-gray-300'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
                     }`}
                   >
                     <span className="text-sm font-medium">{mode.name}</span>
@@ -143,7 +181,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Modo Compacto</Label>
-                <p className="text-sm text-gray-500">Reduzir espaçamento geral</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Reduzir espaçamento geral</p>
               </div>
               <Switch
                 checked={themeSettings.compactMode}
@@ -153,7 +191,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Mostrar Avatares</Label>
-                <p className="text-sm text-gray-500">Exibir fotos de perfil</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Exibir fotos de perfil</p>
               </div>
               <Switch
                 checked={layoutSettings.showAvatars}
@@ -163,7 +201,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Mostrar Timestamps</Label>
-                <p className="text-sm text-gray-500">Exibir horários das mensagens</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Exibir horários das mensagens</p>
               </div>
               <Switch
                 checked={layoutSettings.showTimestamps}
@@ -183,7 +221,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Animações</Label>
-                <p className="text-sm text-gray-500">Habilitar animações de interface</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Habilitar animações de interface</p>
               </div>
               <Switch
                 checked={themeSettings.animations}
@@ -203,7 +241,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Alto Contraste</Label>
-                <p className="text-sm text-gray-500">Aumentar contraste para melhor visibilidade</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Aumentar contraste para melhor visibilidade</p>
               </div>
               <Switch
                 checked={accessibilitySettings.highContrast}
@@ -213,7 +251,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Movimento Reduzido</Label>
-                <p className="text-sm text-gray-500">Reduzir animações e transições</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Reduzir animações e transições</p>
               </div>
               <Switch
                 checked={accessibilitySettings.reducedMotion}
@@ -223,7 +261,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Suporte a Leitor de Tela</Label>
-                <p className="text-sm text-gray-500">Otimizar para leitores de tela</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Otimizar para leitores de tela</p>
               </div>
               <Switch
                 checked={accessibilitySettings.screenReader}
@@ -233,7 +271,7 @@ export default function Aparencia() {
             <div className="flex items-center justify-between">
               <div>
                 <Label className="font-medium">Navegação por Teclado</Label>
-                <p className="text-sm text-gray-500">Habilitar navegação completa por teclado</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Habilitar navegação completa por teclado</p>
               </div>
               <Switch
                 checked={accessibilitySettings.keyboardNavigation}

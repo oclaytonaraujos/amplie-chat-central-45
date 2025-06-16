@@ -65,7 +65,7 @@ export function Layout({ children, title, description, icon }: LayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex overflow-hidden transition-colors duration-300">
       {/* Mobile sidebar overlay with touch gestures */}
       {isMobile && (
         <div 
