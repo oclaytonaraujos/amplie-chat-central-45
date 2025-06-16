@@ -29,8 +29,8 @@ interface Usuario {
 export default function UsuariosTab() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filtroEmpresa, setFiltroEmpresa] = useState('');
-  const [filtroCargo, setFiltroCargo] = useState('');
+  const [filtroEmpresa, setFiltroEmpresa] = useState('all');
+  const [filtroCargo, setFiltroCargo] = useState('all');
   const [busca, setBusca] = useState('');
   const [empresas, setEmpresas] = useState<{id: string, nome: string}[]>([]);
   const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
@@ -134,8 +134,8 @@ export default function UsuariosTab() {
   };
 
   const usuariosFiltrados = usuarios.filter(usuario => {
-    const matchEmpresa = !filtroEmpresa || usuario.empresa_id === filtroEmpresa;
-    const matchCargo = !filtroCargo || usuario.cargo === filtroCargo;
+    const matchEmpresa = filtroEmpresa === 'all' || usuario.empresa_id === filtroEmpresa;
+    const matchCargo = filtroCargo === 'all' || usuario.cargo === filtroCargo;
     const matchBusca = !busca || 
       usuario.nome.toLowerCase().includes(busca.toLowerCase()) ||
       usuario.email.toLowerCase().includes(busca.toLowerCase());
@@ -170,7 +170,7 @@ export default function UsuariosTab() {
             <SelectValue placeholder="Filtrar por empresa" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todas as empresas</SelectItem>
+            <SelectItem value="all">Todas as empresas</SelectItem>
             {empresas.map((empresa) => (
               <SelectItem key={empresa.id} value={empresa.id}>
                 {empresa.nome}
@@ -183,7 +183,7 @@ export default function UsuariosTab() {
             <SelectValue placeholder="Filtrar por cargo" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos os cargos</SelectItem>
+            <SelectItem value="all">Todos os cargos</SelectItem>
             <SelectItem value="super_admin">Super Admin</SelectItem>
             <SelectItem value="admin">Administrador</SelectItem>
             <SelectItem value="agente">Agente</SelectItem>
