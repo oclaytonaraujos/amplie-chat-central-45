@@ -521,6 +521,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      create_super_admin_profile: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       setup_admin_user: {
         Args: Record<PropertyKey, never>
         Returns: undefined
