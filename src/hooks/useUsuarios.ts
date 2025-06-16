@@ -139,13 +139,47 @@ export function useUsuarios() {
         empresaId = currentProfile.empresa_id;
       }
 
-      // Gerar um ID único para o novo usuário
-      const novoId = crypto.randomUUID();
+      // Primeiro, criar o usuário no Supabase Auth
+      console.log('Criando usuário no Supabase Auth...');
+      const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+        email: usuario.email,
+        password: usuario.senha,
+        email_confirm: true, // Auto-confirmar email para evitar problemas
+        user_metadata: {
+          nome: usuario.nome
+        }
+      });
 
-      const { data, error } = await supabase
+      if (authError) {
+        console.error('Erro ao criar usuário no Auth:', authError);
+        
+        // Verificar se é erro de usuário já existente
+        if (authError.message.includes('already registered')) {
+          toast({
+            title: "Erro ao criar usuário",
+            description: "Este email já está cadastrado no sistema.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Erro ao criar usuário",
+            description: authError.message,
+            variant: "destructive",
+          });
+        }
+        return null;
+      }
+
+      console.log('Usuário criado no Auth:', authData.user?.id);
+
+      // Aguardar um pouco para garantir que o usuário foi criado
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Depois, criar o perfil do usuário
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .insert({
-          id: novoId,
+          id: authData.user.id,
           nome: usuario.nome,
           email: usuario.email,
           empresa_id: empresaId,
@@ -157,23 +191,31 @@ export function useUsuarios() {
         .select()
         .single();
 
-      if (error) {
-        console.error('Erro ao criar usuário:', error);
+      if (profileError) {
+        console.error('Erro ao criar perfil:', profileError);
+        
+        // Se falhou ao criar o perfil, tentar deletar o usuário do Auth
+        try {
+          await supabase.auth.admin.deleteUser(authData.user.id);
+        } catch (deleteError) {
+          console.error('Erro ao deletar usuário após falha no perfil:', deleteError);
+        }
+        
         toast({
-          title: "Erro ao criar usuário",
-          description: error.message,
+          title: "Erro ao criar perfil do usuário",
+          description: profileError.message,
           variant: "destructive",
         });
         return null;
       }
 
-      console.log('Usuário criado com sucesso:', data);
-      setUsuarios(prev => [data, ...prev]);
+      console.log('Usuário e perfil criados com sucesso:', profileData);
+      setUsuarios(prev => [profileData, ...prev]);
       toast({
         title: "Usuário criado",
-        description: `${usuario.nome} foi adicionado com sucesso. Senha: ${usuario.senha}`,
+        description: `${usuario.nome} foi adicionado com sucesso. Email: ${usuario.email}`,
       });
-      return data;
+      return profileData;
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
       toast({
