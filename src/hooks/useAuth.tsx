@@ -28,7 +28,7 @@ export const useAuth = () => {
 // Função para criar perfil do usuário quando necessário
 const createUserProfile = async (user: User) => {
   try {
-    console.log('Iniciando criação de perfil para:', user.email);
+    console.log('Verificando perfil para:', user.email);
     
     // Verificar se o perfil já existe
     const { data: existingProfile, error: profileError } = await supabase
@@ -47,7 +47,11 @@ const createUserProfile = async (user: User) => {
       return;
     }
 
-    // Buscar a empresa Amplie Marketing
+    // Se chegou aqui, o perfil não existe e precisa ser criado
+    // Isso pode acontecer se o usuário foi criado diretamente no Auth
+    console.log('Criando perfil para usuário existente...');
+
+    // Buscar a empresa Amplie Marketing como padrão
     const { data: empresa, error: empresaError } = await supabase
       .from('empresas')
       .select('id')
@@ -56,66 +60,45 @@ const createUserProfile = async (user: User) => {
 
     if (empresaError) {
       console.error('Erro ao buscar empresa:', empresaError);
-      // Se não encontrar a empresa, vamos criar uma empresa padrão
-      const { data: novaEmpresa, error: criarEmpresaError } = await supabase
-        .from('empresas')
-        .insert({
-          nome: 'Amplie Marketing',
-          email: 'ampliemarketing.mkt@gmail.com'
-        })
-        .select()
-        .single();
+      return;
+    }
 
-      if (criarEmpresaError) {
-        console.error('Erro ao criar empresa:', criarEmpresaError);
-        return;
-      }
-      
-      console.log('Empresa criada:', novaEmpresa);
-      
-      // Usar a nova empresa
-      await createProfile(user, novaEmpresa.id);
+    // Verificar se é o usuário super admin
+    const userEmail = user.email;
+    if (!userEmail) {
+      console.error('Usuário sem email, não é possível criar perfil');
+      return;
+    }
+
+    const isSuperAdmin = userEmail === 'ampliemarketing.mkt@gmail.com';
+    
+    // Usar dados do user_metadata se disponível
+    const userData = user.user_metadata || {};
+    
+    const profileData = {
+      id: user.id,
+      nome: userData.nome || (isSuperAdmin ? 'Super Admin' : userEmail.split('@')[0] || 'Usuário'),
+      email: userEmail,
+      empresa_id: userData.empresa_id || empresa.id,
+      cargo: userData.cargo || (isSuperAdmin ? 'super_admin' : 'usuario'),
+      setor: userData.setor || (isSuperAdmin ? 'Administração' : 'Geral'),
+      status: userData.status || 'online',
+      permissoes: userData.permissoes || []
+    };
+
+    console.log('Criando perfil com dados:', profileData);
+
+    const { error } = await supabase
+      .from('profiles')
+      .insert(profileData);
+
+    if (error) {
+      console.error('Erro ao criar perfil:', error);
     } else {
-      console.log('Empresa encontrada:', empresa);
-      await createProfile(user, empresa.id);
+      console.log('Perfil criado com sucesso para:', userEmail);
     }
   } catch (error) {
     console.error('Erro geral ao processar criação de perfil:', error);
-  }
-};
-
-const createProfile = async (user: User, empresaId: string) => {
-  // Verificação mais robusta do email
-  const userEmail = user.email;
-  if (!userEmail) {
-    console.error('Usuário sem email, não é possível criar perfil');
-    return;
-  }
-
-  // Determinar se é o usuário super admin - agora usando o email correto
-  const isSuperAdmin = userEmail === 'ampliemarketing.mkt@gmail.com';
-  
-  // Criar o perfil do usuário
-  const profileData = {
-    id: user.id,
-    nome: isSuperAdmin ? 'Super Admin' : userEmail.split('@')[0] || 'Usuário',
-    email: userEmail,
-    empresa_id: empresaId,
-    cargo: isSuperAdmin ? 'super_admin' : 'usuario',
-    setor: isSuperAdmin ? 'Administração' : 'Geral',
-    status: 'online'
-  };
-
-  console.log('Criando perfil com dados:', profileData);
-
-  const { error } = await supabase
-    .from('profiles')
-    .insert(profileData);
-
-  if (error) {
-    console.error('Erro ao criar perfil:', error);
-  } else {
-    console.log('Perfil criado com sucesso para:', userEmail);
   }
 };
 
@@ -134,7 +117,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Se o usuário acabou de fazer login, criar perfil se necessário
+        // Se o usuário acabou de fazer login, verificar/criar perfil se necessário
         if (event === 'SIGNED_IN' && session?.user) {
           console.log('Usuário fez login, verificando perfil...');
           setTimeout(() => {
