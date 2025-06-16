@@ -36,7 +36,6 @@ interface ThemeContextType {
   updateLayoutSettings: (settings: Partial<LayoutSettings>) => void;
   updateAccessibilitySettings: (settings: Partial<AccessibilitySettings>) => void;
   applyTheme: () => void;
-  toggleDarkMode: () => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -103,21 +102,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
-  const toggleDarkMode = () => {
-    updateThemeSettings({
-      theme: themeSettings.theme === 'light' ? 'dark' : 'light'
-    });
-  };
-
   const applyTheme = () => {
     const root = document.documentElement;
     
-    // Apply theme - agora suporta dark mode
-    if (themeSettings.theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    // Apply theme - sempre light
+    root.classList.remove('dark');
 
     // Apply color scheme
     root.setAttribute('data-color-scheme', themeSettings.colorScheme);
@@ -136,7 +125,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.classList.toggle('reduced-motion', accessibilitySettings.reducedMotion);
     root.classList.toggle('no-animations', !themeSettings.animations || accessibilitySettings.reducedMotion);
 
-    console.log('Tema aplicado:', { themeSettings, layoutSettings, accessibilitySettings });
+    console.log('Tema aplicado (sempre claro):', { themeSettings, layoutSettings, accessibilitySettings });
   };
 
   useEffect(() => {
@@ -151,8 +140,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       updateThemeSettings,
       updateLayoutSettings,
       updateAccessibilitySettings,
-      applyTheme,
-      toggleDarkMode
+      applyTheme
     }}>
       {children}
     </ThemeContext.Provider>
