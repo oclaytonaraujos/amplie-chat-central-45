@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -183,6 +182,8 @@ export function useUsuarios() {
 
   const editarUsuario = async (usuario: Usuario) => {
     try {
+      console.log('Editando usuário:', usuario);
+      
       const { data, error } = await supabase
         .from('profiles')
         .update({
@@ -198,6 +199,7 @@ export function useUsuarios() {
         .single();
 
       if (error) {
+        console.error('Erro ao editar usuário:', error);
         toast({
           title: "Erro ao editar usuário",
           description: error.message,
@@ -206,6 +208,7 @@ export function useUsuarios() {
         return false;
       }
 
+      console.log('Usuário editado com sucesso:', data);
       setUsuarios(prev => prev.map(u => u.id === usuario.id ? data : u));
       toast({
         title: "Usuário atualizado",
@@ -214,6 +217,11 @@ export function useUsuarios() {
       return true;
     } catch (error) {
       console.error('Erro ao editar usuário:', error);
+      toast({
+        title: "Erro",
+        description: "Erro inesperado ao editar usuário",
+        variant: "destructive",
+      });
       return false;
     }
   };
