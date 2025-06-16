@@ -4,16 +4,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
 interface RedefinirSenhaDialogProps {
   open: boolean;
   onSenhaRedefinida: () => void;
+  onClose?: () => void;
 }
 
-export function RedefinirSenhaDialog({ open, onSenhaRedefinida }: RedefinirSenhaDialogProps) {
+export function RedefinirSenhaDialog({ open, onSenhaRedefinida, onClose }: RedefinirSenhaDialogProps) {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -79,16 +80,35 @@ export function RedefinirSenhaDialog({ open, onSenhaRedefinida }: RedefinirSenha
     }
   };
 
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md" hideCloseButton>
+    <Dialog open={open} onOpenChange={onClose ? () => onClose() : undefined}>
+      <DialogContent className="max-w-md">
+        {onClose && (
+          <button
+            onClick={handleClose}
+            className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">Fechar</span>
+          </button>
+        )}
+        
         <DialogHeader>
           <DialogTitle>Redefinir Senha</DialogTitle>
         </DialogHeader>
         
         <div className="mb-4">
           <p className="text-sm text-gray-600">
-            Por segurança, é necessário redefinir sua senha de primeiro acesso.
+            {onClose 
+              ? "Defina uma nova senha para sua conta."
+              : "Por segurança, é necessário redefinir sua senha de primeiro acesso."
+            }
           </p>
         </div>
 
@@ -100,7 +120,7 @@ export function RedefinirSenhaDialog({ open, onSenhaRedefinida }: RedefinirSenha
               type="password"
               value={senhaAtual}
               onChange={(e) => setSenhaAtual(e.target.value)}
-              placeholder="Digite sua senha atual (0000)"
+              placeholder="Digite sua senha atual"
               required
             />
           </div>
@@ -160,10 +180,20 @@ export function RedefinirSenhaDialog({ open, onSenhaRedefinida }: RedefinirSenha
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
+            {onClose && (
+              <Button 
+                type="button" 
+                variant="outline"
+                onClick={handleClose}
+                disabled={loading}
+              >
+                Cancelar
+              </Button>
+            )}
             <Button 
               type="submit" 
               disabled={loading || !senhaAtual || !novaSenha || !confirmarSenha}
-              className="w-full"
+              className={onClose ? "" : "w-full"}
             >
               {loading ? 'Redefinindo...' : 'Redefinir Senha'}
             </Button>

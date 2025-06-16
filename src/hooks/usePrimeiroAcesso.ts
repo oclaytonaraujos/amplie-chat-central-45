@@ -60,9 +60,14 @@ export function usePrimeiroAcesso() {
     }
   };
 
+  const pularRedefinicao = () => {
+    setIsPrimeiroAcesso(false);
+  };
+
   return {
     isPrimeiroAcesso,
     loading,
-    marcarSenhaRedefinida
+    marcarSenhaRedefinida,
+    pularRedefinicao
   };
 }

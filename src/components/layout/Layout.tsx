@@ -13,7 +13,7 @@ interface LayoutProps {
 
 export function Layout({ children, title, description }: LayoutProps) {
   const { user, loading: authLoading } = useAuth();
-  const { isPrimeiroAcesso, loading: primeiroAcessoLoading, marcarSenhaRedefinida } = usePrimeiroAcesso();
+  const { isPrimeiroAcesso, loading: primeiroAcessoLoading, marcarSenhaRedefinida, pularRedefinicao } = usePrimeiroAcesso();
 
   if (authLoading || primeiroAcessoLoading) {
     return (
@@ -31,7 +31,7 @@ export function Layout({ children, title, description }: LayoutProps) {
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
       <div className="lg:pl-72">
-        <Header />
+        <Header title={title} />
         <main className="py-10">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="mb-8">
@@ -48,6 +48,7 @@ export function Layout({ children, title, description }: LayoutProps) {
       <RedefinirSenhaDialog
         open={isPrimeiroAcesso}
         onSenhaRedefinida={marcarSenhaRedefinida}
+        onClose={pularRedefinicao}
       />
     </div>
   );
