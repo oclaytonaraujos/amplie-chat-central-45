@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { UserCheck, Search, Filter, Eye, MessageSquare, Edit, Trash2, Plus, Tag, Phone, Mail, Clock, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,12 +26,12 @@ export default function Contatos() {
     status: '',
     tag: ''
   });
-  const [contatoSelecionado, setContatoSelecionado: any] = useState(null);
+  const [contatoSelecionado, setContatoSelecionado] = useState<any>(null);
   const [showNovoContato, setShowNovoContato] = useState(false);
   const [editarContatoOpen, setEditarContatoOpen] = useState(false);
   const [excluirContatoOpen, setExcluirContatoOpen] = useState(false);
-  const [contatoParaEdicao, setContatoParaEdicao: any] = useState(null);
-  const [contatoParaExclusao, setContatoParaExclusao: any] = useState(null);
+  const [contatoParaEdicao, setContatoParaEdicao] = useState<any>(null);
+  const [contatoParaExclusao, setContatoParaExclusao] = useState<any>(null);
   const { toast } = useToast();
 
   // Filtrar contatos baseado nos critérios
@@ -229,7 +230,18 @@ export default function Contatos() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {contatosFiltrados.map(contato => (
+              {contatos.filter(contato => {
+                // Filtro de pesquisa
+                if (pesquisa) {
+                  const termoPesquisa = pesquisa.toLowerCase();
+                  if (!contato.nome.toLowerCase().includes(termoPesquisa) && 
+                      !contato.telefone?.includes(termoPesquisa) && 
+                      !contato.email?.toLowerCase().includes(termoPesquisa)) {
+                    return false;
+                  }
+                }
+                return true;
+              }).map(contato => (
                 <TableRow key={contato.id} className="cursor-pointer hover:bg-muted/50" onClick={() => abrirCadastroContato(contato)}>
                   <TableCell>
                     <div>
@@ -290,7 +302,17 @@ export default function Contatos() {
             </TableBody>
           </Table>
 
-          {contatosFiltrados.length === 0 && (
+          {contatos.filter(contato => {
+            if (pesquisa) {
+              const termoPesquisa = pesquisa.toLowerCase();
+              if (!contato.nome.toLowerCase().includes(termoPesquisa) && 
+                  !contato.telefone?.includes(termoPesquisa) && 
+                  !contato.email?.toLowerCase().includes(termoPesquisa)) {
+                return false;
+              }
+            }
+            return true;
+          }).length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <UserCheck className="w-12 h-12 mx-auto mb-4 text-gray-300" />
               <p>Nenhum contato encontrado com os filtros aplicados.</p>
