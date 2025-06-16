@@ -28,12 +28,19 @@ export const useAuth = () => {
 // Função para criar perfil do usuário quando necessário
 const createUserProfile = async (user: User) => {
   try {
+    console.log('Iniciando criação de perfil para:', user.email);
+    
     // Verificar se o perfil já existe
-    const { data: existingProfile } = await supabase
+    const { data: existingProfile, error: profileError } = await supabase
       .from('profiles')
       .select('id')
       .eq('id', user.id)
       .single();
+
+    if (profileError && profileError.code !== 'PGRST116') {
+      console.error('Erro ao verificar perfil existente:', profileError);
+      return;
+    }
 
     if (existingProfile) {
       console.log('Perfil já existe para o usuário');
@@ -41,42 +48,67 @@ const createUserProfile = async (user: User) => {
     }
 
     // Buscar a empresa Amplie Marketing
-    const { data: empresa } = await supabase
+    const { data: empresa, error: empresaError } = await supabase
       .from('empresas')
       .select('id')
       .eq('email', 'ampliemarketing.mkt@gmail.com')
       .single();
 
-    if (!empresa) {
-      console.error('Empresa Amplie Marketing não encontrada');
-      return;
-    }
+    if (empresaError) {
+      console.error('Erro ao buscar empresa:', empresaError);
+      // Se não encontrar a empresa, vamos criar uma empresa padrão
+      const { data: novaEmpresa, error: criarEmpresaError } = await supabase
+        .from('empresas')
+        .insert({
+          nome: 'Amplie Marketing',
+          email: 'ampliemarketing.mkt@gmail.com'
+        })
+        .select()
+        .single();
 
-    // Determinar se é o usuário admin
-    const isAdmin = user.email === 'ampliemarketing.mkt@gmail.com';
-    
-    // Criar o perfil do usuário
-    const profileData = {
-      id: user.id,
-      nome: isAdmin ? 'Administrador' : user.email?.split('@')[0] || 'Usuário',
-      email: user.email || '',
-      empresa_id: empresa.id,
-      cargo: isAdmin ? 'admin' : 'usuario',
-      setor: isAdmin ? 'Administração' : 'Geral',
-      status: 'online'
-    };
-
-    const { error } = await supabase
-      .from('profiles')
-      .insert(profileData);
-
-    if (error) {
-      console.error('Erro ao criar perfil:', error);
+      if (criarEmpresaError) {
+        console.error('Erro ao criar empresa:', criarEmpresaError);
+        return;
+      }
+      
+      console.log('Empresa criada:', novaEmpresa);
+      
+      // Usar a nova empresa
+      await createProfile(user, novaEmpresa.id);
     } else {
-      console.log('Perfil criado com sucesso para:', user.email);
+      console.log('Empresa encontrada:', empresa);
+      await createProfile(user, empresa.id);
     }
   } catch (error) {
-    console.error('Erro ao processar criação de perfil:', error);
+    console.error('Erro geral ao processar criação de perfil:', error);
+  }
+};
+
+const createProfile = async (user: User, empresaId: string) => {
+  // Determinar se é o usuário admin
+  const isAdmin = user.email === 'ampliemarketing.mkt@gmail.com';
+  
+  // Criar o perfil do usuário
+  const profileData = {
+    id: user.id,
+    nome: isAdmin ? 'Administrador' : user.email?.split('@')[0] || 'Usuário',
+    email: user.email || '',
+    empresa_id: empresaId,
+    cargo: isAdmin ? 'admin' : 'usuario',
+    setor: isAdmin ? 'Administração' : 'Geral',
+    status: 'online'
+  };
+
+  console.log('Criando perfil com dados:', profileData);
+
+  const { error } = await supabase
+    .from('profiles')
+    .insert(profileData);
+
+  if (error) {
+    console.error('Erro ao criar perfil:', error);
+  } else {
+    console.log('Perfil criado com sucesso para:', user.email);
   }
 };
 
@@ -86,6 +118,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log('Configurando auth listener...');
+    
     // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
@@ -95,6 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Se o usuário acabou de fazer login, criar perfil se necessário
         if (event === 'SIGNED_IN' && session?.user) {
+          console.log('Usuário fez login, verificando perfil...');
           setTimeout(() => {
             createUserProfile(session.user);
           }, 100);
@@ -105,12 +140,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // Verificar sessão atual
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Erro ao obter sessão:', error);
+      }
+      
+      console.log('Sessão inicial:', session?.user?.email || 'Nenhuma sessão');
       setSession(session);
       setUser(session?.user ?? null);
       
       // Se já há uma sessão ativa, verificar perfil
       if (session?.user) {
+        console.log('Sessão ativa encontrada, verificando perfil...');
         setTimeout(() => {
           createUserProfile(session.user);
         }, 100);
@@ -123,6 +164,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = async () => {
+    console.log('Fazendo logout...');
     await supabase.auth.signOut();
   };
 

@@ -18,12 +18,23 @@ export default function Auth() {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log('Auth page carregada');
     // Verificar se o usuário já está autenticado
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      console.log('Verificando usuário existente...');
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Erro ao verificar sessão:', error);
+        return;
+      }
+      
       if (session) {
+        console.log('Usuário já autenticado:', session.user.email);
         const from = location.state?.from?.pathname || '/painel';
         navigate(from, { replace: true });
+      } else {
+        console.log('Nenhuma sessão ativa encontrada');
       }
     };
     checkUser();
@@ -31,15 +42,19 @@ export default function Auth() {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Tentando fazer login com:', email);
     setLoading(true);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
+      console.log('Resultado do login:', { data, error });
+
       if (error) {
+        console.error('Erro no login:', error);
         if (error.message.includes('Invalid login credentials')) {
           toast({
             title: "Credenciais inválidas",
@@ -54,27 +69,55 @@ export default function Auth() {
           });
         }
       } else {
-        // Verificar se o usuário tem empresa associada
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('empresa_id')
-          .eq('id', (await supabase.auth.getUser()).data.user?.id)
-          .single();
+        console.log('Login bem-sucedido, verificando perfil...');
+        
+        // Aguardar um pouco para o perfil ser criado
+        setTimeout(async () => {
+          try {
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('empresa_id')
+              .eq('id', data.user?.id)
+              .single();
 
-        if (!profile?.empresa_id) {
-          await supabase.auth.signOut();
-          toast({
-            title: "Acesso negado",
-            description: "Usuário não está associado a nenhuma empresa. Entre em contato com o administrador.",
-            variant: "destructive",
-          });
-          return;
-        }
+            console.log('Perfil encontrado:', profile);
 
-        const from = location.state?.from?.pathname || '/painel';
-        navigate(from, { replace: true });
+            if (profileError) {
+              console.error('Erro ao buscar perfil:', profileError);
+              toast({
+                title: "Erro",
+                description: "Erro ao verificar perfil do usuário.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            if (!profile?.empresa_id) {
+              console.log('Usuário sem empresa associada');
+              await supabase.auth.signOut();
+              toast({
+                title: "Acesso negado",
+                description: "Usuário não está associado a nenhuma empresa. Entre em contato com o administrador.",
+                variant: "destructive",
+              });
+              return;
+            }
+
+            console.log('Redirecionando para painel...');
+            const from = location.state?.from?.pathname || '/painel';
+            navigate(from, { replace: true });
+          } catch (profileCheckError) {
+            console.error('Erro ao verificar perfil:', profileCheckError);
+            toast({
+              title: "Erro",
+              description: "Erro ao verificar dados do usuário.",
+              variant: "destructive",
+            });
+          }
+        }, 1000); // Aguardar 1 segundo para o perfil ser criado
       }
     } catch (error) {
+      console.error('Erro inesperado no login:', error);
       toast({
         title: "Erro inesperado",
         description: "Ocorreu um erro durante o login.",
@@ -140,6 +183,9 @@ export default function Auth() {
               <div className="text-sm text-amber-800">
                 <p className="font-medium">Usuários são cadastrados pelo administrador</p>
                 <p className="mt-1">Caso não tenha acesso, entre em contato com o administrador do sistema.</p>
+                <p className="mt-2 font-medium">Credenciais de teste:</p>
+                <p>Email: ampliemarketing.mkt@gmail.com</p>
+                <p>Senha: (definida pelo administrador)</p>
               </div>
             </div>
           </div>
