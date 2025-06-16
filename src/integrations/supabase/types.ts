@@ -289,7 +289,6 @@ export type Database = {
           empresa_id: string | null
           id: string
           nome: string
-          permissoes: Json | null
           setor: string | null
           status: string | null
           updated_at: string | null
@@ -302,7 +301,6 @@ export type Database = {
           empresa_id?: string | null
           id: string
           nome: string
-          permissoes?: Json | null
           setor?: string | null
           status?: string | null
           updated_at?: string | null
@@ -315,7 +313,6 @@ export type Database = {
           empresa_id?: string | null
           id?: string
           nome?: string
-          permissoes?: Json | null
           setor?: string | null
           status?: string | null
           updated_at?: string | null
@@ -367,33 +364,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
-      }
-      setores_sistema: {
-        Row: {
-          ativo: boolean | null
-          created_at: string | null
-          descricao: string | null
-          id: string
-          nome: string
-          updated_at: string | null
-        }
-        Insert: {
-          ativo?: boolean | null
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          nome: string
-          updated_at?: string | null
-        }
-        Update: {
-          ativo?: boolean | null
-          created_at?: string | null
-          descricao?: string | null
-          id?: string
-          nome?: string
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       transferencias: {
         Row: {
