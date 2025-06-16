@@ -10,7 +10,7 @@ export interface Profile {
   email: string;
   cargo?: string;
   setor?: string;
-  status: 'online' | 'ausente' | 'offline';
+  status: string; // Changed from union type to string
   avatar_url?: string;
   created_at: string;
   updated_at: string;
@@ -32,9 +32,9 @@ export interface Conversa {
   id: string;
   contato_id?: string;
   agente_id?: string;
-  status: 'ativo' | 'pendente' | 'finalizado' | 'transferido';
-  canal: 'whatsapp' | 'email' | 'chat';
-  prioridade: 'baixa' | 'normal' | 'alta' | 'urgente';
+  status: string; // Changed from union type to string
+  canal: string; // Changed from union type to string
+  prioridade: string; // Changed from union type to string
   setor?: string;
   tags?: string[];
   created_at: string;
@@ -46,10 +46,10 @@ export interface Conversa {
 export interface Mensagem {
   id: string;
   conversa_id: string;
-  remetente_tipo: 'agente' | 'contato' | 'sistema';
+  remetente_tipo: string; // Changed from union type to string
   remetente_id?: string;
   conteudo: string;
-  tipo_mensagem: 'texto' | 'imagem' | 'audio' | 'documento' | 'localizacao';
+  tipo_mensagem: string; // Changed from union type to string
   metadata?: any;
   lida: boolean;
   created_at: string;
@@ -81,7 +81,7 @@ export function useSupabaseData() {
           return;
         }
 
-        setProfile(data);
+        setProfile(data as Profile);
       } catch (error) {
         console.error('Erro ao carregar perfil:', error);
       }
@@ -126,7 +126,7 @@ export function useSupabaseData() {
         return;
       }
 
-      setConversas(data || []);
+      setConversas(data as Conversa[] || []);
     } catch (error) {
       console.error('Erro ao carregar conversas:', error);
     } finally {
@@ -189,7 +189,7 @@ export function useSupabaseData() {
         return null;
       }
 
-      setConversas(prev => [data, ...prev]);
+      setConversas(prev => [data as Conversa, ...prev]);
       return data;
     } catch (error) {
       console.error('Erro ao criar conversa:', error);

@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Layout from "@/components/layout/Layout";
+import { Layout } from "@/components/layout/Layout";
 import Auth from "@/pages/Auth";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
@@ -47,7 +47,7 @@ const App = () => (
             {/* Rotas protegidas */}
             <Route path="/painel" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Painel" description="Visão geral do sistema">
                   <Painel />
                 </Layout>
               </ProtectedRoute>
@@ -55,7 +55,7 @@ const App = () => (
             
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Dashboard" description="Métricas e estatísticas">
                   <Dashboard />
                 </Layout>
               </ProtectedRoute>
@@ -63,7 +63,7 @@ const App = () => (
             
             <Route path="/atendimento" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Atendimento" description="Central de atendimento">
                   <Atendimento />
                 </Layout>
               </ProtectedRoute>
@@ -71,7 +71,7 @@ const App = () => (
             
             <Route path="/chat-interno" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Chat Interno" description="Comunicação da equipe">
                   <ChatInterno />
                 </Layout>
               </ProtectedRoute>
@@ -79,7 +79,7 @@ const App = () => (
             
             <Route path="/contatos" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Contatos" description="Gerenciamento de contatos">
                   <Contatos />
                 </Layout>
               </ProtectedRoute>
@@ -87,7 +87,7 @@ const App = () => (
             
             <Route path="/kanban" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Kanban" description="Quadro de tarefas">
                   <Kanban />
                 </Layout>
               </ProtectedRoute>
@@ -95,7 +95,7 @@ const App = () => (
             
             <Route path="/chatbot" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="ChatBot" description="Automação inteligente">
                   <ChatBot />
                 </Layout>
               </ProtectedRoute>
@@ -103,7 +103,7 @@ const App = () => (
             
             <Route path="/usuarios" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Usuários" description="Gerenciamento de usuários">
                   <Usuarios />
                 </Layout>
               </ProtectedRoute>
@@ -111,7 +111,7 @@ const App = () => (
             
             <Route path="/setores" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Setores" description="Organização por setores">
                   <Setores />
                 </Layout>
               </ProtectedRoute>
@@ -119,7 +119,7 @@ const App = () => (
             
             <Route path="/gerenciar-equipe" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Gerenciar Equipe" description="Administração da equipe">
                   <GerenciarEquipe />
                 </Layout>
               </ProtectedRoute>
@@ -127,7 +127,7 @@ const App = () => (
             
             <Route path="/meu-perfil" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Meu Perfil" description="Configurações pessoais">
                   <MeuPerfil />
                 </Layout>
               </ProtectedRoute>
@@ -135,7 +135,7 @@ const App = () => (
             
             <Route path="/plano-faturamento" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Plano e Faturamento" description="Gerenciamento financeiro">
                   <PlanoFaturamento />
                 </Layout>
               </ProtectedRoute>
@@ -143,7 +143,7 @@ const App = () => (
             
             <Route path="/configuracoes/gerais" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Configurações Gerais" description="Configurações do sistema">
                   <ConfiguracoesGerais />
                 </Layout>
               </ProtectedRoute>
@@ -151,7 +151,7 @@ const App = () => (
             
             <Route path="/configuracoes/avancadas" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Configurações Avançadas" description="Configurações técnicas">
                   <ConfiguracoesAvancadas />
                 </Layout>
               </ProtectedRoute>
@@ -159,7 +159,7 @@ const App = () => (
             
             <Route path="/configuracoes/notificacoes" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Notificações" description="Preferências de notificação">
                   <PreferenciasNotificacao />
                 </Layout>
               </ProtectedRoute>
@@ -167,7 +167,7 @@ const App = () => (
             
             <Route path="/configuracoes/aparencia" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Aparência" description="Personalização visual">
                   <Aparencia />
                 </Layout>
               </ProtectedRoute>
@@ -175,7 +175,7 @@ const App = () => (
             
             <Route path="/configuracoes/idioma" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Idioma" description="Configurações de idioma">
                   <Idioma />
                 </Layout>
               </ProtectedRoute>
