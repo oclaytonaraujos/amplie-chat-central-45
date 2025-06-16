@@ -8,7 +8,6 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Layout } from "@/components/layout/Layout";
 import Auth from "@/pages/Auth";
-import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Atendimento from "./pages/Atendimento";
 import ChatInterno from "./pages/ChatInterno";
@@ -41,8 +40,8 @@ const App = () => (
             {/* Rota de autenticação */}
             <Route path="/auth" element={<Auth />} />
             
-            {/* Rota pública inicial */}
-            <Route path="/" element={<Index />} />
+            {/* Redirecionar página inicial para login */}
+            <Route path="/" element={<Navigate to="/auth" replace />} />
             
             {/* Rotas protegidas */}
             <Route path="/painel" element={

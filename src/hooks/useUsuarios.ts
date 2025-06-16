@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import type { Database } from '@/integrations/supabase/types';
 
 export interface Usuario {
@@ -11,6 +13,7 @@ export interface Usuario {
   cargo?: string;
   status: string;
   avatar_url?: string;
+  empresa_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -22,13 +25,28 @@ export function useUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const loadUsuarios = async () => {
     try {
       setLoading(true);
+      
+      // Primeiro, obter a empresa_id do usuário atual
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user?.id)
+        .single();
+
+      if (!currentProfile?.empresa_id) {
+        console.error('Usuário não está associado a uma empresa');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
+        .eq('empresa_id', currentProfile.empresa_id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -51,9 +69,28 @@ export function useUsuarios() {
 
   const criarUsuario = async (usuario: NovoUsuario) => {
     try {
+      // Obter a empresa_id do usuário atual
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user?.id)
+        .single();
+
+      if (!currentProfile?.empresa_id) {
+        toast({
+          title: "Erro",
+          description: "Usuário não está associado a uma empresa.",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
-        .insert(usuario)
+        .insert({
+          ...usuario,
+          empresa_id: currentProfile.empresa_id
+        })
         .select()
         .single();
 
@@ -146,8 +183,10 @@ export function useUsuarios() {
   };
 
   useEffect(() => {
-    loadUsuarios();
-  }, []);
+    if (user) {
+      loadUsuarios();
+    }
+  }, [user]);
 
   return {
     usuarios,

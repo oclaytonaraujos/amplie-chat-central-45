@@ -14,6 +14,7 @@ export type Database = {
           created_at: string | null
           email: string | null
           empresa: string | null
+          empresa_id: string | null
           id: string
           nome: string
           observacoes: string | null
@@ -25,6 +26,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           empresa?: string | null
+          empresa_id?: string | null
           id?: string
           nome: string
           observacoes?: string | null
@@ -36,6 +38,7 @@ export type Database = {
           created_at?: string | null
           email?: string | null
           empresa?: string | null
+          empresa_id?: string | null
           id?: string
           nome?: string
           observacoes?: string | null
@@ -43,7 +46,15 @@ export type Database = {
           telefone?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "contatos_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversas: {
         Row: {
@@ -51,6 +62,7 @@ export type Database = {
           canal: string | null
           contato_id: string | null
           created_at: string | null
+          empresa_id: string | null
           id: string
           prioridade: string | null
           setor: string | null
@@ -63,6 +75,7 @@ export type Database = {
           canal?: string | null
           contato_id?: string | null
           created_at?: string | null
+          empresa_id?: string | null
           id?: string
           prioridade?: string | null
           setor?: string | null
@@ -75,6 +88,7 @@ export type Database = {
           canal?: string | null
           contato_id?: string | null
           created_at?: string | null
+          empresa_id?: string | null
           id?: string
           prioridade?: string | null
           setor?: string | null
@@ -97,7 +111,50 @@ export type Database = {
             referencedRelation: "contatos"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "conversas_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      empresas: {
+        Row: {
+          ativo: boolean | null
+          cnpj: string | null
+          created_at: string | null
+          email: string | null
+          endereco: string | null
+          id: string
+          nome: string
+          telefone: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nome: string
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          ativo?: boolean | null
+          cnpj?: string | null
+          created_at?: string | null
+          email?: string | null
+          endereco?: string | null
+          id?: string
+          nome?: string
+          telefone?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       mensagens: {
         Row: {
@@ -149,6 +206,7 @@ export type Database = {
           cargo: string | null
           created_at: string | null
           email: string
+          empresa_id: string | null
           id: string
           nome: string
           setor: string | null
@@ -160,6 +218,7 @@ export type Database = {
           cargo?: string | null
           created_at?: string | null
           email: string
+          empresa_id?: string | null
           id: string
           nome: string
           setor?: string | null
@@ -171,13 +230,22 @@ export type Database = {
           cargo?: string | null
           created_at?: string | null
           email?: string
+          empresa_id?: string | null
           id?: string
           nome?: string
           setor?: string | null
           status?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "profiles_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       setores: {
         Row: {
@@ -185,6 +253,7 @@ export type Database = {
           cor: string | null
           created_at: string | null
           descricao: string | null
+          empresa_id: string | null
           id: string
           nome: string
         }
@@ -193,6 +262,7 @@ export type Database = {
           cor?: string | null
           created_at?: string | null
           descricao?: string | null
+          empresa_id?: string | null
           id?: string
           nome: string
         }
@@ -201,10 +271,19 @@ export type Database = {
           cor?: string | null
           created_at?: string | null
           descricao?: string | null
+          empresa_id?: string | null
           id?: string
           nome?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "setores_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       transferencias: {
         Row: {
@@ -262,6 +341,7 @@ export type Database = {
         Row: {
           ativo: boolean | null
           created_at: string | null
+          empresa_id: string | null
           id: string
           instance_id: string
           token: string
@@ -272,6 +352,7 @@ export type Database = {
         Insert: {
           ativo?: boolean | null
           created_at?: string | null
+          empresa_id?: string | null
           id?: string
           instance_id: string
           token: string
@@ -282,6 +363,7 @@ export type Database = {
         Update: {
           ativo?: boolean | null
           created_at?: string | null
+          empresa_id?: string | null
           id?: string
           instance_id?: string
           token?: string
@@ -290,6 +372,13 @@ export type Database = {
           webhook_url?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "zapi_config_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "zapi_config_user_id_fkey"
             columns: ["user_id"]

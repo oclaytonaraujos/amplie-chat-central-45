@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface Contato {
   id: string;
@@ -11,6 +12,7 @@ export interface Contato {
   empresa?: string;
   tags?: string[];
   observacoes?: string;
+  empresa_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -19,13 +21,28 @@ export function useContatos() {
   const [contatos, setContatos] = useState<Contato[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const loadContatos = async () => {
     try {
       setLoading(true);
+      
+      // Primeiro, obter a empresa_id do usuário atual
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user?.id)
+        .single();
+
+      if (!currentProfile?.empresa_id) {
+        console.error('Usuário não está associado a uma empresa');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('contatos')
         .select('*')
+        .eq('empresa_id', currentProfile.empresa_id)
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -46,11 +63,30 @@ export function useContatos() {
     }
   };
 
-  const criarContato = async (contato: Omit<Contato, 'id' | 'created_at' | 'updated_at'>) => {
+  const criarContato = async (contato: Omit<Contato, 'id' | 'created_at' | 'updated_at' | 'empresa_id'>) => {
     try {
+      // Obter a empresa_id do usuário atual
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user?.id)
+        .single();
+
+      if (!currentProfile?.empresa_id) {
+        toast({
+          title: "Erro",
+          description: "Usuário não está associado a uma empresa.",
+          variant: "destructive",
+        });
+        return null;
+      }
+
       const { data, error } = await supabase
         .from('contatos')
-        .insert([contato])
+        .insert([{
+          ...contato,
+          empresa_id: currentProfile.empresa_id
+        }])
         .select()
         .single();
 
@@ -143,8 +179,10 @@ export function useContatos() {
   };
 
   useEffect(() => {
-    loadContatos();
-  }, []);
+    if (user) {
+      loadContatos();
+    }
+  }, [user]);
 
   return {
     contatos,
