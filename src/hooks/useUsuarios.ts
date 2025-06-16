@@ -14,8 +14,15 @@ export interface Usuario {
   updated_at: string;
 }
 
-// Type for creating a new user (without auto-generated fields)
-type NovoUsuario = Omit<Usuario, 'id' | 'created_at' | 'updated_at'>;
+// Type for creating a new user (making id optional since it has a default value)
+interface NovoUsuario {
+  nome: string;
+  email: string;
+  setor?: string;
+  cargo?: string;
+  status: string;
+  avatar_url?: string;
+}
 
 export function useUsuarios() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
