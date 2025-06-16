@@ -15,6 +15,7 @@ export interface Usuario {
   empresa_id?: string;
   created_at: string;
   updated_at: string;
+  permissoes?: string[];
 }
 
 interface NovoUsuario {
@@ -23,6 +24,7 @@ interface NovoUsuario {
   setor: string;
   cargo: string;
   status: string;
+  permissoes?: string[];
 }
 
 export function useUsuarios() {
@@ -40,7 +42,6 @@ export function useUsuarios() {
       console.log('IsSuperAdmin:', isSuperAdmin);
       
       if (isSuperAdmin) {
-        // Super admin pode ver todos os usuários
         console.log('Carregando todos os usuários (super admin)');
         const { data, error } = await supabase
           .from('profiles')
@@ -58,12 +59,10 @@ export function useUsuarios() {
         }
 
         console.log('Usuários carregados (super admin):', data?.length);
-        setUsuarios(data || []);
+        setUsuarios(data?.map(u => ({ ...u, permissoes: u.permissoes || [] })) || []);
       } else {
-        // Usuário normal - carrega apenas da sua empresa
         console.log('Carregando usuários da empresa');
         
-        // Primeiro, obter a empresa_id do usuário atual
         const { data: currentProfile } = await supabase
           .from('profiles')
           .select('empresa_id')
@@ -93,7 +92,7 @@ export function useUsuarios() {
         }
 
         console.log('Usuários da empresa carregados:', data?.length);
-        setUsuarios(data || []);
+        setUsuarios(data?.map(u => ({ ...u, permissoes: u.permissoes || [] })) || []);
       }
     } catch (error) {
       console.error('Erro ao carregar usuários:', error);
@@ -114,10 +113,8 @@ export function useUsuarios() {
       let empresaId;
       
       if (isSuperAdmin && 'empresa_id' in usuario) {
-        // Super admin pode especificar a empresa
         empresaId = (usuario as any).empresa_id;
       } else {
-        // Usuário normal - usar sua própria empresa
         const { data: currentProfile } = await supabase
           .from('profiles')
           .select('empresa_id')
@@ -135,7 +132,6 @@ export function useUsuarios() {
         empresaId = currentProfile.empresa_id;
       }
 
-      // Gerar um ID único para o novo usuário
       const novoId = crypto.randomUUID();
 
       const { data, error } = await supabase
@@ -147,7 +143,8 @@ export function useUsuarios() {
           empresa_id: empresaId,
           cargo: usuario.cargo,
           setor: usuario.setor,
-          status: usuario.status
+          status: usuario.status,
+          permissoes: usuario.permissoes || []
         })
         .select()
         .single();
@@ -163,12 +160,13 @@ export function useUsuarios() {
       }
 
       console.log('Usuário criado com sucesso:', data);
-      setUsuarios(prev => [data, ...prev]);
+      const novoUsuario = { ...data, permissoes: data.permissoes || [] };
+      setUsuarios(prev => [novoUsuario, ...prev]);
       toast({
         title: "Usuário criado",
         description: `${usuario.nome} foi adicionado com sucesso.`,
       });
-      return data;
+      return novoUsuario;
     } catch (error) {
       console.error('Erro ao criar usuário:', error);
       toast({
@@ -193,6 +191,7 @@ export function useUsuarios() {
           cargo: usuario.cargo,
           status: usuario.status,
           avatar_url: usuario.avatar_url,
+          permissoes: usuario.permissoes || []
         })
         .eq('id', usuario.id)
         .select()
@@ -209,7 +208,8 @@ export function useUsuarios() {
       }
 
       console.log('Usuário editado com sucesso:', data);
-      setUsuarios(prev => prev.map(u => u.id === usuario.id ? data : u));
+      const usuarioEditado = { ...data, permissoes: data.permissoes || [] };
+      setUsuarios(prev => prev.map(u => u.id === usuario.id ? usuarioEditado : u));
       toast({
         title: "Usuário atualizado",
         description: `As informações de ${usuario.nome} foram atualizadas.`,
