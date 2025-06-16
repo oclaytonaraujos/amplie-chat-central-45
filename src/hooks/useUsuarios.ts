@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +12,7 @@ export interface Usuario {
   setor?: string;
   cargo?: string;
   status: string;
+  permissoes?: any;
   avatar_url?: string;
   empresa_id?: string;
   created_at: string;
@@ -23,6 +25,7 @@ interface NovoUsuario {
   setor: string;
   cargo: string;
   status: string;
+  permissoes: string[];
 }
 
 export function useUsuarios() {
@@ -147,7 +150,8 @@ export function useUsuarios() {
           empresa_id: empresaId,
           cargo: usuario.cargo,
           setor: usuario.setor,
-          status: usuario.status
+          status: usuario.status,
+          permissoes: usuario.permissoes
         })
         .select()
         .single();
@@ -192,6 +196,7 @@ export function useUsuarios() {
           setor: usuario.setor,
           cargo: usuario.cargo,
           status: usuario.status,
+          permissoes: usuario.permissoes,
           avatar_url: usuario.avatar_url,
         })
         .eq('id', usuario.id)
