@@ -93,7 +93,7 @@ export default function Auth() {
   };
 
   const fillSuperAdminCredentials = () => {
-    setEmail('amplie-admin@ampliemarketing.com');
+    setEmail('ampliemarketing.mkt@gmail.com');
     setPassword('Amplie123@');
   };
 
@@ -156,7 +156,7 @@ export default function Auth() {
               Usar credenciais de Super Admin
             </Button>
             <p className="text-xs text-gray-500 mt-2 text-center">
-              Email: amplie-admin@ampliemarketing.com<br />
+              Email: ampliemarketing.mkt@gmail.com<br />
               Senha: Amplie123@
             </p>
           </div>

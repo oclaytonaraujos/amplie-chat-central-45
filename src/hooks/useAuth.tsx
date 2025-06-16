@@ -25,32 +25,6 @@ export const useAuth = () => {
   return context;
 };
 
-// Função para criar usuário super admin
-const createSuperAdmin = async () => {
-  try {
-    console.log('Criando usuário super admin...');
-    
-    const { data, error } = await supabase.auth.signUp({
-      email: 'amplie-admin@ampliemarketing.com',
-      password: 'Amplie123@',
-      options: {
-        data: {
-          nome: 'Amplie Admin'
-        }
-      }
-    });
-
-    if (error) {
-      console.error('Erro ao criar super admin:', error);
-      return;
-    }
-
-    console.log('Super admin criado com sucesso:', data);
-  } catch (error) {
-    console.error('Erro inesperado ao criar super admin:', error);
-  }
-};
-
 // Função para criar perfil do usuário quando necessário
 const createUserProfile = async (user: User) => {
   try {
@@ -118,18 +92,17 @@ const createProfile = async (user: User, empresaId: string) => {
     return;
   }
 
-  // Determinar se é o usuário admin
-  const isAdmin = userEmail === 'ampliemarketing.mkt@gmail.com';
-  const isSuperAdmin = userEmail === 'amplie-admin@ampliemarketing.com';
+  // Determinar se é o usuário super admin - agora usando o email correto
+  const isSuperAdmin = userEmail === 'ampliemarketing.mkt@gmail.com';
   
   // Criar o perfil do usuário
   const profileData = {
     id: user.id,
-    nome: isSuperAdmin ? 'Amplie Admin' : isAdmin ? 'Administrador' : userEmail.split('@')[0] || 'Usuário',
+    nome: isSuperAdmin ? 'Super Admin' : userEmail.split('@')[0] || 'Usuário',
     email: userEmail,
     empresa_id: empresaId,
-    cargo: isSuperAdmin ? 'super_admin' : isAdmin ? 'admin' : 'usuario',
-    setor: isSuperAdmin || isAdmin ? 'Administração' : 'Geral',
+    cargo: isSuperAdmin ? 'super_admin' : 'usuario',
+    setor: isSuperAdmin ? 'Administração' : 'Geral',
     status: 'online'
   };
 
@@ -153,28 +126,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     console.log('Configurando auth listener...');
-    
-    // Criar super admin na inicialização (apenas uma vez)
-    const initializeSuperAdmin = async () => {
-      try {
-        // Verificar se super admin já existe
-        const { data: users, error } = await supabase.auth.admin.listUsers();
-        
-        if (!error) {
-          const superAdminExists = users.users.some(u => u.email === 'amplie-admin@ampliemarketing.com');
-          
-          if (!superAdminExists) {
-            await createSuperAdmin();
-          }
-        }
-      } catch (error) {
-        console.log('Tentando criar super admin via signup:', error);
-        // Se não conseguir via admin, tentar via signup normal
-        await createSuperAdmin();
-      }
-    };
-    
-    initializeSuperAdmin();
     
     // Configurar listener de mudanças de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
