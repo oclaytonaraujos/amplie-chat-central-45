@@ -4,29 +4,41 @@ import { Building2, Edit, Trash2, Users, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useSetores, type Setor } from '@/hooks/useSetores';
+import { useSetoresData } from '@/hooks/useSetoresData';
 import { NovoSetorDialog } from '@/components/setores/NovoSetorDialog';
 import { EditarSetorDialog } from '@/components/setores/EditarSetorDialog';
 import { ExcluirSetorDialog } from '@/components/setores/ExcluirSetorDialog';
+import { Loader2 } from 'lucide-react';
 
 export default function Setores() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [setorParaEditar, setSetorParaEditar] = useState<Setor | null>(null);
-  const [setorParaExcluir, setSetorParaExcluir] = useState<Setor | null>(null);
-  const { setores } = useSetores();
+  const [setorParaEditar, setSetorParaEditar] = useState<any>(null);
+  const [setorParaExcluir, setSetorParaExcluir] = useState<any>(null);
+  const { setores, loading } = useSetoresData();
 
   const filteredSetores = setores.filter(setor =>
     setor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (setor.descricao && setor.descricao.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const formatarData = (data: Date) => {
+  const formatarData = (data: string) => {
     return new Intl.DateTimeFormat('pt-BR', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric'
-    }).format(data);
+    }).format(new Date(data));
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Carregando setores...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-6 min-h-screen">
@@ -71,9 +83,9 @@ export default function Setores() {
               <Users className="w-5 h-5 text-green-600" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs md:text-sm text-gray-600 break-words">Total de Agentes</p>
+              <p className="text-xs md:text-sm text-gray-600 break-words">Setores Ativos</p>
               <p className="text-lg md:text-2xl font-bold text-gray-900">
-                {setores.reduce((total, setor) => total + setor.agentes, 0)}
+                {setores.filter(s => s.ativo).length}
               </p>
             </div>
           </div>
@@ -85,9 +97,9 @@ export default function Setores() {
               <Clock className="w-5 h-5 text-orange-600" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs md:text-sm text-gray-600 break-words">Atendimentos Ativos</p>
+              <p className="text-xs md:text-sm text-gray-600 break-words">Setores Inativos</p>
               <p className="text-lg md:text-2xl font-bold text-gray-900">
-                {setores.reduce((total, setor) => total + setor.atendimentosAtivos, 0)}
+                {setores.filter(s => !s.ativo).length}
               </p>
             </div>
           </div>
@@ -101,7 +113,7 @@ export default function Setores() {
             {/* Header do Card */}
             <div className="flex items-start justify-between mb-4 gap-2">
               <div className="flex items-start space-x-3 min-w-0 flex-1">
-                <div className={`w-10 h-10 ${setor.cor} rounded-lg flex items-center justify-center flex-shrink-0`}>
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0`} style={{ backgroundColor: setor.cor }}>
                   <Building2 className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -140,50 +152,10 @@ export default function Setores() {
               </div>
             )}
 
-            {/* Estatísticas */}
-            <div className="space-y-3 flex-1">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center space-x-2 min-w-0 flex-1">
-                  <Users className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span className="text-xs md:text-sm text-gray-600 break-words">Agentes</span>
-                </div>
-                <Badge variant="secondary" className="bg-gray-100 text-gray-800 flex-shrink-0 text-xs">
-                  {setor.agentes}
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center space-x-2 min-w-0 flex-1">
-                  <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  <span className="text-xs md:text-sm text-gray-600 break-words">Atendimentos</span>
-                </div>
-                <Badge 
-                  variant="secondary" 
-                  className={`flex-shrink-0 text-xs ${setor.atendimentosAtivos > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
-                >
-                  {setor.atendimentosAtivos}
-                </Badge>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
-              <div className="flex justify-between text-xs md:text-sm text-gray-600 mb-2 gap-2">
-                <span className="break-words">Capacidade</span>
-                <span className="flex-shrink-0">{setor.atendimentosAtivos}/{setor.capacidadeMaxima}</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className={`${setor.cor} h-2 rounded-full transition-all duration-300`}
-                  style={{ width: `${Math.min((setor.atendimentosAtivos / setor.capacidadeMaxima) * 100, 100)}%` }}
-                ></div>
-              </div>
-            </div>
-
             {/* Data de criação */}
-            <div className="mt-4 pt-4 border-t border-gray-100">
+            <div className="mt-auto pt-4 border-t border-gray-100">
               <p className="text-xs text-gray-500 break-words">
-                Criado em {formatarData(setor.criadoEm)}
+                Criado em {formatarData(setor.created_at)}
               </p>
             </div>
           </div>

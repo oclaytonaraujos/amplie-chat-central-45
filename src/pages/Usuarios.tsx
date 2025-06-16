@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Plus, Search, Edit, Trash2, Shield, UserPlus, Filter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,112 +8,75 @@ import { NovoUsuarioDialog } from '@/components/usuarios/NovoUsuarioDialog';
 import { EditarUsuarioDialog } from '@/components/usuarios/EditarUsuarioDialog';
 import { ExcluirUsuarioDialog } from '@/components/usuarios/ExcluirUsuarioDialog';
 import { FiltrosUsuarios } from '@/components/usuarios/FiltrosUsuarios';
-import { useToast } from '@/hooks/use-toast';
-
-interface Usuario {
-  id: number;
-  nome: string;
-  email: string;
-  setor: string;
-  papel: string;
-  status: 'Ativo' | 'Inativo';
-  permissoes?: string[];
-}
-
-const usuariosDataInicial: Usuario[] = [
-  {
-    id: 1,
-    nome: 'Ana Silva',
-    email: 'ana.silva@empresa.com',
-    setor: 'Vendas',
-    papel: 'Agente',
-    status: 'Ativo',
-    permissoes: ['Visualizar Dashboard', 'Atendimento', 'Gerenciar Contatos']
-  },
-  {
-    id: 2,
-    nome: 'Carlos Santos',
-    email: 'carlos.santos@empresa.com',
-    setor: 'Suporte',
-    papel: 'Supervisor',
-    status: 'Ativo',
-    permissoes: ['Visualizar Dashboard', 'Atendimento', 'Gerenciar Contatos', 'Visualizar Relatórios']
-  },
-  {
-    id: 3,
-    nome: 'Maria Oliveira',
-    email: 'maria.oliveira@empresa.com',
-    setor: 'Vendas',
-    papel: 'Agente',
-    status: 'Inativo',
-    permissoes: ['Visualizar Dashboard', 'Atendimento']
-  }
-];
+import { useUsuarios } from '@/hooks/useUsuarios';
+import { Loader2 } from 'lucide-react';
 
 export default function Usuarios() {
-  const [usuarios, setUsuarios] = useState<Usuario[]>(usuariosDataInicial);
+  const { usuarios, loading, criarUsuario, editarUsuario, excluirUsuario } = useUsuarios();
   const [searchTerm, setSearchTerm] = useState('');
   const [filtros, setFiltros] = useState({ setor: '', papel: '', status: '' });
   const [novoUsuarioOpen, setNovoUsuarioOpen] = useState(false);
   const [editarUsuarioOpen, setEditarUsuarioOpen] = useState(false);
   const [excluirUsuarioOpen, setExcluirUsuarioOpen] = useState(false);
-  const [usuarioSelecionado, setUsuarioSelecionado] = useState<Usuario | null>(null);
+  const [usuarioSelecionado, setUsuarioSelecionado] = useState<any>(null);
   const [filtroSheetOpen, setFiltroSheetOpen] = useState(false);
-  const { toast } = useToast();
 
   const filteredUsers = usuarios.filter(user => {
     const matchesSearch = user.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     
     const matchesSetor = filtros.setor === '' || user.setor === filtros.setor;
-    const matchesPapel = filtros.papel === '' || user.papel === filtros.papel;
+    const matchesPapel = filtros.papel === '' || user.cargo === filtros.papel;
     const matchesStatus = filtros.status === '' || user.status === filtros.status;
 
     return matchesSearch && matchesSetor && matchesPapel && matchesStatus;
   });
 
-  const handleNovoUsuario = (novoUsuario: any) => {
-    const usuario: Usuario = {
-      id: Date.now(),
-      ...novoUsuario
-    };
-    
-    setUsuarios(prev => [...prev, usuario]);
-    toast({
-      title: "Usuário criado",
-      description: `${usuario.nome} foi adicionado com sucesso.`,
-    });
+  const handleNovoUsuario = async (novoUsuario: any) => {
+    const resultado = await criarUsuario(novoUsuario);
+    if (resultado) {
+      setNovoUsuarioOpen(false);
+    }
   };
 
-  const handleEditarUsuario = (usuarioEditado: Usuario) => {
-    setUsuarios(prev => prev.map(u => u.id === usuarioEditado.id ? usuarioEditado : u));
-    toast({
-      title: "Usuário atualizado",
-      description: `As informações de ${usuarioEditado.nome} foram atualizadas.`,
-    });
+  const handleEditarUsuario = async (usuarioEditado: any) => {
+    const sucesso = await editarUsuario(usuarioEditado);
+    if (sucesso) {
+      setEditarUsuarioOpen(false);
+      setUsuarioSelecionado(null);
+    }
   };
 
-  const handleExcluirUsuario = (id: number) => {
-    const usuario = usuarios.find(u => u.id === id);
-    setUsuarios(prev => prev.filter(u => u.id !== id));
-    toast({
-      title: "Usuário excluído",
-      description: `${usuario?.nome} foi removido do sistema.`,
-      variant: "destructive"
-    });
+  const handleExcluirUsuario = async (id: string) => {
+    const sucesso = await excluirUsuario(id);
+    if (sucesso) {
+      setExcluirUsuarioOpen(false);
+      setUsuarioSelecionado(null);
+    }
   };
 
-  const abrirEdicao = (usuario: Usuario) => {
+  const abrirEdicao = (usuario: any) => {
     setUsuarioSelecionado(usuario);
     setEditarUsuarioOpen(true);
   };
 
-  const abrirExclusao = (usuario: Usuario) => {
+  const abrirExclusao = (usuario: any) => {
     setUsuarioSelecionado(usuario);
     setExcluirUsuarioOpen(true);
   };
 
   const filtrosAtivos = Object.entries(filtros).filter(([_, valor]) => valor !== '');
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Carregando usuários...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -133,7 +95,7 @@ export default function Usuarios() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Usuários Ativos</p>
-              <p className="text-2xl font-bold text-green-600">{usuarios.filter(u => u.status === 'Ativo').length}</p>
+              <p className="text-2xl font-bold text-green-600">{usuarios.filter(u => u.status === 'online').length}</p>
             </div>
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
               <div className="w-3 h-3 bg-green-500 rounded-full"></div>
@@ -144,7 +106,7 @@ export default function Usuarios() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Usuários Inativos</p>
-              <p className="text-2xl font-bold text-red-600">{usuarios.filter(u => u.status === 'Inativo').length}</p>
+              <p className="text-2xl font-bold text-red-600">{usuarios.filter(u => u.status === 'offline').length}</p>
             </div>
             <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
               <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -155,7 +117,7 @@ export default function Usuarios() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Supervisores</p>
-              <p className="text-2xl font-bold text-purple-600">{usuarios.filter(u => u.papel === 'Supervisor').length}</p>
+              <p className="text-2xl font-bold text-purple-600">{usuarios.filter(u => u.cargo === 'supervisor').length}</p>
             </div>
             <Shield className="w-8 h-8 text-purple-500" />
           </div>
@@ -228,9 +190,8 @@ export default function Usuarios() {
               <tr>
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Usuário</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Setor</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Papel</th>
+                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Cargo</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Status</th>
-                <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Permissões</th>
                 <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Ações</th>
               </tr>
             </thead>
@@ -251,35 +212,21 @@ export default function Usuarios() {
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-900">{user.setor}</span>
+                    <span className="text-sm text-gray-900">{user.setor || 'Não definido'}</span>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-1">
                       <Shield className="w-4 h-4 text-gray-400" />
-                      <span className="text-sm text-gray-900">{user.papel}</span>
+                      <span className="text-sm text-gray-900">{user.cargo || 'Não definido'}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
                     <Badge 
-                      variant={user.status === 'Ativo' ? 'default' : 'secondary'}
-                      className={user.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                      variant={user.status === 'online' ? 'default' : 'secondary'}
+                      className={user.status === 'online' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
                     >
                       {user.status}
                     </Badge>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex flex-wrap gap-1 max-w-xs">
-                      {user.permissoes?.slice(0, 2).map(permissao => (
-                        <Badge key={permissao} variant="outline" className="text-xs">
-                          {permissao}
-                        </Badge>
-                      ))}
-                      {user.permissoes && user.permissoes.length > 2 && (
-                        <Badge variant="outline" className="text-xs">
-                          +{user.permissoes.length - 2}
-                        </Badge>
-                      )}
-                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center space-x-2">

@@ -4,26 +4,25 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { AlertTriangle } from 'lucide-react';
 
 interface Usuario {
-  id: number;
+  id: string;
   nome: string;
   email: string;
-  setor: string;
-  papel: string;
-  status: 'Ativo' | 'Inativo';
+  setor?: string;
+  cargo?: string;
+  status: string;
 }
 
 interface ExcluirUsuarioDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   usuario: Usuario | null;
-  onUsuarioExcluido: (id: number) => void;
+  onUsuarioExcluido: (id: string) => void;
 }
 
 export function ExcluirUsuarioDialog({ open, onOpenChange, usuario, onUsuarioExcluido }: ExcluirUsuarioDialogProps) {
   const handleConfirm = () => {
     if (usuario) {
       onUsuarioExcluido(usuario.id);
-      onOpenChange(false);
     }
   };
 
