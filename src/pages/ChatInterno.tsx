@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import React, { useState } from 'react';
 import { ChatSidebar } from '@/components/chat-interno/ChatSidebar';
 import { ChatArea } from '@/components/chat-interno/ChatArea';
 import { ContactsList } from '@/components/chat-interno/ContactsList';
