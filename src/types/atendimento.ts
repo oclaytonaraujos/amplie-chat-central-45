@@ -1,6 +1,6 @@
 
 export interface Atendimento {
-  id: number;
+  id: string; // Changed from number to string to match Supabase UUID
   cliente: string;
   telefone: string;
   ultimaMensagem: string;
@@ -8,11 +8,16 @@ export interface Atendimento {
   setor: string;
   agente?: string;
   tags?: string[];
-  status: 'novos' | 'em-atendimento' | 'pendentes' | 'finalizados';
+  status: 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado'; // Updated to match Supabase values
+  transferencia?: {
+    de: string;
+    motivo: string;
+    dataTransferencia: string;
+  };
 }
 
 export interface Message {
-  id: number;
+  id: string; // Changed from number to string
   texto: string;
   anexo?: {
     tipo: 'imagem' | 'audio' | 'documento' | 'video' | 'contato';
@@ -25,7 +30,7 @@ export interface Message {
 }
 
 export interface Cliente {
-  id: number;
+  id: string; // Changed from number to string
   nome: string;
   telefone: string;
   email?: string;
@@ -34,7 +39,7 @@ export interface Cliente {
   dataCadastro?: string;
   tags?: string[];
   historico?: {
-    id: number;
+    id: string; // Changed from number to string
     data: string;
     assunto: string;
     status: string;

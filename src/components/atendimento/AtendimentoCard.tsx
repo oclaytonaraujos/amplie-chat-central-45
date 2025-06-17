@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 interface AtendimentoCardProps {
-  id: number;
+  id: string; // Changed from number to string
   cliente: string;
   telefone: string;
   ultimaMensagem: string;

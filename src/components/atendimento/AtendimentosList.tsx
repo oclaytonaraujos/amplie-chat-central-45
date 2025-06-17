@@ -15,7 +15,7 @@ interface Atendimento {
   setor: string;
   agente?: string;
   tags?: string[];
-  status: 'novos' | 'em-atendimento' | 'pendentes' | 'finalizados';
+  status: 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado';
   transferencia?: {
     de: string;
     motivo: string;
@@ -49,10 +49,10 @@ export function AtendimentosList({
     setor: conversa.setor || 'Geral',
     agente: conversa.profiles?.nome,
     tags: conversa.tags || [],
-    status: conversa.status as 'novos' | 'em-atendimento' | 'pendentes' | 'finalizados',
-    // TODO: Implementar transferências quando necessário
+    status: conversa.status as 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado',
   }));
 
+  // Fixed status comparisons to match Supabase values
   const atendimentosAbertos = atendimentos.filter(a => a.status === 'ativo' || a.status === 'em-atendimento');
   const atendimentosPendentes = atendimentos.filter(a => a.status === 'pendente');
 

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -10,7 +9,7 @@ interface Chatbot {
   nome: string;
   status: string;
   mensagem_inicial: string;
-  fluxo: any[];
+  fluxo: any; // Changed from any[] to any to match Json type
   interacoes: number;
   transferencias: number;
   created_at: string;
@@ -53,7 +52,21 @@ export function useChatbots() {
         return;
       }
 
-      setChatbots(data || []);
+      // Transform Supabase data to match Chatbot interface
+      const transformedData: Chatbot[] = (data || []).map(item => ({
+        id: item.id,
+        empresa_id: item.empresa_id,
+        nome: item.nome,
+        status: item.status,
+        mensagem_inicial: item.mensagem_inicial,
+        fluxo: item.fluxo || [], // Handle null case
+        interacoes: item.interacoes || 0,
+        transferencias: item.transferencias || 0,
+        created_at: item.created_at || '',
+        updated_at: item.updated_at || ''
+      }));
+
+      setChatbots(transformedData);
     } catch (error) {
       console.error('Erro ao carregar chatbots:', error);
     } finally {
@@ -101,14 +114,28 @@ export function useChatbots() {
         return null;
       }
 
-      setChatbots(prev => [data, ...prev]);
+      // Transform the single result
+      const transformedChatbot: Chatbot = {
+        id: data.id,
+        empresa_id: data.empresa_id,
+        nome: data.nome,
+        status: data.status,
+        mensagem_inicial: data.mensagem_inicial,
+        fluxo: data.fluxo || [],
+        interacoes: data.interacoes || 0,
+        transferencias: data.transferencias || 0,
+        created_at: data.created_at || '',
+        updated_at: data.updated_at || ''
+      };
+
+      setChatbots(prev => [transformedChatbot, ...prev]);
       
       toast({
         title: "Chatbot criado",
         description: "Chatbot criado com sucesso!",
       });
 
-      return data;
+      return transformedChatbot;
     } catch (error) {
       console.error('Erro ao criar chatbot:', error);
       return null;
@@ -137,9 +164,23 @@ export function useChatbots() {
         return null;
       }
 
+      // Transform the result
+      const transformedChatbot: Chatbot = {
+        id: data.id,
+        empresa_id: data.empresa_id,
+        nome: data.nome,
+        status: data.status,
+        mensagem_inicial: data.mensagem_inicial,
+        fluxo: data.fluxo || [],
+        interacoes: data.interacoes || 0,
+        transferencias: data.transferencias || 0,
+        created_at: data.created_at || '',
+        updated_at: data.updated_at || ''
+      };
+
       setChatbots(prev => 
         prev.map(chatbot => 
-          chatbot.id === id ? { ...chatbot, ...data } : chatbot
+          chatbot.id === id ? { ...chatbot, ...transformedChatbot } : chatbot
         )
       );
 
@@ -148,7 +189,7 @@ export function useChatbots() {
         description: "Chatbot atualizado com sucesso!",
       });
 
-      return data;
+      return transformedChatbot;
     } catch (error) {
       console.error('Erro ao atualizar chatbot:', error);
       return null;

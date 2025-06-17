@@ -13,99 +13,47 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 
-// Dados de exemplo com transferências
-const dadosAtendimentos = [
-  {
-    id: 1,
-    cliente: 'João Silva',
-    telefone: '+55 11 99999-9999',
-    ultimaMensagem: 'Preciso de ajuda com meu pedido #12345, não chegou ainda',
-    tempo: '5 min',
-    setor: 'Suporte',
-    agente: 'Ana Silva',
-    tags: ['Pedido', 'Urgente'],
-    status: 'em-atendimento' as const,
-    transferencia: {
-      de: 'Carlos Santos',
-      motivo: 'Cliente solicitou falar com supervisor',
-      dataTransferencia: '14:25'
-    }
-  },
-  {
-    id: 2,
-    cliente: 'Maria Santos',
-    telefone: '+55 11 88888-8888',
-    ultimaMensagem: 'Olá, gostaria de mais informações sobre o plano premium',
-    tempo: '12 min',
-    setor: 'Vendas',
-    tags: ['Novo Cliente'],
-    status: 'novos' as const
-  },
-  {
-    id: 3,
-    cliente: 'Pedro Almeida',
-    telefone: '+55 11 77777-7777',
-    ultimaMensagem: 'Quando vocês vão lançar o novo produto?',
-    tempo: '30 min',
-    setor: 'Marketing',
-    agente: 'Carlos Oliveira',
-    status: 'pendentes' as const
-  },
-  {
-    id: 4,
-    cliente: 'Ana Pereira',
-    telefone: '+55 11 66666-6666',
-    ultimaMensagem: 'O problema foi resolvido, muito obrigado!',
-    tempo: '1 hora',
-    setor: 'Suporte',
-    agente: 'Marcos Silva',
-    status: 'finalizados' as const
-  },
-  {
-    id: 5,
-    cliente: 'Roberto Gomes',
-    telefone: '+55 11 55555-5555',
-    ultimaMensagem: 'Preciso trocar o produto que comprei ontem',
-    tempo: '2 min',
-    setor: 'Suporte',
-    tags: ['Troca', 'Urgente'],
-    status: 'novos' as const
-  },
-  {
-    id: 6,
-    cliente: 'Fernanda Lima',
-    telefone: '+55 11 44444-4444',
-    ultimaMensagem: 'Obrigado pelo atendimento, foi muito útil!',
-    tempo: '3 horas',
-    setor: 'Vendas',
-    agente: 'Ana Silva',
-    status: 'finalizados' as const
-  }
-];
+// Updated interface to match Supabase data structure
+interface Atendimento {
+  id: string; // Changed from number to string
+  cliente: string;
+  telefone: string;
+  ultimaMensagem: string;
+  tempo: string;
+  setor: string;
+  agente?: string;
+  tags?: string[];
+  status: 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado'; // Updated status values
+  transferencia?: {
+    de: string;
+    motivo: string;
+    dataTransferencia: string;
+  };
+}
 
 // Configuração simulada do limite de mensagens (normalmente viria do Painel)
 const LIMITE_MENSAGENS_ABERTAS = 5; // Configurável pelo administrador
 
 const mensagensExemplo = [
-  { id: 1, texto: 'Olá! Preciso de ajuda com meu pedido #12345', autor: 'cliente' as const, tempo: '14:30' },
-  { id: 2, texto: 'Olá João! Claro, vou verificar seu pedido. Um momento por favor.', autor: 'agente' as const, tempo: '14:31', status: 'lido' as const },
-  { id: 3, texto: 'Estou vendo aqui no sistema que seu pedido está em separação no estoque e deve ser enviado hoje ainda.', autor: 'agente' as const, tempo: '14:32', status: 'lido' as const },
-  { id: 4, texto: 'Perfeito! Muito obrigado pelo atendimento rápido.', autor: 'cliente' as const, tempo: '14:33' },
-  { id: 5, texto: 'Você consegue me passar o código de rastreamento?', autor: 'cliente' as const, tempo: '14:34' },
-  { id: 6, texto: 'Claro! Assim que o pedido for despachado, o código de rastreamento será enviado automaticamente para o seu email e também para o seu WhatsApp.', autor: 'agente' as const, tempo: '14:35', status: 'lido' as const }
+  { id: '1', texto: 'Olá! Preciso de ajuda com meu pedido #12345', autor: 'cliente' as const, tempo: '14:30' },
+  { id: '2', texto: 'Olá João! Claro, vou verificar seu pedido. Um momento por favor.', autor: 'agente' as const, tempo: '14:31', status: 'lido' as const },
+  { id: '3', texto: 'Estou vendo aqui no sistema que seu pedido está em separação no estoque e deve ser enviado hoje ainda.', autor: 'agente' as const, tempo: '14:32', status: 'lido' as const },
+  { id: '4', texto: 'Perfeito! Muito obrigado pelo atendimento rápido.', autor: 'cliente' as const, tempo: '14:33' },
+  { id: '5', texto: 'Você consegue me passar o código de rastreamento?', autor: 'cliente' as const, tempo: '14:34' },
+  { id: '6', texto: 'Claro! Assim que o pedido for despachado, o código de rastreamento será enviado automaticamente para o seu email e também para o seu WhatsApp.', autor: 'agente' as const, tempo: '14:35', status: 'lido' as const }
 ];
 
 const clienteExemplo = {
-  id: 1,
+  id: '1', // Changed to string
   nome: 'João Silva',
   telefone: '+55 11 99999-9999',
   email: 'joao.silva@email.com',
   dataCadastro: '15/03/2023',
   tags: ['Cliente Fiel', 'Premium'],
   historico: [
-    { id: 1, data: '10/05/2023', assunto: 'Problema com entrega', status: 'Resolvido' },
-    { id: 2, data: '23/06/2023', assunto: 'Troca de produto', status: 'Resolvido' },
-    { id: 3, data: '05/09/2023', assunto: 'Dúvida sobre garantia', status: 'Resolvido' }
+    { id: '1', data: '10/05/2023', assunto: 'Problema com entrega', status: 'Resolvido' }, // Changed ids to string
+    { id: '2', data: '23/06/2023', assunto: 'Troca de produto', status: 'Resolvido' },
+    { id: '3', data: '05/09/2023', assunto: 'Dúvida sobre garantia', status: 'Resolvido' }
   ]
 };
 
@@ -145,7 +93,7 @@ const contatosMockInicial = [
 ];
 
 export default function Atendimento() {
-  const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
+  const [selectedAtendimento, setSelectedAtendimento] = useState<Atendimento | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showContacts, setShowContacts] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
@@ -166,15 +114,7 @@ export default function Atendimento() {
     handleContactSaved
   } = useContactCheck();
 
-  // Calcular mensagens em aberto para o agente atual
-  const mensagensEmAberto = dadosAtendimentos.filter(a => 
-    (a.status === 'novos' || a.status === 'em-atendimento') && 
-    a.agente === 'Ana Silva' // Agente atual simulado
-  ).length;
-
-  const podeIniciarNovoAtendimento = mensagensEmAberto < LIMITE_MENSAGENS_ABERTAS;
-  
-  const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
+  const handleSelectAtendimento = (atendimento: Atendimento) => {
     setSelectedAtendimento(atendimento);
     setShowContacts(false);
     if (isMobile) {
@@ -222,14 +162,6 @@ export default function Atendimento() {
   };
 
   const handleNovaConversa = () => {
-    if (!podeIniciarNovoAtendimento) {
-      toast({
-        title: "Limite atingido",
-        description: `Você atingiu o limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens em aberto. Finalize ou transfira alguns atendimentos para iniciar novos.`,
-        variant: "destructive"
-      });
-      return;
-    }
     setShowContacts(true);
     if (isMobile) {
       setShowChat(true);
@@ -237,25 +169,16 @@ export default function Atendimento() {
   };
 
   const handleSelectContact = (contato: typeof contatos[0]) => {
-    if (!podeIniciarNovoAtendimento) {
-      toast({
-        title: "Limite atingido",
-        description: `Você atingiu o limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens em aberto. Finalize ou transfira alguns atendimentos para iniciar novos.`,
-        variant: "destructive"
-      });
-      return;
-    }
-
     // Criar novo atendimento baseado no contato selecionado
-    const novoAtendimento = {
-      id: dadosAtendimentos.length + 1,
+    const novoAtendimento: Atendimento = {
+      id: `novo-${Date.now()}`, // Generate a unique string ID
       cliente: contato.nome,
       telefone: contato.telefone,
       ultimaMensagem: 'Nova conversa iniciada',
       tempo: 'agora',
       setor: 'Suporte',
-      tags: [], // Add missing tags property as empty array
-      status: 'novos' as const
+      tags: [],
+      status: 'ativo' // Use the correct status value
     };
     
     setSelectedAtendimento(novoAtendimento);
@@ -298,17 +221,15 @@ export default function Atendimento() {
               <FilterBar />
               <Button 
                 onClick={handleNovaConversa}
-                disabled={!podeIniciarNovoAtendimento}
                 className="bg-green-500 hover:bg-green-600 text-white ml-2 w-10 h-10 p-0"
                 size="icon"
-                title={!podeIniciarNovoAtendimento ? `Limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens atingido` : 'Nova conversa'}
+                title="Nova conversa"
               >
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
             <div className="flex-1 overflow-hidden">
               <AtendimentosList 
-                atendimentos={dadosAtendimentos} 
                 onSelectAtendimento={handleSelectAtendimento}
                 selectedAtendimento={selectedAtendimento}
                 isMobile={isMobile}
@@ -326,13 +247,13 @@ export default function Atendimento() {
           // Mostra chat em tela cheia
           <div className="h-full">
             <ChatWhatsApp 
+              conversaId={selectedAtendimento.id}
               cliente={{
                 id: selectedAtendimento.id,
                 nome: selectedAtendimento.cliente,
                 telefone: selectedAtendimento.telefone,
                 status: 'online'
               }}
-              mensagens={mensagensExemplo}
               onReturnToList={handleReturnToList}
               onSairConversa={handleSairConversa}
               onTransferir={handleTransferir}
@@ -382,10 +303,9 @@ export default function Atendimento() {
             </div>
             <Button 
               onClick={handleNovaConversa}
-              disabled={!podeIniciarNovoAtendimento}
               className="bg-green-500 hover:bg-green-600 text-white w-10 h-10 p-0"
               size="icon"
-              title={!podeIniciarNovoAtendimento ? `Limite de ${LIMITE_MENSAGENS_ABERTAS} mensagens atingido` : 'Nova conversa'}
+              title="Nova conversa"
             >
               <Plus className="w-4 h-4" />
             </Button>
@@ -401,7 +321,6 @@ export default function Atendimento() {
               />
             ) : (
               <AtendimentosList 
-                atendimentos={dadosAtendimentos} 
                 onSelectAtendimento={handleSelectAtendimento}
                 selectedAtendimento={selectedAtendimento}
               />
@@ -415,13 +334,13 @@ export default function Atendimento() {
           <div className="row-span-2">
             {selectedAtendimento ? (
               <ChatWhatsApp 
+                conversaId={selectedAtendimento.id}
                 cliente={{
                   id: selectedAtendimento.id,
                   nome: selectedAtendimento.cliente,
                   telefone: selectedAtendimento.telefone,
                   status: 'online'
                 }}
-                mensagens={mensagensExemplo}
                 onSairConversa={handleSairConversa}
                 onTransferir={handleTransferir}
                 onFinalizar={handleFinalizar}
@@ -432,11 +351,6 @@ export default function Atendimento() {
                   <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-600 mb-1">Selecione uma conversa</h3>
                   <p className="text-sm text-gray-500">Clique em uma conversa para iniciar o atendimento</p>
-                  {!podeIniciarNovoAtendimento && (
-                    <p className="text-xs text-orange-600 mt-2">
-                      Limite de {LIMITE_MENSAGENS_ABERTAS} mensagens em aberto atingido
-                    </p>
-                  )}
                 </div>
               </div>
             )}
