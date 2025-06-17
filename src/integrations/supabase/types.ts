@@ -652,7 +652,10 @@ export type Database = {
       }
       setores: {
         Row: {
+          agentes_ativos: number | null
+          atendimentos_ativos: number | null
           ativo: boolean | null
+          capacidade_maxima: number | null
           cor: string | null
           created_at: string | null
           descricao: string | null
@@ -661,7 +664,10 @@ export type Database = {
           nome: string
         }
         Insert: {
+          agentes_ativos?: number | null
+          atendimentos_ativos?: number | null
           ativo?: boolean | null
+          capacidade_maxima?: number | null
           cor?: string | null
           created_at?: string | null
           descricao?: string | null
@@ -670,7 +676,10 @@ export type Database = {
           nome: string
         }
         Update: {
+          agentes_ativos?: number | null
+          atendimentos_ativos?: number | null
           ativo?: boolean | null
+          capacidade_maxima?: number | null
           cor?: string | null
           created_at?: string | null
           descricao?: string | null

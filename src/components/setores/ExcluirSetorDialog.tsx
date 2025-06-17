@@ -2,16 +2,8 @@
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertTriangle } from 'lucide-react';
-import { useSetoresData } from '@/hooks/useSetoresData';
-
-interface SetorData {
-  id: string;
-  nome: string;
-  descricao?: string;
-  cor: string;
-  ativo: boolean;
-  created_at: string;
-}
+import { useDeleteSetorMutation } from '@/hooks/useSetoresQuery';
+import { type SetorData } from '@/services/setoresService';
 
 interface ExcluirSetorDialogProps {
   setor: SetorData | null;
@@ -20,15 +12,16 @@ interface ExcluirSetorDialogProps {
 }
 
 export function ExcluirSetorDialog({ setor, open, onOpenChange }: ExcluirSetorDialogProps) {
-  const { excluirSetor } = useSetoresData();
+  const deleteSetorMutation = useDeleteSetorMutation();
 
   if (!setor) return null;
 
-  const handleExcluir = async () => {
-    const sucesso = await excluirSetor(setor.id);
-    if (sucesso) {
-      onOpenChange(false);
-    }
+  const handleExcluir = () => {
+    deleteSetorMutation.mutate(setor.id, {
+      onSuccess: () => {
+        onOpenChange(false);
+      }
+    });
   };
 
   return (
@@ -46,14 +39,19 @@ export function ExcluirSetorDialog({ setor, open, onOpenChange }: ExcluirSetorDi
 
         <div className="space-y-4">
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={deleteSetorMutation.isPending}
+            >
               Cancelar
             </Button>
             <Button 
               variant="destructive" 
               onClick={handleExcluir}
+              disabled={deleteSetorMutation.isPending}
             >
-              Excluir Setor
+              {deleteSetorMutation.isPending ? 'Excluindo...' : 'Excluir Setor'}
             </Button>
           </div>
         </div>

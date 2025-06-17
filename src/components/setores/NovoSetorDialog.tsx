@@ -1,33 +1,44 @@
 
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus } from 'lucide-react';
-import { useSetores, type Setor } from '@/hooks/useSetores';
+import { Switch } from '@/components/ui/switch';
+import { useCreateSetorMutation } from '@/hooks/useSetoresQuery';
 
 const coresDisponiveis = [
-  { valor: 'bg-blue-500', nome: 'Azul' },
-  { valor: 'bg-green-500', nome: 'Verde' },
-  { valor: 'bg-yellow-500', nome: 'Amarelo' },
-  { valor: 'bg-purple-500', nome: 'Roxo' },
-  { valor: 'bg-red-500', nome: 'Vermelho' },
-  { valor: 'bg-indigo-500', nome: 'Índigo' },
-  { valor: 'bg-pink-500', nome: 'Rosa' },
-  { valor: 'bg-teal-500', nome: 'Verde-azulado' },
-  { valor: 'bg-orange-500', nome: 'Laranja' },
-  { valor: 'bg-gray-500', nome: 'Cinza' }
+  { valor: '#3B82F6', nome: 'Azul' },
+  { valor: '#10B981', nome: 'Verde' },
+  { valor: '#F59E0B', nome: 'Amarelo' },
+  { valor: '#8B5CF6', nome: 'Roxo' },
+  { valor: '#EF4444', nome: 'Vermelho' },
+  { valor: '#6366F1', nome: 'Índigo' },
+  { valor: '#EC4899', nome: 'Rosa' },
+  { valor: '#14B8A6', nome: 'Verde-azulado' },
+  { valor: '#F97316', nome: 'Laranja' },
+  { valor: '#6B7280', nome: 'Cinza' }
 ];
 
 export function NovoSetorDialog() {
   const [open, setOpen] = useState(false);
   const [nome, setNome] = useState('');
-  const [cor, setCor] = useState('');
-  const [capacidadeMaxima, setCapacidadeMaxima] = useState('20');
+  const [cor, setCor] = useState('#3B82F6');
+  const [capacidadeMaxima, setCapacidadeMaxima] = useState('10');
   const [descricao, setDescricao] = useState('');
-  const { criarSetor } = useSetores();
+  const [ativo, setAtivo] = useState(true);
+
+  const createSetorMutation = useCreateSetorMutation();
+
+  const resetForm = () => {
+    setNome('');
+    setCor('#3B82F6');
+    setCapacidadeMaxima('10');
+    setDescricao('');
+    setAtivo(true);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,24 +47,18 @@ export function NovoSetorDialog() {
       return;
     }
 
-    const dadosSetor: Omit<Setor, 'id' | 'criadoEm'> = {
+    createSetorMutation.mutate({
       nome: nome.trim(),
       cor,
-      capacidadeMaxima: parseInt(capacidadeMaxima) || 20,
+      capacidade_maxima: parseInt(capacidadeMaxima) || 10,
       descricao: descricao.trim() || undefined,
-      agentes: 0,
-      atendimentosAtivos: 0,
-      ativo: true
-    };
-
-    criarSetor(dadosSetor);
-    
-    // Limpar formulário
-    setNome('');
-    setCor('');
-    setCapacidadeMaxima('20');
-    setDescricao('');
-    setOpen(false);
+      ativo
+    }, {
+      onSuccess: () => {
+        setOpen(false);
+        resetForm();
+      }
+    });
   };
 
   return (
@@ -90,7 +95,10 @@ export function NovoSetorDialog() {
                 {coresDisponiveis.map((corOption) => (
                   <SelectItem key={corOption.valor} value={corOption.valor}>
                     <div className="flex items-center space-x-2">
-                      <div className={`w-4 h-4 ${corOption.valor} rounded`}></div>
+                      <div 
+                        className="w-4 h-4 rounded" 
+                        style={{ backgroundColor: corOption.valor }}
+                      ></div>
                       <span>{corOption.nome}</span>
                     </div>
                   </SelectItem>
@@ -122,12 +130,30 @@ export function NovoSetorDialog() {
             />
           </div>
 
+          <div className="flex items-center space-x-2">
+            <Switch
+              id="ativo"
+              checked={ativo}
+              onCheckedChange={setAtivo}
+            />
+            <Label htmlFor="ativo">Setor ativo</Label>
+          </div>
+
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => setOpen(false)}
+              disabled={createSetorMutation.isPending}
+            >
               Cancelar
             </Button>
-            <Button type="submit" className="bg-amplie-primary hover:bg-amplie-primary-light">
-              Criar Setor
+            <Button 
+              type="submit" 
+              className="bg-amplie-primary hover:bg-amplie-primary-light"
+              disabled={createSetorMutation.isPending}
+            >
+              {createSetorMutation.isPending ? 'Criando...' : 'Criar Setor'}
             </Button>
           </div>
         </form>

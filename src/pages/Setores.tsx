@@ -4,17 +4,19 @@ import { Building2, Edit, Trash2, Users, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useSetoresData } from '@/hooks/useSetoresData';
+import { useSetoresQuery } from '@/hooks/useSetoresQuery';
 import { NovoSetorDialog } from '@/components/setores/NovoSetorDialog';
 import { EditarSetorDialog } from '@/components/setores/EditarSetorDialog';
 import { ExcluirSetorDialog } from '@/components/setores/ExcluirSetorDialog';
 import { Loader2 } from 'lucide-react';
+import { type SetorData } from '@/services/setoresService';
 
 export default function Setores() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [setorParaEditar, setSetorParaEditar] = useState<any>(null);
-  const [setorParaExcluir, setSetorParaExcluir] = useState<any>(null);
-  const { setores, loading } = useSetoresData();
+  const [setorParaEditar, setSetorParaEditar] = useState<SetorData | null>(null);
+  const [setorParaExcluir, setSetorParaExcluir] = useState<SetorData | null>(null);
+  
+  const { data: setores = [], isLoading, error } = useSetoresQuery();
 
   const filteredSetores = setores.filter(setor =>
     setor.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -29,12 +31,23 @@ export default function Setores() {
     }).format(new Date(data));
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Carregando setores...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Erro ao carregar setores</p>
+          <p className="text-sm text-gray-500">{error.message}</p>
         </div>
       </div>
     );
@@ -113,7 +126,10 @@ export default function Setores() {
             {/* Header do Card */}
             <div className="flex items-start justify-between mb-4 gap-2">
               <div className="flex items-start space-x-3 min-w-0 flex-1">
-                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0`} style={{ backgroundColor: setor.cor }}>
+                <div 
+                  className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" 
+                  style={{ backgroundColor: setor.cor }}
+                >
                   <Building2 className="w-5 h-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -143,6 +159,14 @@ export default function Setores() {
                   <Trash2 className="w-4 h-4 text-red-500" />
                 </Button>
               </div>
+            </div>
+
+            {/* Capacidade */}
+            <div className="mb-4 min-w-0">
+              <p className="text-xs text-gray-500">Capacidade</p>
+              <p className="text-sm font-medium">
+                {setor.agentes_ativos}/{setor.capacidade_maxima} agentes
+              </p>
             </div>
 
             {/* Descrição */}
