@@ -10,8 +10,9 @@ export interface Profile {
   email: string;
   cargo?: string;
   setor?: string;
-  status: string; // Changed from union type to string
+  status: string;
   avatar_url?: string;
+  empresa_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -24,6 +25,7 @@ export interface Contato {
   empresa?: string;
   tags?: string[];
   observacoes?: string;
+  empresa_id?: string;
   created_at: string;
   updated_at: string;
 }
@@ -32,11 +34,12 @@ export interface Conversa {
   id: string;
   contato_id?: string;
   agente_id?: string;
-  status: string; // Changed from union type to string
-  canal: string; // Changed from union type to string
-  prioridade: string; // Changed from union type to string
+  status: string;
+  canal: string;
+  prioridade: string;
   setor?: string;
   tags?: string[];
+  empresa_id?: string;
   created_at: string;
   updated_at: string;
   contatos?: Contato;
@@ -46,10 +49,10 @@ export interface Conversa {
 export interface Mensagem {
   id: string;
   conversa_id: string;
-  remetente_tipo: string; // Changed from union type to string
+  remetente_tipo: string;
   remetente_id?: string;
   conteudo: string;
-  tipo_mensagem: string; // Changed from union type to string
+  tipo_mensagem: string;
   metadata?: any;
   lida: boolean;
   created_at: string;
@@ -137,9 +140,15 @@ export function useSupabaseData() {
   // Criar contato
   const createContato = async (contato: Omit<Contato, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Buscar empresa_id do usuário se não foi fornecido
+      let empresaId = contato.empresa_id;
+      if (!empresaId && profile?.empresa_id) {
+        empresaId = profile.empresa_id;
+      }
+
       const { data, error } = await supabase
         .from('contatos')
-        .insert([contato])
+        .insert([{ ...contato, empresa_id: empresaId }])
         .select()
         .single();
 
@@ -167,11 +176,18 @@ export function useSupabaseData() {
   // Criar conversa
   const createConversa = async (conversa: Omit<Conversa, 'id' | 'created_at' | 'updated_at'>) => {
     try {
+      // Buscar empresa_id do usuário se não foi fornecido
+      let empresaId = conversa.empresa_id;
+      if (!empresaId && profile?.empresa_id) {
+        empresaId = profile.empresa_id;
+      }
+
       const { data, error } = await supabase
         .from('conversas')
         .insert([{
           ...conversa,
-          agente_id: user?.id
+          agente_id: user?.id,
+          empresa_id: empresaId
         }])
         .select(`
           *,
@@ -202,7 +218,7 @@ export function useSupabaseData() {
       loadContatos();
       loadConversas();
     }
-  }, [user]);
+  }, [user, profile]);
 
   return {
     profile,
