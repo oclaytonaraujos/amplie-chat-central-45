@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
-import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Form, 
   FormControl, 
@@ -15,6 +14,8 @@ import {
   FormMessage 
 } from '@/components/ui/form';
 import { useForm } from 'react-hook-form';
+import { useChatbotFlows, ChatbotFlowComplete } from '@/hooks/useChatbotFlows';
+import { toast } from 'sonner';
 
 interface NoDoFluxo {
   id: string;
@@ -39,40 +40,72 @@ interface ChatbotFormData {
 }
 
 interface ChatbotFormProps {
-  formData?: ChatbotFormData;
-  onSubmit: (data: ChatbotFormData) => void;
+  flowId?: string;
+  onSubmit: (success: boolean) => void;
   onCancel: () => void;
   isEdit?: boolean;
 }
 
 const setoresDisponiveis = ['Vendas', 'Suporte Técnico', 'Financeiro', 'Recursos Humanos'];
 
-export function ChatbotForm({ formData, onSubmit, onCancel, isEdit = false }: ChatbotFormProps) {
+export function ChatbotForm({ flowId, onSubmit, onCancel, isEdit = false }: ChatbotFormProps) {
+  const { saveFlow, getFlowById, loading } = useChatbotFlows();
+  const [nosFluxo, setNosFluxo] = useState<NoDoFluxo[]>([{
+    id: 'no-inicial',
+    nome: 'Nó Inicial',
+    mensagem: '',
+    tipoResposta: 'opcoes',
+    opcoes: [{ id: '1', texto: '', proximaAcao: 'finalizar' }],
+    isCollapsed: false
+  }]);
+
   const form = useForm<ChatbotFormData>({
-    defaultValues: formData || {
+    defaultValues: {
       nome: '',
       mensagemInicial: '',
-      nos: [{
-        id: 'no-inicial',
-        nome: 'Nó Inicial',
-        mensagem: '',
-        tipoResposta: 'opcoes',
-        opcoes: [{ id: '1', texto: '', proximaAcao: 'finalizar' }],
-        isCollapsed: false
-      }]
+      nos: []
     }
   });
 
-  const [nosFluxo, setNosFluxo] = useState<NoDoFluxo[]>(
-    formData?.nos || [{
-      id: 'no-inicial',
-      nome: 'Nó Inicial',
-      mensagem: '',
-      tipoResposta: 'opcoes',
-      opcoes: [{ id: '1', texto: '', proximaAcao: 'finalizar' }],
-      isCollapsed: false
-    }]
-  );
+  // Carregar dados do fluxo existente se estiver editando
+  useEffect(() => {
+    const loadFlowData = async () => {
+      if (flowId && isEdit) {
+        const flowData = await getFlowById(flowId);
+        if (flowData) {
+          form.setValue('nome', flowData.nome);
+          form.setValue('mensagemInicial', flowData.mensagem_inicial);
+          
+          const formattedNodes = flowData.nodes.map(node => ({
+            id: node.node_id,
+            nome: node.nome,
+            mensagem: node.mensagem,
+            tipoResposta: node.tipo_resposta,
+            opcoes: node.options.map(option => ({
+              id: option.option_id,
+              texto: option.texto,
+              proximaAcao: option.proxima_acao,
+              proximoNoId: option.proximo_node_id,
+              setorTransferencia: option.setor_transferencia,
+              mensagemFinal: option.mensagem_final
+            })),
+            isCollapsed: false
+          }));
+          
+          setNosFluxo(formattedNodes.length > 0 ? formattedNodes : [{
+            id: 'no-inicial',
+            nome: 'Nó Inicial',
+            mensagem: '',
+            tipoResposta: 'opcoes',
+            opcoes: [{ id: '1', texto: '', proximaAcao: 'finalizar' }],
+            isCollapsed: false
+          }]);
+        }
+      }
+    };
+
+    loadFlowData();
+  }, [flowId, isEdit, getFlowById, form]);
 
   const gerarIdUnico = () => `no-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
@@ -89,7 +122,7 @@ export function ChatbotForm({ formData, onSubmit, onCancel, isEdit = false }: Ch
   };
 
   const removerNo = (noId: string) => {
-    if (noId === 'no-inicial') return; // Não permite remover o nó inicial
+    if (noId === 'no-inicial') return;
     setNosFluxo(nosFluxo.filter(no => no.id !== noId));
   };
 
@@ -142,13 +175,48 @@ export function ChatbotForm({ formData, onSubmit, onCancel, isEdit = false }: Ch
     ));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const formValues = form.getValues();
-    const dadosCompletos: ChatbotFormData = {
-      ...formValues,
-      nos: nosFluxo
+    
+    // Validações básicas
+    if (!formValues.nome.trim()) {
+      toast.error('Nome do fluxo é obrigatório');
+      return;
+    }
+    
+    if (!formValues.mensagemInicial.trim()) {
+      toast.error('Mensagem de boas-vindas é obrigatória');
+      return;
+    }
+
+    // Validar nós
+    for (const no of nosFluxo) {
+      if (!no.mensagem.trim()) {
+        toast.error(`Mensagem do nó "${no.nome || 'sem nome'}" é obrigatória`);
+        return;
+      }
+      
+      if (no.tipoResposta === 'opcoes') {
+        for (const opcao of no.opcoes) {
+          if (!opcao.texto.trim()) {
+            toast.error(`Texto da opção no nó "${no.nome}" é obrigatório`);
+            return;
+          }
+        }
+      }
+    }
+
+    const dadosCompletos = {
+      nome: formValues.nome,
+      mensagem_inicial: formValues.mensagemInicial,
+      nos: nosFluxo.map(no => ({
+        ...no,
+        tipoResposta: no.tipoResposta
+      }))
     };
-    onSubmit(dadosCompletos);
+
+    const result = await saveFlow(dadosCompletos, flowId);
+    onSubmit(!!result);
   };
 
   return (
@@ -315,6 +383,52 @@ export function ChatbotForm({ formData, onSubmit, onCancel, isEdit = false }: Ch
                             </SelectContent>
                           </Select>
 
+                          {/* Campos condicionais baseados na ação */}
+                          {opcao.proximaAcao === 'proximo-no' && (
+                            <Select
+                              value={opcao.proximoNoId || ''}
+                              onValueChange={(value) => atualizarOpcao(no.id, opcao.id, 'proximoNoId', value)}
+                            >
+                              <SelectTrigger className="w-48">
+                                <SelectValue placeholder="Selecionar nó" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {nosFluxo.filter(n => n.id !== no.id).map(n => (
+                                  <SelectItem key={n.id} value={n.id}>
+                                    {n.nome || n.id}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+
+                          {opcao.proximaAcao === 'transferir' && (
+                            <Select
+                              value={opcao.setorTransferencia || ''}
+                              onValueChange={(value) => atualizarOpcao(no.id, opcao.id, 'setorTransferencia', value)}
+                            >
+                              <SelectTrigger className="w-48">
+                                <SelectValue placeholder="Selecionar setor" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {setoresDisponiveis.map(setor => (
+                                  <SelectItem key={setor} value={setor}>
+                                    {setor}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+
+                          {opcao.proximaAcao === 'mensagem-finalizar' && (
+                            <Input
+                              placeholder="Mensagem final"
+                              value={opcao.mensagemFinal || ''}
+                              onChange={(e) => atualizarOpcao(no.id, opcao.id, 'mensagemFinal', e.target.value)}
+                              className="w-48"
+                            />
+                          )}
+
                           {no.opcoes.length > 1 && (
                             <Button
                               variant="ghost"
@@ -364,11 +478,15 @@ export function ChatbotForm({ formData, onSubmit, onCancel, isEdit = false }: Ch
 
         {/* Botões de Ação */}
         <div className="flex justify-end space-x-2 pt-4 border-t">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
             Cancelar
           </Button>
-          <Button onClick={handleSubmit} className="bg-amplie-primary hover:bg-amplie-primary-light">
-            {isEdit ? 'Salvar Alterações' : 'Criar Fluxo'}
+          <Button 
+            onClick={handleSubmit} 
+            disabled={loading}
+            className="bg-amplie-primary hover:bg-amplie-primary-light"
+          >
+            {loading ? 'Salvando...' : (isEdit ? 'Salvar Alterações' : 'Criar Fluxo')}
           </Button>
         </div>
       </Form>

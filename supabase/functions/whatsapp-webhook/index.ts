@@ -27,22 +27,18 @@ interface WebhookPayload {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // Parse webhook payload
     const payload: WebhookPayload = await req.json()
     console.log('Webhook recebido:', JSON.stringify(payload, null, 2))
 
-    // Verificar se é uma mensagem recebida (não enviada por nós)
     if (payload.event !== 'message-received' || payload.data.fromMe) {
       console.log('Evento ignorado:', payload.event, 'fromMe:', payload.data.fromMe)
       return new Response(JSON.stringify({ success: true, message: 'Evento ignorado' }), {
@@ -52,7 +48,7 @@ serve(async (req) => {
     }
 
     const message = payload.data
-    const telefone = message.from.replace(/\D/g, '') // Remove caracteres não numéricos
+    const telefone = message.from.replace(/\D/g, '')
     const nomeContato = message.senderName || message.pushName || 'Cliente'
 
     console.log('Processando mensagem de:', telefone, 'nome:', nomeContato)
@@ -65,10 +61,8 @@ serve(async (req) => {
       .single()
 
     if (contatoError && contatoError.code === 'PGRST116') {
-      // Contato não existe, criar novo
       console.log('Criando novo contato para:', telefone)
       
-      // Buscar primeira empresa ativa (melhorar isso depois)
       const { data: empresa } = await supabase
         .from('empresas')
         .select('id')
@@ -111,11 +105,11 @@ serve(async (req) => {
       .limit(1)
       .single()
 
+    let novaConversa = false
     if (conversaError && conversaError.code === 'PGRST116') {
-      // Conversa não existe, criar nova
       console.log('Criando nova conversa para contato:', contato!.id)
       
-      const { data: novaConversa, error: criarConversaError } = await supabase
+      const { data: novaConversaData, error: criarConversaError } = await supabase
         .from('conversas')
         .insert({
           contato_id: contato!.id,
@@ -131,14 +125,15 @@ serve(async (req) => {
         throw criarConversaError
       }
 
-      conversa = novaConversa
+      conversa = novaConversaData
+      novaConversa = true
     } else if (conversaError) {
       throw conversaError
     }
 
     console.log('Conversa encontrada/criada:', conversa?.id)
 
-    // Inserir mensagem
+    // Inserir mensagem do cliente
     const { data: mensagem, error: mensagemError } = await supabase
       .from('mensagens')
       .insert({
@@ -162,6 +157,62 @@ serve(async (req) => {
     }
 
     console.log('Mensagem inserida:', mensagem.id)
+
+    // Verificar se deve iniciar o chatbot ou processar resposta
+    if (novaConversa) {
+      // Nova conversa - iniciar fluxo do chatbot
+      console.log('Iniciando fluxo do chatbot para nova conversa')
+      
+      try {
+        const chatbotResponse = await fetch(`${supabaseUrl}/functions/v1/chatbot-engine`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`
+          },
+          body: JSON.stringify({
+            conversaId: conversa!.id,
+            iniciarFluxo: true
+          })
+        })
+
+        const chatbotResult = await chatbotResponse.json()
+        console.log('Resultado do chatbot:', chatbotResult)
+      } catch (chatbotError) {
+        console.error('Erro ao iniciar chatbot:', chatbotError)
+      }
+    } else {
+      // Conversa existente - verificar se há sessão ativa do chatbot
+      const { data: sessaoAtiva } = await supabase
+        .from('chatbot_sessions')
+        .select('*')
+        .eq('conversa_id', conversa!.id)
+        .eq('status', 'ativo')
+        .single()
+
+      if (sessaoAtiva) {
+        console.log('Processando resposta do chatbot')
+        
+        try {
+          const chatbotResponse = await fetch(`${supabaseUrl}/functions/v1/chatbot-engine`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`
+            },
+            body: JSON.stringify({
+              conversaId: conversa!.id,
+              mensagemCliente: message.text.message
+            })
+          })
+
+          const chatbotResult = await chatbotResponse.json()
+          console.log('Resultado do chatbot:', chatbotResult)
+        } catch (chatbotError) {
+          console.error('Erro ao processar chatbot:', chatbotError)
+        }
+      }
+    }
 
     return new Response(
       JSON.stringify({ 

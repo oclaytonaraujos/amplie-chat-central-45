@@ -8,21 +8,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-interface Chatbot {
-  id: string;
-  nome: string;
-  status: string;
-  ultimaEdicao: string;
-  interacoes: number;
-  transferencias: number;
-}
+import { ChatbotFlow } from '@/hooks/useChatbotFlows';
+import { format } from 'date-fns';
 
 interface ChatbotTableProps {
-  chatbots: Chatbot[];
-  onEdit: (chatbot: Chatbot) => void;
+  chatbots: ChatbotFlow[];
+  onEdit: (chatbot: ChatbotFlow) => void;
   onDuplicate: (chatbotId: string) => void;
-  onToggleStatus: (chatbotId: string) => void;
+  onToggleStatus: (chatbotId: string, currentStatus: string) => void;
   onDelete: (chatbotId: string) => void;
 }
 
@@ -36,7 +29,7 @@ export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, on
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Fluxo</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Status</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Última Edição</th>
-              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Métricas</th>
+              <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Padrão</th>
               <th className="px-6 py-4 text-left text-sm font-medium text-gray-900">Ações</th>
             </tr>
           </thead>
@@ -50,7 +43,11 @@ export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, on
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{chatbot.nome}</p>
-                      <p className="text-sm text-gray-500">ID: {chatbot.id.substring(0, 8)}...</p>
+                      <p className="text-sm text-gray-500">
+                        {chatbot.mensagem_inicial.length > 50 
+                          ? `${chatbot.mensagem_inicial.substring(0, 50)}...` 
+                          : chatbot.mensagem_inicial}
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -63,26 +60,23 @@ export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, on
                   </Badge>
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-900">{chatbot.ultimaEdicao}</span>
+                  <span className="text-sm text-gray-900">
+                    {chatbot.updated_at ? format(new Date(chatbot.updated_at), 'dd/MM/yyyy HH:mm') : '-'}
+                  </span>
                 </td>
                 <td className="px-6 py-4">
-                  <div className="text-sm space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <MessageCircle className="w-3 h-3 text-gray-400" />
-                      <span className="text-gray-600">{chatbot.interacoes} interações</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <ArrowRight className="w-3 h-3 text-gray-400" />
-                      <span className="text-gray-600">{chatbot.transferencias} transferências</span>
-                    </div>
-                  </div>
+                  {chatbot.is_default && (
+                    <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                      Padrão
+                    </Badge>
+                  )}
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex items-center space-x-2">
                     <Button 
                       variant="ghost" 
                       size="sm"
-                      onClick={() => onToggleStatus(chatbot.id)}
+                      onClick={() => onToggleStatus(chatbot.id!, chatbot.status)}
                       className={chatbot.status === 'ativo' ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
                     >
                       {chatbot.status === 'ativo' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
@@ -99,7 +93,7 @@ export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, on
                           <Edit className="w-4 h-4 mr-2" />
                           Editar
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => onDuplicate(chatbot.id)}>
+                        <DropdownMenuItem onClick={() => onDuplicate(chatbot.id!)}>
                           <Copy className="w-4 h-4 mr-2" />
                           Duplicar
                         </DropdownMenuItem>
@@ -110,7 +104,7 @@ export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, on
                       variant="ghost" 
                       size="sm" 
                       className="text-red-600 hover:text-red-700"
-                      onClick={() => onDelete(chatbot.id)}
+                      onClick={() => onDelete(chatbot.id!)}
                     >
                       <Trash2 className="w-4 h-4" />
                     </Button>

@@ -9,6 +9,183 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chatbot_flows: {
+        Row: {
+          created_at: string | null
+          empresa_id: string
+          id: string
+          is_default: boolean | null
+          mensagem_inicial: string
+          nome: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          empresa_id: string
+          id?: string
+          is_default?: boolean | null
+          mensagem_inicial: string
+          nome: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          empresa_id?: string
+          id?: string
+          is_default?: boolean | null
+          mensagem_inicial?: string
+          nome?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_flows_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_nodes: {
+        Row: {
+          created_at: string | null
+          flow_id: string
+          id: string
+          mensagem: string
+          node_id: string
+          nome: string
+          ordem: number | null
+          tipo_resposta: string
+        }
+        Insert: {
+          created_at?: string | null
+          flow_id: string
+          id?: string
+          mensagem: string
+          node_id: string
+          nome: string
+          ordem?: number | null
+          tipo_resposta: string
+        }
+        Update: {
+          created_at?: string | null
+          flow_id?: string
+          id?: string
+          mensagem?: string
+          node_id?: string
+          nome?: string
+          ordem?: number | null
+          tipo_resposta?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_nodes_flow_id_fkey"
+            columns: ["flow_id"]
+            isOneToOne: false
+            referencedRelation: "chatbot_flows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_options: {
+        Row: {
+          created_at: string | null
+          id: string
+          mensagem_final: string | null
+          node_id: string
+          option_id: string
+          ordem: number | null
+          proxima_acao: string
+          proximo_node_id: string | null
+          setor_transferencia: string | null
+          texto: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mensagem_final?: string | null
+          node_id: string
+          option_id: string
+          ordem?: number | null
+          proxima_acao: string
+          proximo_node_id?: string | null
+          setor_transferencia?: string | null
+          texto: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mensagem_final?: string | null
+          node_id?: string
+          option_id?: string
+          ordem?: number | null
+          proxima_acao?: string
+          proximo_node_id?: string | null
+          setor_transferencia?: string | null
+          texto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_options_node_id_fkey"
+            columns: ["node_id"]
+            isOneToOne: false
+            referencedRelation: "chatbot_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatbot_sessions: {
+        Row: {
+          conversa_id: string
+          created_at: string | null
+          current_node_id: string
+          flow_id: string
+          id: string
+          session_data: Json | null
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          conversa_id: string
+          created_at?: string | null
+          current_node_id: string
+          flow_id: string
+          id?: string
+          session_data?: Json | null
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          conversa_id?: string
+          created_at?: string | null
+          current_node_id?: string
+          flow_id?: string
+          id?: string
+          session_data?: Json | null
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbot_sessions_conversa_id_fkey"
+            columns: ["conversa_id"]
+            isOneToOne: true
+            referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chatbot_sessions_flow_id_fkey"
+            columns: ["flow_id"]
+            isOneToOne: false
+            referencedRelation: "chatbot_flows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chatbots: {
         Row: {
           created_at: string | null
