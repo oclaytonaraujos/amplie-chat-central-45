@@ -167,6 +167,54 @@ export type Database = {
           },
         ]
       }
+      conversas_internas: {
+        Row: {
+          created_at: string | null
+          empresa_id: string
+          id: string
+          nome: string | null
+          participante_1_id: string
+          participante_2_id: string
+          tipo: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          empresa_id: string
+          id?: string
+          nome?: string | null
+          participante_1_id: string
+          participante_2_id: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          empresa_id?: string
+          id?: string
+          nome?: string | null
+          participante_1_id?: string
+          participante_2_id?: string
+          tipo?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversas_internas_participante_1_id_fkey"
+            columns: ["participante_1_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversas_internas_participante_2_id_fkey"
+            columns: ["participante_2_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       empresas: {
         Row: {
           ativo: boolean | null
@@ -269,6 +317,51 @@ export type Database = {
             columns: ["conversa_id"]
             isOneToOne: false
             referencedRelation: "conversas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mensagens_internas: {
+        Row: {
+          conteudo: string
+          conversa_interna_id: string
+          created_at: string | null
+          id: string
+          lida: boolean | null
+          remetente_id: string
+          tipo_mensagem: string | null
+        }
+        Insert: {
+          conteudo: string
+          conversa_interna_id: string
+          created_at?: string | null
+          id?: string
+          lida?: boolean | null
+          remetente_id: string
+          tipo_mensagem?: string | null
+        }
+        Update: {
+          conteudo?: string
+          conversa_interna_id?: string
+          created_at?: string | null
+          id?: string
+          lida?: boolean | null
+          remetente_id?: string
+          tipo_mensagem?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mensagens_internas_conversa_interna_id_fkey"
+            columns: ["conversa_interna_id"]
+            isOneToOne: false
+            referencedRelation: "conversas_internas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mensagens_internas_remetente_id_fkey"
+            columns: ["remetente_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
