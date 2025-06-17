@@ -1,4 +1,3 @@
-
 import { User, Phone, Clock, Tag, ArrowRight } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -12,14 +11,14 @@ interface TransferenciaInfo {
 
 interface ClienteInfoProps {
   cliente: {
-    id: number;
+    id: string; // Changed from number to string
     nome: string;
     telefone: string;
     email?: string;
     dataCadastro?: string;
     tags?: string[];
     historico?: {
-      id: number;
+      id: string; // Changed from number to string
       data: string;
       assunto: string;
       status: string;
