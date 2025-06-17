@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock, Image, FileText, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,7 +24,7 @@ interface Message {
 }
 
 interface ClienteInfo {
-  id: number | string;
+  id: number;
   nome: string;
   telefone: string;
   avatar?: string;
@@ -46,20 +45,19 @@ interface ChatWhatsAppProps {
   onSairConversa?: () => void;
   onTransferir?: () => void;
   onFinalizar?: () => void;
-  onSendMessage?: (message: string) => void;
   transferencia?: TransferenciaInfo;
 }
 
 export function ChatWhatsApp({ 
   cliente, 
-  mensagens, 
+  mensagens: initialMensagens, 
   onReturnToList,
   onSairConversa,
   onTransferir,
   onFinalizar,
-  onSendMessage,
   transferencia
 }: ChatWhatsAppProps) {
+  const [mensagens, setMensagens] = useState<Message[]>(initialMensagens);
   const [novaMensagem, setNovaMensagem] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [anexoSelecionado, setAnexoSelecionado] = useState<File | null>(null);
@@ -81,11 +79,26 @@ export function ChatWhatsApp({
     }
 
     let success = false;
+    let novaMsgObj: Message;
 
     if (anexoSelecionado) {
       // Simular upload do anexo e obter URL
       const anexoUrl = URL.createObjectURL(anexoSelecionado);
       
+      novaMsgObj = {
+        id: mensagens.length + 1,
+        texto: novaMensagem || '',
+        anexo: {
+          tipo: anexoSelecionado.type.startsWith('image/') ? 'imagem' : 
+                anexoSelecionado.type.startsWith('audio/') ? 'audio' : 'documento',
+          url: anexoUrl,
+          nome: anexoSelecionado.name
+        },
+        autor: 'agente',
+        tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        status: 'enviado'
+      };
+
       // Enviar via Z-API baseado no tipo de arquivo
       if (anexoSelecionado.type.startsWith('image/')) {
         success = await sendImageMessage(cliente.telefone, anexoUrl, novaMensagem);
@@ -98,12 +111,45 @@ export function ChatWhatsApp({
       setAnexoSelecionado(null);
     } else {
       // Mensagem de texto
+      novaMsgObj = {
+        id: mensagens.length + 1,
+        texto: novaMensagem,
+        autor: 'agente',
+        tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        status: 'enviado'
+      };
+
       success = await sendMessage(cliente.telefone, novaMensagem);
     }
 
-    if (success && onSendMessage) {
-      onSendMessage(novaMensagem);
+    if (success) {
+      setMensagens([...mensagens, novaMsgObj]);
       setNovaMensagem('');
+      
+      // Simular alteração do status da mensagem
+      setTimeout(() => {
+        setMensagens(msgs => 
+          msgs.map(m => m.id === novaMsgObj.id ? {...m, status: 'entregue'} : m)
+        );
+      }, 1000);
+      
+      // Simular resposta do cliente após 2 segundos
+      setTimeout(() => {
+        setIsTyping(true);
+      }, 1500);
+      
+      setTimeout(() => {
+        setIsTyping(false);
+        setMensagens(msgs => [
+          ...msgs, 
+          {
+            id: msgs.length + 1,
+            texto: "Obrigado pelo atendimento!",
+            autor: 'cliente',
+            tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+      }, 3500);
     }
   };
 
