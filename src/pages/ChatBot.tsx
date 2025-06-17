@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ChatbotForm } from '@/components/chatbot/ChatbotForm';
 import { ChatbotTable } from '@/components/chatbot/ChatbotTable';
 import { EmptyState } from '@/components/chatbot/EmptyState';
+import { useChatbots } from '@/hooks/useChatbots';
 
 interface NoDoFluxo {
   id: string;
@@ -23,113 +24,61 @@ interface NoDoFluxo {
   }>;
 }
 
-interface ChatbotData {
-  id: number;
+interface ChatbotFormData {
   nome: string;
-  status: 'Ativo' | 'Inativo';
-  ultimaEdicao: string;
-  interacoes: number;
-  transferencias: number;
   mensagemInicial: string;
   nos: NoDoFluxo[];
 }
 
-const chatbotsData: ChatbotData[] = [
-  {
-    id: 1,
-    nome: 'Fluxo Principal',
-    status: 'Ativo',
-    ultimaEdicao: '2024-06-10',
-    interacoes: 234,
-    transferencias: 12,
-    mensagemInicial: 'Olá! Bem-vindo ao nosso atendimento. Como posso ajudá-lo hoje?',
-    nos: [
-      {
-        id: 'no-inicial',
-        nome: 'Nó Inicial',
-        mensagem: 'Por favor, escolha uma das opções abaixo:',
-        tipoResposta: 'opcoes',
-        opcoes: [
-          { id: '1', texto: 'Vendas', proximaAcao: 'transferir', setorTransferencia: 'Vendas' },
-          { id: '2', texto: 'Suporte Técnico', proximaAcao: 'transferir', setorTransferencia: 'Suporte Técnico' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 2,
-    nome: 'Suporte Técnico',
-    status: 'Ativo',
-    ultimaEdicao: '2024-06-09',
-    interacoes: 89,
-    transferencias: 45,
-    mensagemInicial: 'Olá! Você está no suporte técnico.',
-    nos: [
-      {
-        id: 'no-inicial',
-        nome: 'Nó Inicial',
-        mensagem: 'Qual tipo de problema você está enfrentando?',
-        tipoResposta: 'opcoes',
-        opcoes: [
-          { id: '1', texto: 'Problema de acesso', proximaAcao: 'proximo-no', proximoNoId: 'no-acesso' },
-          { id: '2', texto: 'Erro no sistema', proximaAcao: 'transferir', setorTransferencia: 'Suporte Técnico' }
-        ]
-      }
-    ]
-  },
-  {
-    id: 3,
-    nome: 'Vendas',
-    status: 'Inativo',
-    ultimaEdicao: '2024-06-08',
-    interacoes: 156,
-    transferencias: 23,
-    mensagemInicial: 'Olá! Interessado em nossos produtos?',
-    nos: [
-      {
-        id: 'no-inicial',
-        nome: 'Nó Inicial',
-        mensagem: 'Que tipo de produto você procura?',
-        tipoResposta: 'opcoes',
-        opcoes: [
-          { id: '1', texto: 'Planos Básicos', proximaAcao: 'mensagem-finalizar', mensagemFinal: 'Obrigado pelo interesse! Um consultor entrará em contato.' },
-          { id: '2', texto: 'Planos Premium', proximaAcao: 'transferir', setorTransferencia: 'Vendas' }
-        ]
-      }
-    ]
-  }
-];
+// Converter dados do Supabase para o formato esperado pela tabela
+const convertSupabaseChatbotToTableFormat = (chatbot: any) => ({
+  id: chatbot.id,
+  nome: chatbot.nome,
+  status: chatbot.status === 'ativo' ? 'Ativo' as const : 'Inativo' as const,
+  ultimaEdicao: new Date(chatbot.updated_at).toISOString().split('T')[0],
+  interacoes: chatbot.interacoes || 0,
+  transferencias: chatbot.transferencias || 0,
+  mensagemInicial: chatbot.mensagem_inicial,
+  nos: chatbot.fluxo || []
+});
 
 export default function ChatBot() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [selectedChatbot, setSelectedChatbot] = useState<ChatbotData | null>(null);
-  const [chatbots, setChatbots] = useState<ChatbotData[]>(chatbotsData);
+  const [selectedChatbot, setSelectedChatbot] = useState<any>(null);
+  
+  const { 
+    chatbots, 
+    loading, 
+    criarChatbot, 
+    atualizarChatbot, 
+    deletarChatbot, 
+    toggleStatusChatbot 
+  } = useChatbots();
 
   const filteredChatbots = useMemo(() => 
-    chatbots.filter(chatbot =>
-      chatbot.nome.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
+    chatbots
+      .filter(chatbot =>
+        chatbot.nome.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+      .map(convertSupabaseChatbotToTableFormat),
     [searchTerm, chatbots]
   );
 
-  const handleCreateChatbot = (formData: any) => {
+  const handleCreateChatbot = async (formData: ChatbotFormData) => {
     console.log('Criando chatbot:', formData);
     
-    const novoChatbot: ChatbotData = {
-      id: Date.now(),
+    const result = await criarChatbot({
       nome: formData.nome,
-      status: 'Ativo',
-      ultimaEdicao: new Date().toISOString().split('T')[0],
-      interacoes: 0,
-      transferencias: 0,
-      mensagemInicial: formData.mensagemInicial,
-      nos: formData.nos
-    };
+      status: 'ativo',
+      mensagem_inicial: formData.mensagemInicial,
+      fluxo: formData.nos
+    });
 
-    setChatbots([...chatbots, novoChatbot]);
-    setIsCreateDialogOpen(false);
+    if (result) {
+      setIsCreateDialogOpen(false);
+    }
   };
 
   const handleEditChatbot = (chatbot: any) => {
@@ -138,62 +87,61 @@ export default function ChatBot() {
     setIsEditDialogOpen(true);
   };
 
-  const handleSaveEdit = (formData: any) => {
+  const handleSaveEdit = async (formData: ChatbotFormData) => {
     if (!selectedChatbot) return;
 
     console.log('Salvando edição:', formData);
     
-    setChatbots(chatbots.map(chatbot =>
-      chatbot.id === selectedChatbot.id
-        ? {
-            ...chatbot,
-            nome: formData.nome,
-            mensagemInicial: formData.mensagemInicial,
-            nos: formData.nos,
-            ultimaEdicao: new Date().toISOString().split('T')[0]
-          }
-        : chatbot
-    ));
+    const result = await atualizarChatbot(selectedChatbot.id, {
+      nome: formData.nome,
+      mensagem_inicial: formData.mensagemInicial,
+      fluxo: formData.nos
+    });
     
-    setIsEditDialogOpen(false);
-    setSelectedChatbot(null);
+    if (result) {
+      setIsEditDialogOpen(false);
+      setSelectedChatbot(null);
+    }
   };
 
-  const handleDuplicate = (chatbotId: number) => {
+  const handleDuplicate = async (chatbotId: string) => {
     const chatbotOriginal = chatbots.find(c => c.id === chatbotId);
     if (!chatbotOriginal) return;
 
-    const chatbotDuplicado: ChatbotData = {
-      ...chatbotOriginal,
-      id: Date.now(),
+    const result = await criarChatbot({
       nome: `${chatbotOriginal.nome} (Cópia)`,
-      status: 'Inativo',
-      ultimaEdicao: new Date().toISOString().split('T')[0],
-      interacoes: 0,
-      transferencias: 0
-    };
+      status: 'inativo',
+      mensagem_inicial: chatbotOriginal.mensagem_inicial,
+      fluxo: chatbotOriginal.fluxo
+    });
 
-    setChatbots([...chatbots, chatbotDuplicado]);
-    console.log('Chatbot duplicado:', chatbotDuplicado);
+    if (result) {
+      console.log('Chatbot duplicado:', result);
+    }
   };
 
-  const toggleStatus = (chatbotId: number) => {
-    setChatbots(chatbots.map(chatbot =>
-      chatbot.id === chatbotId
-        ? { 
-            ...chatbot, 
-            status: chatbot.status === 'Ativo' ? 'Inativo' : 'Ativo',
-            ultimaEdicao: new Date().toISOString().split('T')[0]
-          }
-        : chatbot
-    ));
+  const toggleStatus = async (chatbotId: string) => {
+    await toggleStatusChatbot(chatbotId);
     console.log('Status alternado para chatbot:', chatbotId);
   };
 
-  const handleDelete = (chatbotId: number) => {
-    setChatbots(chatbots.filter(chatbot => chatbot.id !== chatbotId));
-    console.log('Chatbot excluído:', chatbotId);
+  const handleDelete = async (chatbotId: string) => {
+    const success = await deletarChatbot(chatbotId);
+    if (success) {
+      console.log('Chatbot excluído:', chatbotId);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amplie-primary mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando chatbots...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -250,8 +198,8 @@ export default function ChatBot() {
             <ChatbotForm
               formData={{
                 nome: selectedChatbot.nome,
-                mensagemInicial: selectedChatbot.mensagemInicial,
-                nos: selectedChatbot.nos
+                mensagemInicial: selectedChatbot.mensagem_inicial,
+                nos: selectedChatbot.fluxo || []
               }}
               onSubmit={handleSaveEdit}
               onCancel={() => setIsEditDialogOpen(false)}
