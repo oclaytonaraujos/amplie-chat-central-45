@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { MessageSquare, User, Plus } from 'lucide-react';
+import { useState } from 'react';
+import { MessageSquare, User, Plus, Filter } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
 import { AtendimentosList } from '@/components/atendimento/AtendimentosList';
 import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
@@ -9,42 +9,149 @@ import { TransferDialog } from '@/components/atendimento/TransferDialog';
 import { ConfirmSaveContactDialog } from '@/components/contatos/ConfirmSaveContactDialog';
 import { NovoContatoDialog } from '@/components/contatos/NovoContatoDialog';
 import { useContactCheck } from '@/hooks/useContactCheck';
-import { useAtendimento } from '@/hooks/useAtendimento';
-import { useSupabaseData } from '@/hooks/useSupabaseData';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+
+// Dados de exemplo com transferências
+const dadosAtendimentos = [
+  {
+    id: 1,
+    cliente: 'João Silva',
+    telefone: '+55 11 99999-9999',
+    ultimaMensagem: 'Preciso de ajuda com meu pedido #12345, não chegou ainda',
+    tempo: '5 min',
+    setor: 'Suporte',
+    agente: 'Ana Silva',
+    tags: ['Pedido', 'Urgente'],
+    status: 'em-atendimento' as const,
+    transferencia: {
+      de: 'Carlos Santos',
+      motivo: 'Cliente solicitou falar com supervisor',
+      dataTransferencia: '14:25'
+    }
+  },
+  {
+    id: 2,
+    cliente: 'Maria Santos',
+    telefone: '+55 11 88888-8888',
+    ultimaMensagem: 'Olá, gostaria de mais informações sobre o plano premium',
+    tempo: '12 min',
+    setor: 'Vendas',
+    tags: ['Novo Cliente'],
+    status: 'novos' as const
+  },
+  {
+    id: 3,
+    cliente: 'Pedro Almeida',
+    telefone: '+55 11 77777-7777',
+    ultimaMensagem: 'Quando vocês vão lançar o novo produto?',
+    tempo: '30 min',
+    setor: 'Marketing',
+    agente: 'Carlos Oliveira',
+    status: 'pendentes' as const
+  },
+  {
+    id: 4,
+    cliente: 'Ana Pereira',
+    telefone: '+55 11 66666-6666',
+    ultimaMensagem: 'O problema foi resolvido, muito obrigado!',
+    tempo: '1 hora',
+    setor: 'Suporte',
+    agente: 'Marcos Silva',
+    status: 'finalizados' as const
+  },
+  {
+    id: 5,
+    cliente: 'Roberto Gomes',
+    telefone: '+55 11 55555-5555',
+    ultimaMensagem: 'Preciso trocar o produto que comprei ontem',
+    tempo: '2 min',
+    setor: 'Suporte',
+    tags: ['Troca', 'Urgente'],
+    status: 'novos' as const
+  },
+  {
+    id: 6,
+    cliente: 'Fernanda Lima',
+    telefone: '+55 11 44444-4444',
+    ultimaMensagem: 'Obrigado pelo atendimento, foi muito útil!',
+    tempo: '3 horas',
+    setor: 'Vendas',
+    agente: 'Ana Silva',
+    status: 'finalizados' as const
+  }
+];
 
 // Configuração simulada do limite de mensagens (normalmente viria do Painel)
 const LIMITE_MENSAGENS_ABERTAS = 5; // Configurável pelo administrador
 
+const mensagensExemplo = [
+  { id: 1, texto: 'Olá! Preciso de ajuda com meu pedido #12345', autor: 'cliente' as const, tempo: '14:30' },
+  { id: 2, texto: 'Olá João! Claro, vou verificar seu pedido. Um momento por favor.', autor: 'agente' as const, tempo: '14:31', status: 'lido' as const },
+  { id: 3, texto: 'Estou vendo aqui no sistema que seu pedido está em separação no estoque e deve ser enviado hoje ainda.', autor: 'agente' as const, tempo: '14:32', status: 'lido' as const },
+  { id: 4, texto: 'Perfeito! Muito obrigado pelo atendimento rápido.', autor: 'cliente' as const, tempo: '14:33' },
+  { id: 5, texto: 'Você consegue me passar o código de rastreamento?', autor: 'cliente' as const, tempo: '14:34' },
+  { id: 6, texto: 'Claro! Assim que o pedido for despachado, o código de rastreamento será enviado automaticamente para o seu email e também para o seu WhatsApp.', autor: 'agente' as const, tempo: '14:35', status: 'lido' as const }
+];
+
+const clienteExemplo = {
+  id: 1,
+  nome: 'João Silva',
+  telefone: '+55 11 99999-9999',
+  email: 'joao.silva@email.com',
+  dataCadastro: '15/03/2023',
+  tags: ['Cliente Fiel', 'Premium'],
+  historico: [
+    { id: 1, data: '10/05/2023', assunto: 'Problema com entrega', status: 'Resolvido' },
+    { id: 2, data: '23/06/2023', assunto: 'Troca de produto', status: 'Resolvido' },
+    { id: 3, data: '05/09/2023', assunto: 'Dúvida sobre garantia', status: 'Resolvido' }
+  ]
+};
+
+// Dados de contatos mockados
+const contatosMockInicial = [
+  {
+    id: 1,
+    nome: 'Carlos Mendes',
+    telefone: '+55 11 91234-5678',
+    email: 'carlos.mendes@email.com',
+    status: 'online' as const,
+    ultimoContato: '2 dias atrás'
+  },
+  {
+    id: 2,
+    nome: 'Fernanda Costa',
+    telefone: '+55 11 98765-4321',
+    email: 'fernanda.costa@email.com',
+    status: 'offline' as const,
+    ultimoContato: '1 semana atrás'
+  },
+  {
+    id: 3,
+    nome: 'Ricardo Silva',
+    telefone: '+55 11 95555-1234',
+    status: 'online' as const,
+    ultimoContato: '3 dias atrás'
+  },
+  {
+    id: 4,
+    nome: 'Juliana Santos',
+    telefone: '+55 11 97777-8888',
+    email: 'juliana.santos@email.com',
+    status: 'offline' as const,
+    ultimoContato: '5 dias atrás'
+  }
+];
+
 export default function Atendimento() {
-  const [selectedAtendimento, setSelectedAtendimento] = useState<any>(null);
+  const [selectedAtendimento, setSelectedAtendimento] = useState<typeof dadosAtendimentos[0] | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showContacts, setShowContacts] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
+  const [contatos, setContatos] = useState(contatosMockInicial); // Estado local dos contatos
   const isMobile = useIsMobile();
   const { toast } = useToast();
-  const { user } = useAuth();
-
-  // Hooks do Supabase
-  const {
-    conversas,
-    mensagens,
-    loading: loadingConversas,
-    loadMensagens,
-    enviarMensagem,
-    atualizarStatusConversa,
-    assumirConversa
-  } = useAtendimento();
-
-  const {
-    contatos,
-    createContato,
-    createConversa,
-    loading: loadingContatos
-  } = useSupabaseData();
 
   // Hook para gerenciar verificação e salvamento de contatos
   const {
@@ -59,45 +166,17 @@ export default function Atendimento() {
     handleContactSaved
   } = useContactCheck();
 
-  // Converter conversas do Supabase para o formato esperado pelo componente
-  const atendimentosFormatados = conversas
-    .filter(conv => conv.canal !== 'chat-interno') // Excluir conversas internas
-    .map(conv => ({
-      id: conv.id,
-      cliente: conv.contatos?.nome || 'Cliente sem nome',
-      telefone: conv.contatos?.telefone || '',
-      ultimaMensagem: 'Nova conversa',
-      tempo: new Date(conv.updated_at).toLocaleString('pt-BR', {
-        hour: '2-digit',
-        minute: '2-digit'
-      }),
-      setor: conv.setor || 'Suporte',
-      agente: conv.profiles?.nome,
-      tags: conv.tags || [],
-      status: conv.status as 'novos' | 'em-atendimento' | 'aguardando-cliente' | 'finalizados',
-      tempoAberto: new Date(conv.created_at).toLocaleString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit'
-      })
-    }));
-
   // Calcular mensagens em aberto para o agente atual
-  const mensagensEmAberto = atendimentosFormatados.filter(a => 
+  const mensagensEmAberto = dadosAtendimentos.filter(a => 
     (a.status === 'novos' || a.status === 'em-atendimento') && 
-    a.agente === user?.email // Usar email do usuário atual
+    a.agente === 'Ana Silva' // Agente atual simulado
   ).length;
 
   const podeIniciarNovoAtendimento = mensagensEmAberto < LIMITE_MENSAGENS_ABERTAS;
   
-  const handleSelectAtendimento = (atendimento: any) => {
+  const handleSelectAtendimento = (atendimento: typeof dadosAtendimentos[0]) => {
     setSelectedAtendimento(atendimento);
     setShowContacts(false);
-    
-    // Carregar mensagens da conversa
-    loadMensagens(atendimento.id);
-    
     if (isMobile) {
       setShowChat(true);
     }
@@ -108,10 +187,7 @@ export default function Atendimento() {
     setShowContacts(false);
   };
 
-  const handleSairConversa = async () => {
-    if (!selectedAtendimento) return;
-    
-    await atualizarStatusConversa(selectedAtendimento.id, 'aguardando-cliente');
+  const handleSairConversa = () => {
     setSelectedAtendimento(null);
     if (isMobile) {
       setShowChat(false);
@@ -126,20 +202,17 @@ export default function Atendimento() {
     if (!selectedAtendimento) return;
 
     // Agente e setor atuais (normalmente viriam do contexto de autenticação)
-    const agenteAtual = user?.email || 'Agente Atual';
+    const agenteAtual = 'Ana Silva';
     const setorAtual = 'Suporte';
 
     // Usa o hook para verificar se deve salvar contato
     handleFinalizarWithContactCheck(
-      {
-        nome: selectedAtendimento.cliente,
-        telefone: selectedAtendimento.telefone
-      },
+      selectedAtendimento,
       contatos,
       agenteAtual,
       setorAtual,
-      async () => {
-        await atualizarStatusConversa(selectedAtendimento.id, 'finalizados');
+      () => {
+        console.log('Finalizar atendimento');
         setSelectedAtendimento(null);
         if (isMobile) {
           setShowChat(false);
@@ -163,7 +236,7 @@ export default function Atendimento() {
     }
   };
 
-  const handleSelectContact = async (contato: any) => {
+  const handleSelectContact = (contato: typeof contatos[0]) => {
     if (!podeIniciarNovoAtendimento) {
       toast({
         title: "Limite atingido",
@@ -173,43 +246,27 @@ export default function Atendimento() {
       return;
     }
 
-    // Criar nova conversa no Supabase
-    const novaConversa = await createConversa({
-      contato_id: contato.id,
-      status: 'novos',
-      canal: 'whatsapp',
-      prioridade: 'normal',
+    // Criar novo atendimento baseado no contato selecionado
+    const novoAtendimento = {
+      id: dadosAtendimentos.length + 1,
+      cliente: contato.nome,
+      telefone: contato.telefone,
+      ultimaMensagem: 'Nova conversa iniciada',
+      tempo: 'agora',
       setor: 'Suporte',
-      tags: []
-    });
+      tags: [], // Add missing tags property as empty array
+      status: 'novos' as const
+    };
     
-    if (novaConversa) {
-      const atendimentoFormatado = {
-        id: novaConversa.id,
-        cliente: contato.nome,
-        telefone: contato.telefone,
-        ultimaMensagem: 'Nova conversa iniciada',
-        tempo: 'agora',
-        setor: 'Suporte',
-        tags: [],
-        status: 'novos' as const
-      };
-      
-      setSelectedAtendimento(atendimentoFormatado);
-      setShowContacts(false);
-      if (isMobile) {
-        setShowChat(true);
-      }
+    setSelectedAtendimento(novoAtendimento);
+    setShowContacts(false);
+    if (isMobile) {
+      setShowChat(true);
     }
   };
 
-  const handleConfirmTransfer = async (agente: string, motivo: string) => {
-    if (!selectedAtendimento) return;
-    
-    // Aqui você implementaria a lógica de transferência real
-    // Por enquanto, apenas atualiza o status
-    await atualizarStatusConversa(selectedAtendimento.id, 'aguardando-cliente');
-    
+  const handleConfirmTransfer = (agente: string, motivo: string) => {
+    console.log('Transferir para:', agente, 'Motivo:', motivo);
     toast({
       title: "Atendimento transferido",
       description: `Atendimento transferido para ${agente} com sucesso.`,
@@ -221,65 +278,14 @@ export default function Atendimento() {
     }
   };
 
-  const handleContatoAdicionado = async (novoContato: any) => {
-    const contato = await createContato(novoContato);
-    if (contato) {
-      handleContactSaved();
-      toast({
-        title: "Contato salvo",
-        description: `${novoContato.nome} foi adicionado aos contatos com sucesso.`
-      });
-    }
+  const handleContatoAdicionado = (novoContato: any) => {
+    setContatos(prev => [...prev, { ...novoContato, id: prev.length + 1 }]);
+    handleContactSaved();
+    toast({
+      title: "Contato salvo",
+      description: `${novoContato.nome} foi adicionado aos contatos com sucesso.`
+    });
   };
-
-  const handleSendMessage = async (texto: string) => {
-    if (!selectedAtendimento) return;
-    
-    await enviarMensagem(selectedAtendimento.id, texto);
-    
-    // Assumir conversa se ainda não foi assumida
-    if (selectedAtendimento.status === 'novos') {
-      await assumirConversa(selectedAtendimento.id);
-    }
-  };
-
-  // Obter mensagens da conversa selecionada
-  const mensagensConversa = selectedAtendimento 
-    ? (mensagens[selectedAtendimento.id] || []).map(msg => ({
-        id: parseInt(msg.id.substring(0, 8), 16), // Converter UUID para número para compatibilidade
-        texto: msg.conteudo,
-        autor: msg.remetente_tipo === 'agente' ? 'agente' as const : 'cliente' as const,
-        tempo: new Date(msg.created_at).toLocaleTimeString('pt-BR', { 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        }),
-        status: msg.lida ? 'lido' as const : 'entregue' as const
-      }))
-    : [];
-
-  // Obter informações do cliente selecionado
-  const clienteInfo = selectedAtendimento 
-    ? {
-        id: selectedAtendimento.id,
-        nome: selectedAtendimento.cliente,
-        telefone: selectedAtendimento.telefone,
-        email: '', // Buscar do contato se disponível
-        dataCadastro: selectedAtendimento.tempoAberto,
-        tags: selectedAtendimento.tags || [],
-        historico: [] // Implementar histórico de conversas
-      }
-    : null;
-
-  if (loadingConversas || loadingContatos) {
-    return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amplie-primary mx-auto mb-4"></div>
-          <p className="text-gray-600">Carregando atendimentos...</p>
-        </div>
-      </div>
-    );
-  }
 
   // Layout mobile: mostra lista, contatos ou chat baseado no estado
   if (isMobile) {
@@ -302,7 +308,7 @@ export default function Atendimento() {
             </div>
             <div className="flex-1 overflow-hidden">
               <AtendimentosList 
-                atendimentos={atendimentosFormatados} 
+                atendimentos={dadosAtendimentos} 
                 onSelectAtendimento={handleSelectAtendimento}
                 selectedAtendimento={selectedAtendimento}
                 isMobile={isMobile}
@@ -312,11 +318,7 @@ export default function Atendimento() {
         ) : showContacts ? (
           // Mostra lista de contatos
           <ContactsList
-            contatos={contatos.map(c => ({
-              ...c,
-              status: 'online' as const,
-              ultimoContato: new Date(c.updated_at).toLocaleDateString('pt-BR')
-            }))}
+            contatos={contatos}
             onSelectContact={handleSelectContact}
             onBack={handleReturnToList}
           />
@@ -330,12 +332,11 @@ export default function Atendimento() {
                 telefone: selectedAtendimento.telefone,
                 status: 'online'
               }}
-              mensagens={mensagensConversa}
+              mensagens={mensagensExemplo}
               onReturnToList={handleReturnToList}
               onSairConversa={handleSairConversa}
               onTransferir={handleTransferir}
               onFinalizar={handleFinalizar}
-              onSendMessage={handleSendMessage}
             />
           </div>
         ) : null}
@@ -394,17 +395,13 @@ export default function Atendimento() {
           <div className="flex-1 mt-4">
             {showContacts ? (
               <ContactsList
-                contatos={contatos.map(c => ({
-                  ...c,
-                  status: 'online' as const,
-                  ultimoContato: new Date(c.updated_at).toLocaleDateString('pt-BR')
-                }))}
+                contatos={contatos}
                 onSelectContact={handleSelectContact}
                 onBack={() => setShowContacts(false)}
               />
             ) : (
               <AtendimentosList 
-                atendimentos={atendimentosFormatados} 
+                atendimentos={dadosAtendimentos} 
                 onSelectAtendimento={handleSelectAtendimento}
                 selectedAtendimento={selectedAtendimento}
               />
@@ -424,11 +421,10 @@ export default function Atendimento() {
                   telefone: selectedAtendimento.telefone,
                   status: 'online'
                 }}
-                mensagens={mensagensConversa}
+                mensagens={mensagensExemplo}
                 onSairConversa={handleSairConversa}
                 onTransferir={handleTransferir}
                 onFinalizar={handleFinalizar}
-                onSendMessage={handleSendMessage}
               />
             ) : (
               <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
@@ -448,8 +444,11 @@ export default function Atendimento() {
           
           {/* Informações do cliente - ocupa 1/3 da altura */}
           <div className="row-span-1">
-            {clienteInfo ? (
-              <ClienteInfo cliente={clienteInfo} />
+            {selectedAtendimento ? (
+              <ClienteInfo 
+                cliente={clienteExemplo} 
+                transferencia={selectedAtendimento.transferencia}
+              />
             ) : (
               <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
                 <div className="text-center">
