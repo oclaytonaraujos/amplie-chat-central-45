@@ -57,7 +57,14 @@ export function useChatbotFlows() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setFlows(data || []);
+      
+      // Type assertion for the data from Supabase
+      const typedFlows = (data || []).map(flow => ({
+        ...flow,
+        status: flow.status as 'ativo' | 'inativo'
+      }));
+      
+      setFlows(typedFlows);
     } catch (error) {
       console.error('Erro ao buscar fluxos:', error);
       toast.error('Erro ao carregar fluxos de chatbot');
@@ -99,13 +106,18 @@ export function useChatbotFlows() {
 
           return {
             ...node,
-            options: options || []
+            tipo_resposta: node.tipo_resposta as 'opcoes' | 'texto-livre' | 'anexo' | 'apenas-mensagem',
+            options: (options || []).map(option => ({
+              ...option,
+              proxima_acao: option.proxima_acao as 'proximo-no' | 'transferir' | 'finalizar' | 'mensagem-finalizar'
+            }))
           };
         })
       );
 
       return {
         ...flow,
+        status: flow.status as 'ativo' | 'inativo',
         nodes: nodesWithOptions
       };
     } catch (error) {

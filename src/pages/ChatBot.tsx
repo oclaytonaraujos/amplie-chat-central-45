@@ -77,7 +77,7 @@ export default function ChatBot() {
       </div>
 
       {flows.length === 0 ? (
-        <EmptyState onCreateFirst={handleCreateNew} />
+        <EmptyState onCreateNew={handleCreateNew} />
       ) : (
         <ChatbotTable
           chatbots={flows}
