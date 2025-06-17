@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Send, Paperclip, Mic, User, Phone, MoreVertical, ArrowLeft, LogOut, ArrowRight, Clock, Image, FileText, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,9 +10,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { useZApi } from '@/hooks/useZApi';
 import { useWhatsAppConnections } from '@/hooks/useWhatsAppConnections';
 import { useToast } from '@/hooks/use-toast';
+import { useAtendimento } from '@/hooks/useAtendimento';
 
 interface Message {
-  id: number;
+  id: string;
   texto: string;
   anexo?: {
     tipo: 'imagem' | 'audio' | 'documento' | 'video' | 'contato';
@@ -24,7 +26,7 @@ interface Message {
 }
 
 interface ClienteInfo {
-  id: number;
+  id: string;
   nome: string;
   telefone: string;
   avatar?: string;
@@ -39,8 +41,8 @@ interface TransferenciaInfo {
 }
 
 interface ChatWhatsAppProps {
+  conversaId: string;
   cliente: ClienteInfo;
-  mensagens: Message[];
   onReturnToList?: () => void;
   onSairConversa?: () => void;
   onTransferir?: () => void;
@@ -49,15 +51,14 @@ interface ChatWhatsAppProps {
 }
 
 export function ChatWhatsApp({ 
+  conversaId,
   cliente, 
-  mensagens: initialMensagens, 
   onReturnToList,
   onSairConversa,
   onTransferir,
   onFinalizar,
   transferencia
 }: ChatWhatsAppProps) {
-  const [mensagens, setMensagens] = useState<Message[]>(initialMensagens);
   const [novaMensagem, setNovaMensagem] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [anexoSelecionado, setAnexoSelecionado] = useState<File | null>(null);
@@ -65,6 +66,26 @@ export function ChatWhatsApp({
   const { sendMessage, sendImageMessage, sendDocumentMessage, sendAudioMessage } = useZApi();
   const { hasConnectedWhatsApp } = useWhatsAppConnections();
   const { toast } = useToast();
+  const { mensagens, loadMensagens, enviarMensagem, loadingMensagens } = useAtendimento();
+  
+  // Carregar mensagens quando a conversa mudar
+  useEffect(() => {
+    if (conversaId) {
+      loadMensagens(conversaId);
+    }
+  }, [conversaId]);
+
+  // Transformar mensagens do Supabase para o formato do componente
+  const mensagensFormatadas: Message[] = (mensagens[conversaId] || []).map(msg => ({
+    id: msg.id,
+    texto: msg.conteudo,
+    autor: msg.remetente_tipo === 'agente' ? 'agente' : 'cliente',
+    tempo: new Date(msg.created_at).toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    }),
+    status: 'entregue'
+  }));
   
   const handleEnviarMensagem = async () => {
     if (!novaMensagem.trim() && !anexoSelecionado) return;
@@ -79,26 +100,11 @@ export function ChatWhatsApp({
     }
 
     let success = false;
-    let novaMsgObj: Message;
 
     if (anexoSelecionado) {
       // Simular upload do anexo e obter URL
       const anexoUrl = URL.createObjectURL(anexoSelecionado);
       
-      novaMsgObj = {
-        id: mensagens.length + 1,
-        texto: novaMensagem || '',
-        anexo: {
-          tipo: anexoSelecionado.type.startsWith('image/') ? 'imagem' : 
-                anexoSelecionado.type.startsWith('audio/') ? 'audio' : 'documento',
-          url: anexoUrl,
-          nome: anexoSelecionado.name
-        },
-        autor: 'agente',
-        tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        status: 'enviado'
-      };
-
       // Enviar via Z-API baseado no tipo de arquivo
       if (anexoSelecionado.type.startsWith('image/')) {
         success = await sendImageMessage(cliente.telefone, anexoUrl, novaMensagem);
@@ -110,45 +116,24 @@ export function ChatWhatsApp({
       
       setAnexoSelecionado(null);
     } else {
-      // Mensagem de texto
-      novaMsgObj = {
-        id: mensagens.length + 1,
-        texto: novaMensagem,
-        autor: 'agente',
-        tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
-        status: 'enviado'
-      };
-
+      // Mensagem de texto via Z-API
       success = await sendMessage(cliente.telefone, novaMensagem);
     }
 
     if (success) {
-      setMensagens([...mensagens, novaMsgObj]);
+      // Salvar mensagem no banco de dados
+      await enviarMensagem(conversaId, novaMensagem);
       setNovaMensagem('');
       
-      // Simular alteração do status da mensagem
-      setTimeout(() => {
-        setMensagens(msgs => 
-          msgs.map(m => m.id === novaMsgObj.id ? {...m, status: 'entregue'} : m)
-        );
-      }, 1000);
-      
-      // Simular resposta do cliente após 2 segundos
+      // Simular resposta do cliente após alguns segundos (apenas para demonstração)
       setTimeout(() => {
         setIsTyping(true);
       }, 1500);
       
-      setTimeout(() => {
+      setTimeout(async () => {
         setIsTyping(false);
-        setMensagens(msgs => [
-          ...msgs, 
-          {
-            id: msgs.length + 1,
-            texto: "Obrigado pelo atendimento!",
-            autor: 'cliente',
-            tempo: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-          }
-        ]);
+        // Simular recebimento de mensagem do cliente
+        await enviarMensagem(conversaId, "Obrigado pelo atendimento!");
       }, 3500);
     }
   };
@@ -191,6 +176,17 @@ export function ChatWhatsApp({
         return null;
     }
   };
+
+  if (loadingMensagens[conversaId]) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando mensagens...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full bg-gray-50 rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -279,7 +275,7 @@ export function ChatWhatsApp({
       <div className="flex-grow min-h-0 bg-gray-100">
         <ScrollArea className="h-full p-4">
           <div className="space-y-3">
-            {mensagens.map((mensagem) => (
+            {mensagensFormatadas.map((mensagem) => (
               <div key={mensagem.id} 
                 className={`flex ${mensagem.autor === 'agente' ? 'justify-end' : 'justify-start'}`}
               >

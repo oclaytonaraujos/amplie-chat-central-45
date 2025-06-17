@@ -49,9 +49,22 @@ export function useChatInterno() {
     if (!user) return;
     
     try {
+      // Primeiro, obter a empresa_id do usuário atual
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!currentProfile?.empresa_id) {
+        console.error('Usuário não está associado a uma empresa');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('profiles')
         .select('id, nome, avatar_url, status, setor')
+        .eq('empresa_id', currentProfile.empresa_id)
         .neq('id', user.id); // Excluir o próprio usuário
 
       if (error) {

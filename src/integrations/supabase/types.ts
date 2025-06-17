@@ -9,6 +9,53 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chatbots: {
+        Row: {
+          created_at: string | null
+          empresa_id: string
+          fluxo: Json | null
+          id: string
+          interacoes: number | null
+          mensagem_inicial: string
+          nome: string
+          status: string
+          transferencias: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          empresa_id: string
+          fluxo?: Json | null
+          id?: string
+          interacoes?: number | null
+          mensagem_inicial: string
+          nome: string
+          status?: string
+          transferencias?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          empresa_id?: string
+          fluxo?: Json | null
+          id?: string
+          interacoes?: number | null
+          mensagem_inicial?: string
+          nome?: string
+          status?: string
+          transferencias?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatbots_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contatos: {
         Row: {
           created_at: string | null

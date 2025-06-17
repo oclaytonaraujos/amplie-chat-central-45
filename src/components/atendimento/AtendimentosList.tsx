@@ -3,9 +3,11 @@ import { MessageSquare, User, Clock, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AtendimentoCard } from './AtendimentoCard';
+import { useAtendimento } from '@/hooks/useAtendimento';
+import { Loader2 } from 'lucide-react';
 
 interface Atendimento {
-  id: number;
+  id: string;
   cliente: string;
   telefone: string;
   ultimaMensagem: string;
@@ -22,28 +24,56 @@ interface Atendimento {
 }
 
 interface AtendimentosListProps {
-  atendimentos: Atendimento[];
   onSelectAtendimento: (atendimento: Atendimento) => void;
   selectedAtendimento?: Atendimento | null;
   isMobile?: boolean;
 }
 
 export function AtendimentosList({ 
-  atendimentos, 
   onSelectAtendimento, 
   selectedAtendimento,
   isMobile = false
 }: AtendimentosListProps) {
-  const atendimentosAbertos = atendimentos.filter(a => a.status === 'novos' || a.status === 'em-atendimento');
-  const atendimentosPendentes = atendimentos.filter(a => a.status === 'pendentes');
+  const { conversas, loading } = useAtendimento();
 
-  // Separar transferências para destacar no topo
+  // Transformar conversas do Supabase para o formato esperado
+  const atendimentos: Atendimento[] = conversas.map(conversa => ({
+    id: conversa.id,
+    cliente: conversa.contatos?.nome || 'Cliente sem nome',
+    telefone: conversa.contatos?.telefone || '',
+    ultimaMensagem: 'Última mensagem...',
+    tempo: new Date(conversa.updated_at).toLocaleTimeString('pt-BR', { 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    }),
+    setor: conversa.setor || 'Geral',
+    agente: conversa.profiles?.nome,
+    tags: conversa.tags || [],
+    status: conversa.status as 'novos' | 'em-atendimento' | 'pendentes' | 'finalizados',
+    // TODO: Implementar transferências quando necessário
+  }));
+
+  const atendimentosAbertos = atendimentos.filter(a => a.status === 'ativo' || a.status === 'em-atendimento');
+  const atendimentosPendentes = atendimentos.filter(a => a.status === 'pendente');
+
+  // Separar transferências para destacar no topo (por enquanto vazio)
   const transferencias = atendimentosAbertos.filter(a => a.transferencia);
   const atendimentosNormais = atendimentosAbertos.filter(a => !a.transferencia);
 
   const handleSelectAtendimento = (atendimento: Atendimento) => {
     onSelectAtendimento(atendimento);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Carregando atendimentos...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

@@ -39,7 +39,7 @@ export function useChatbots() {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('chatbots' as any)
+        .from('chatbots')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -53,7 +53,7 @@ export function useChatbots() {
         return;
       }
 
-      setChatbots((data as unknown as Chatbot[]) || []);
+      setChatbots(data || []);
     } catch (error) {
       console.error('Erro ao carregar chatbots:', error);
     } finally {
@@ -83,7 +83,7 @@ export function useChatbots() {
       }
 
       const { data, error } = await supabase
-        .from('chatbots' as any)
+        .from('chatbots')
         .insert({
           ...dadosChatbot,
           empresa_id: profile.empresa_id
@@ -101,14 +101,14 @@ export function useChatbots() {
         return null;
       }
 
-      setChatbots(prev => [data as unknown as Chatbot, ...prev]);
+      setChatbots(prev => [data, ...prev]);
       
       toast({
         title: "Chatbot criado",
         description: "Chatbot criado com sucesso!",
       });
 
-      return data as unknown as Chatbot;
+      return data;
     } catch (error) {
       console.error('Erro ao criar chatbot:', error);
       return null;
@@ -121,7 +121,7 @@ export function useChatbots() {
     
     try {
       const { data, error } = await supabase
-        .from('chatbots' as any)
+        .from('chatbots')
         .update(dadosAtualizacao)
         .eq('id', id)
         .select()
@@ -139,7 +139,7 @@ export function useChatbots() {
 
       setChatbots(prev => 
         prev.map(chatbot => 
-          chatbot.id === id ? { ...chatbot, ...data as unknown as Chatbot } : chatbot
+          chatbot.id === id ? { ...chatbot, ...data } : chatbot
         )
       );
 
@@ -148,7 +148,7 @@ export function useChatbots() {
         description: "Chatbot atualizado com sucesso!",
       });
 
-      return data as unknown as Chatbot;
+      return data;
     } catch (error) {
       console.error('Erro ao atualizar chatbot:', error);
       return null;
@@ -161,7 +161,7 @@ export function useChatbots() {
     
     try {
       const { error } = await supabase
-        .from('chatbots' as any)
+        .from('chatbots')
         .delete()
         .eq('id', id);
 

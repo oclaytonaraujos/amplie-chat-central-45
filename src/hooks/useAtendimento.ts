@@ -54,6 +54,19 @@ export function useAtendimento() {
     
     try {
       setLoading(true);
+      
+      // Primeiro, obter a empresa_id do usuário atual
+      const { data: currentProfile } = await supabase
+        .from('profiles')
+        .select('empresa_id')
+        .eq('id', user.id)
+        .single();
+
+      if (!currentProfile?.empresa_id) {
+        console.error('Usuário não está associado a uma empresa');
+        return;
+      }
+
       const { data, error } = await supabase
         .from('conversas')
         .select(`
@@ -61,6 +74,8 @@ export function useAtendimento() {
           contatos(id, nome, telefone, email),
           profiles(id, nome)
         `)
+        .eq('empresa_id', currentProfile.empresa_id)
+        .neq('canal', 'chat-interno') // Excluir conversas de chat interno
         .order('updated_at', { ascending: false });
 
       if (error) {
