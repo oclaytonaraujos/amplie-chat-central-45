@@ -235,6 +235,7 @@ export type Database = {
           lida: boolean | null
           metadata: Json | null
           remetente_id: string | null
+          remetente_nome: string | null
           remetente_tipo: string
           tipo_mensagem: string | null
         }
@@ -246,6 +247,7 @@ export type Database = {
           lida?: boolean | null
           metadata?: Json | null
           remetente_id?: string | null
+          remetente_nome?: string | null
           remetente_tipo: string
           tipo_mensagem?: string | null
         }
@@ -257,6 +259,7 @@ export type Database = {
           lida?: boolean | null
           metadata?: Json | null
           remetente_id?: string | null
+          remetente_nome?: string | null
           remetente_tipo?: string
           tipo_mensagem?: string | null
         }
