@@ -34,7 +34,7 @@ interface ChatbotFormData {
 const convertSupabaseChatbotToTableFormat = (chatbot: any) => ({
   id: chatbot.id,
   nome: chatbot.nome,
-  status: chatbot.status === 'ativo' ? 'Ativo' as const : 'Inativo' as const,
+  status: chatbot.status,
   ultimaEdicao: new Date(chatbot.updated_at).toISOString().split('T')[0],
   interacoes: chatbot.interacoes || 0,
   transferencias: chatbot.transferencias || 0,

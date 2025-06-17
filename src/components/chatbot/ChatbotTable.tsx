@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 interface Chatbot {
-  id: number;
+  id: string;
   nome: string;
   status: string;
   ultimaEdicao: string;
@@ -21,9 +21,9 @@ interface Chatbot {
 interface ChatbotTableProps {
   chatbots: Chatbot[];
   onEdit: (chatbot: Chatbot) => void;
-  onDuplicate: (chatbotId: number) => void;
-  onToggleStatus: (chatbotId: number) => void;
-  onDelete: (chatbotId: number) => void;
+  onDuplicate: (chatbotId: string) => void;
+  onToggleStatus: (chatbotId: string) => void;
+  onDelete: (chatbotId: string) => void;
 }
 
 export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, onDelete }: ChatbotTableProps) {
@@ -50,16 +50,16 @@ export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, on
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">{chatbot.nome}</p>
-                      <p className="text-sm text-gray-500">ID: #{chatbot.id.toString().padStart(3, '0')}</p>
+                      <p className="text-sm text-gray-500">ID: {chatbot.id.substring(0, 8)}...</p>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4">
                   <Badge 
-                    variant={chatbot.status === 'Ativo' ? 'default' : 'secondary'}
-                    className={chatbot.status === 'Ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
+                    variant={chatbot.status === 'ativo' ? 'default' : 'secondary'}
+                    className={chatbot.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}
                   >
-                    {chatbot.status}
+                    {chatbot.status === 'ativo' ? 'Ativo' : 'Inativo'}
                   </Badge>
                 </td>
                 <td className="px-6 py-4">
@@ -83,9 +83,9 @@ export function ChatbotTable({ chatbots, onEdit, onDuplicate, onToggleStatus, on
                       variant="ghost" 
                       size="sm"
                       onClick={() => onToggleStatus(chatbot.id)}
-                      className={chatbot.status === 'Ativo' ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
+                      className={chatbot.status === 'ativo' ? 'text-red-600 hover:text-red-700' : 'text-green-600 hover:text-green-700'}
                     >
-                      {chatbot.status === 'Ativo' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
+                      {chatbot.status === 'ativo' ? <PowerOff className="w-4 h-4" /> : <Power className="w-4 h-4" />}
                     </Button>
                     
                     <DropdownMenu>

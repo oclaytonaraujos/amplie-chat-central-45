@@ -53,7 +53,7 @@ export function useChatbots() {
         return;
       }
 
-      setChatbots((data as Chatbot[]) || []);
+      setChatbots((data as unknown as Chatbot[]) || []);
     } catch (error) {
       console.error('Erro ao carregar chatbots:', error);
     } finally {
@@ -101,14 +101,14 @@ export function useChatbots() {
         return null;
       }
 
-      setChatbots(prev => [data as Chatbot, ...prev]);
+      setChatbots(prev => [data as unknown as Chatbot, ...prev]);
       
       toast({
         title: "Chatbot criado",
         description: "Chatbot criado com sucesso!",
       });
 
-      return data as Chatbot;
+      return data as unknown as Chatbot;
     } catch (error) {
       console.error('Erro ao criar chatbot:', error);
       return null;
@@ -139,7 +139,7 @@ export function useChatbots() {
 
       setChatbots(prev => 
         prev.map(chatbot => 
-          chatbot.id === id ? { ...chatbot, ...data as Chatbot } : chatbot
+          chatbot.id === id ? { ...chatbot, ...data as unknown as Chatbot } : chatbot
         )
       );
 
@@ -148,7 +148,7 @@ export function useChatbots() {
         description: "Chatbot atualizado com sucesso!",
       });
 
-      return data as Chatbot;
+      return data as unknown as Chatbot;
     } catch (error) {
       console.error('Erro ao atualizar chatbot:', error);
       return null;
