@@ -13,6 +13,7 @@ interface LayoutProps {
 
 export function Layout({ children, title, description, icon }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const isMobile = useIsMobile();
 
@@ -59,6 +60,7 @@ export function Layout({ children, title, description, icon }: LayoutProps) {
 
   const getSidebarWidth = () => {
     if (isMobile) return 0;
+    if (sidebarCollapsed) return 80;
     return 256;
   };
 
@@ -86,7 +88,12 @@ export function Layout({ children, title, description, icon }: LayoutProps) {
         }`}
         data-sidebar
       >
-        <Sidebar />
+        <Sidebar 
+          isMobile={isMobile}
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          onCollapsedChange={setSidebarCollapsed}
+        />
       </div>
       
       {/* Main content with optimized touch and scroll */}
