@@ -3,21 +3,16 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { Toaster as SonnerToaster } from 'sonner';
-import { AuthProvider } from '@/providers/AuthProvider';
-import { ProtectedRoute } from '@/components/auth/ProtectedRoute';
+import { AuthProvider } from '@/hooks/useAuth';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { Layout } from '@/components/layout/Layout';
 
 // Pages
-import Login from '@/pages/Login';
 import Dashboard from '@/pages/Dashboard';
 import Kanban from '@/pages/Kanban';
 import Contatos from '@/pages/Contatos';
-import Chamadas from '@/pages/Chamadas';
-import Relatorios from '@/pages/Relatorios';
 import ChatBot from '@/pages/ChatBot';
-import WhatsApp from '@/pages/WhatsApp';
 import Manual from '@/pages/Manual';
-import Configuracoes from '@/pages/Configuracoes';
 
 const queryClient = new QueryClient();
 
@@ -27,67 +22,67 @@ function App() {
       <AuthProvider>
         <Router>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/login" element={<Navigate to="/" replace />} />
             <Route path="/" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Dashboard">
                   <Dashboard />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/kanban" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Kanban">
                   <Kanban />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/contatos" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Contatos">
                   <Contatos />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/chamadas" element={
               <ProtectedRoute>
-                <Layout>
-                  <Chamadas />
+                <Layout title="Chamadas">
+                  <Dashboard />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/relatorios" element={
               <ProtectedRoute>
-                <Layout>
-                  <Relatorios />
+                <Layout title="Relatórios">
+                  <Dashboard />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/chatbot" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="ChatBot">
                   <ChatBot />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/whatsapp" element={
               <ProtectedRoute>
-                <Layout>
-                  <WhatsApp />
+                <Layout title="WhatsApp">
+                  <Dashboard />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/manual" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Manual">
                   <Manual />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/configuracoes" element={
               <ProtectedRoute>
-                <Layout>
-                  <Configuracoes />
+                <Layout title="Configurações">
+                  <Dashboard />
                 </Layout>
               </ProtectedRoute>
             } />
