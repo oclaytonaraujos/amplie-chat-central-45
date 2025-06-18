@@ -2,7 +2,7 @@
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 
 interface Atendimento {
-  id: number;
+  id: string;
   cliente: string;
   telefone: string;
   ultimaMensagem: string;
@@ -19,19 +19,11 @@ interface KanbanColumnsProps {
   usuarioLogado?: string;
 }
 
-// Mapear status antigo para novo
-const mapearStatus = (status: string) => {
-  switch (status) {
-    case 'pendentes': return 'aguardando-cliente';
-    default: return status;
-  }
-};
-
 export function KanbanColumns({ atendimentos, onSelectAtendimento, usuarioLogado = 'Ana Silva' }: KanbanColumnsProps) {
-  // Converter atendimentos para o novo formato
+  // Converter atendimentos para o formato esperado pelo KanbanBoard
   const atendimentosConvertidos = atendimentos.map(a => ({
     ...a,
-    status: mapearStatus(a.status) as 'novos' | 'em-atendimento' | 'aguardando-cliente' | 'finalizados',
+    id: parseInt(a.id), // Converter string para number se necessário
     tempoAberto: a.tempo // Usar o tempo existente como tempo em aberto
   }));
 
