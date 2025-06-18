@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { User, MessageSquare } from 'lucide-react';
-
-interface Atendimento {
-  id: number;
-  cliente: string;
-  agente?: string;
-  setor: string;
-}
+import { Atendimento } from '@/types/atendimento';
 
 interface AccessRequestDialogProps {
   open: boolean;
