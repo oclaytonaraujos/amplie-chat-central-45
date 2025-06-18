@@ -1,17 +1,6 @@
 
 import { KanbanBoard } from '@/components/kanban/KanbanBoard';
-
-interface Atendimento {
-  id: string;
-  cliente: string;
-  telefone: string;
-  ultimaMensagem: string;
-  tempo: string;
-  setor: string;
-  agente?: string;
-  tags?: string[];
-  status: 'novos' | 'em-atendimento' | 'aguardando-cliente' | 'finalizados';
-}
+import { Atendimento } from '@/types/atendimento';
 
 interface KanbanColumnsProps {
   atendimentos: Atendimento[];
@@ -20,16 +9,9 @@ interface KanbanColumnsProps {
 }
 
 export function KanbanColumns({ atendimentos, onSelectAtendimento, usuarioLogado = 'Ana Silva' }: KanbanColumnsProps) {
-  // Converter atendimentos para o formato esperado pelo KanbanBoard
-  const atendimentosConvertidos = atendimentos.map(a => ({
-    ...a,
-    id: parseInt(a.id), // Converter string para number se necessário
-    tempoAberto: a.tempo // Usar o tempo existente como tempo em aberto
-  }));
-
   return (
     <KanbanBoard
-      atendimentos={atendimentosConvertidos}
+      atendimentos={atendimentos}
       onSelectAtendimento={onSelectAtendimento}
       usuarioLogado={usuarioLogado}
       isAdmin={false}

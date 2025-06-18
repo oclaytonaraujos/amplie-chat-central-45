@@ -4,13 +4,14 @@ import { KanbanBoard } from '@/components/kanban/KanbanBoard';
 import { KanbanFilters } from '@/components/kanban/KanbanFilters';
 import { useAtendimentoReal } from '@/hooks/useAtendimentoReal';
 import { Loader2 } from 'lucide-react';
+import { Atendimento } from '@/types/atendimento';
 
 export default function Kanban() {
   const { conversas, loading } = useAtendimentoReal();
   const [departamentoSelecionado, setDepartamentoSelecionado] = useState('todos');
   
   // Converter conversas do Supabase para o formato do Kanban
-  const atendimentos = conversas.map(conversa => ({
+  const atendimentos: Atendimento[] = conversas.map(conversa => ({
     id: conversa.id,
     cliente: conversa.contatos?.nome || 'Cliente sem nome',
     telefone: conversa.contatos?.telefone || '',
@@ -22,11 +23,7 @@ export default function Kanban() {
     setor: conversa.setor || 'Geral',
     agente: conversa.profiles?.nome,
     tags: conversa.tags || [],
-    status: conversa.status as 'novos' | 'em-atendimento' | 'aguardando-cliente' | 'finalizados',
-    tempoAberto: new Date(conversa.created_at || '').toLocaleTimeString('pt-BR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
+    status: conversa.status as 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado'
   }));
   
   // Extrair departamentos únicos dos dados reais
@@ -37,7 +34,7 @@ export default function Kanban() {
     ? atendimentos 
     : atendimentos.filter(a => a.setor === departamentoSelecionado);
 
-  const handleSelectAtendimento = (atendimento: any) => {
+  const handleSelectAtendimento = (atendimento: Atendimento) => {
     console.log('Atendimento selecionado:', atendimento);
     // Aqui seria implementada a navegação para o chat específico
   };

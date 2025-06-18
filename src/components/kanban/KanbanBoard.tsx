@@ -5,19 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { AccessRequestDialog } from './AccessRequestDialog';
-
-interface Atendimento {
-  id: number;
-  cliente: string;
-  telefone: string;
-  ultimaMensagem: string;
-  tempo: string;
-  setor: string;
-  agente?: string;
-  tags?: string[];
-  status: 'novos' | 'em-atendimento' | 'aguardando-cliente' | 'finalizados';
-  tempoAberto: string;
-}
+import { Atendimento } from '@/types/atendimento';
 
 interface KanbanBoardProps {
   atendimentos: Atendimento[];
@@ -43,34 +31,45 @@ export function KanbanBoard({
     ? atendimentos.filter(a => a.setor === departamentoSelecionado)
     : atendimentos;
 
+  // Mapear status do Supabase para status do Kanban
+  const mapStatus = (status: string) => {
+    switch (status) {
+      case 'ativo': return 'novos';
+      case 'em-atendimento': return 'em-atendimento';
+      case 'pendente': return 'aguardando-cliente';
+      case 'finalizado': return 'finalizados';
+      default: return 'novos';
+    }
+  };
+
   const colunas = [
     { 
       id: 'novos', 
       titulo: 'Novos', 
       cor: 'bg-blue-500',
       acessoLivre: true,
-      atendimentos: atendimentosFiltrados.filter(a => a.status === 'novos')
+      atendimentos: atendimentosFiltrados.filter(a => mapStatus(a.status) === 'novos')
     },
     { 
       id: 'em-atendimento', 
       titulo: 'Em Atendimento', 
       cor: 'bg-yellow-500',
       acessoLivre: false,
-      atendimentos: atendimentosFiltrados.filter(a => a.status === 'em-atendimento')
+      atendimentos: atendimentosFiltrados.filter(a => mapStatus(a.status) === 'em-atendimento')
     },
     { 
       id: 'aguardando-cliente', 
       titulo: 'Aguardando Cliente', 
       cor: 'bg-orange-500',
       acessoLivre: false,
-      atendimentos: atendimentosFiltrados.filter(a => a.status === 'aguardando-cliente')
+      atendimentos: atendimentosFiltrados.filter(a => mapStatus(a.status) === 'aguardando-cliente')
     },
     { 
       id: 'finalizados', 
       titulo: 'Finalizados', 
       cor: 'bg-green-500',
       acessoLivre: true,
-      atendimentos: atendimentosFiltrados.filter(a => a.status === 'finalizados')
+      atendimentos: atendimentosFiltrados.filter(a => mapStatus(a.status) === 'finalizados')
     }
   ];
 
@@ -182,7 +181,7 @@ export function KanbanBoard({
                     {/* Tempo em aberto */}
                     <div className="flex items-center space-x-1 text-xs text-gray-500">
                       <Clock className="w-3 h-3" />
-                      <span>Aberto há {atendimento.tempoAberto}</span>
+                      <span>Aberto há {atendimento.tempo}</span>
                     </div>
 
                     {/* Departamento */}
