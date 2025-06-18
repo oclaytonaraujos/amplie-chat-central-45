@@ -53,7 +53,7 @@ export default function SuperAdmin() {
         </div>
 
         <Tabs defaultValue="empresas" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="empresas" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               Empresas
@@ -69,6 +69,10 @@ export default function SuperAdmin() {
             <TabsTrigger value="whatsapp" className="flex items-center gap-2">
               <Smartphone className="h-4 w-4" />
               WhatsApp
+            </TabsTrigger>
+            <TabsTrigger value="zapi" className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4" />
+              Z-API
             </TabsTrigger>
             <TabsTrigger value="relatorios" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
@@ -128,6 +132,20 @@ export default function SuperAdmin() {
               </CardHeader>
               <CardContent>
                 <WhatsAppTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="zapi">
+            <Card>
+              <CardHeader>
+                <CardTitle>Configurações Z-API</CardTitle>
+                <CardDescription>
+                  Gerencie as configurações Z-API de todas as empresas
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ZApiConfigTab />
               </CardContent>
             </Card>
           </TabsContent>
