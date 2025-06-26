@@ -11,10 +11,9 @@ import {
   Bot,
   Smartphone,
   BookOpen,
-  LogOut,
-  Building2
+  LogOut
 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/providers/AuthProvider';
 import { Button } from '@/components/ui/button';
 
 const menuItems = [
@@ -48,7 +47,7 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-gray-200">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-gradient-to-r from-amplie-primary to-amplie-secondary rounded-lg flex items-center justify-center">
+          <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
             <MessageSquare className="w-6 h-6 text-white" />
           </div>
           <div>
@@ -70,7 +69,7 @@ export function Sidebar() {
               to={item.path}
               className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                 isActive
-                  ? 'bg-amplie-primary text-white'
+                  ? 'bg-blue-600 text-white'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >

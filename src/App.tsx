@@ -30,63 +30,63 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Dashboard">
                   <Dashboard />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/kanban" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Kanban">
                   <Kanban />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/contatos" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Contatos">
                   <Contatos />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/chamadas" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Chamadas">
                   <Chamadas />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/relatorios" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Relatórios">
                   <Relatorios />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/chatbot" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="ChatBot">
                   <ChatBot />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/whatsapp" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="WhatsApp">
                   <WhatsApp />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/manual" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Manual">
                   <Manual />
                 </Layout>
               </ProtectedRoute>
             } />
             <Route path="/configuracoes" element={
               <ProtectedRoute>
-                <Layout>
+                <Layout title="Configurações">
                   <Configuracoes />
                 </Layout>
               </ProtectedRoute>
