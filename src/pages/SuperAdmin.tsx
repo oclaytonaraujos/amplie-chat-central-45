@@ -9,6 +9,7 @@ import EmpresasTab from '@/components/admin/EmpresasTab';
 import PlanosTab from '@/components/admin/PlanosTab';
 import WhatsAppTab from '@/components/admin/WhatsAppTab';
 import UsuariosTab from '@/components/admin/UsuariosTab';
+import ZApiConfigTab from '@/components/admin/ZApiConfigTab';
 import RelatoriosEstatisticasCard from '@/components/admin/RelatoriosEstatisticasCard';
 import { useUserRole } from '@/hooks/useUserRole';
 

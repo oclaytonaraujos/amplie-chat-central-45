@@ -2,9 +2,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import type { Database } from '@/integrations/supabase/types';
+
+type TableName = keyof Database['public']['Tables'];
 
 interface QueryOptions {
-  table: string;
+  table: TableName;
   select?: string;
   filters?: Array<{
     column: string;
@@ -66,7 +69,7 @@ export function useOptimizedSupabaseQuery<T = any>({
         throw queryError;
       }
 
-      setData(result || []);
+      setData((result as T[]) || []);
     } catch (err: any) {
       console.error(`Erro na consulta da tabela ${table}:`, err);
       setError(err.message || 'Erro desconhecido');
