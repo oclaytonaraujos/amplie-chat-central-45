@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
+  refreshSession: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   signOut: async () => {},
+  refreshSession: async () => {},
 });
 
 export const useAuth = () => {
@@ -48,7 +50,6 @@ const createUserProfile = async (user: User) => {
     }
 
     // Se chegou aqui, o perfil não existe e precisa ser criado
-    // Isso pode acontecer se o usuário foi criado diretamente no Auth
     console.log('Criando perfil para usuário existente...');
 
     // Buscar a empresa Amplie Marketing como padrão
@@ -107,6 +108,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const refreshSession = async () => {
+    try {
+      const { data: { session: newSession }, error } = await supabase.auth.refreshSession();
+      if (error) {
+        console.error('Erro ao renovar sessão:', error);
+        return;
+      }
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
+    } catch (error) {
+      console.error('Erro ao renovar sessão:', error);
+    }
+  };
+
   useEffect(() => {
     console.log('Configurando auth listener...');
     
@@ -123,6 +138,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => {
             createUserProfile(session.user);
           }, 100);
+        }
+        
+        // Se o usuário fez logout, limpar dados
+        if (event === 'SIGNED_OUT') {
+          console.log('Usuário fez logout');
+          setSession(null);
+          setUser(null);
         }
         
         setLoading(false);
@@ -155,7 +177,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('Fazendo logout...');
-    await supabase.auth.signOut();
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        console.error('Erro no logout:', error);
+      }
+    } catch (error) {
+      console.error('Erro no logout:', error);
+    }
   };
 
   const value = {
@@ -163,6 +192,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     session,
     loading,
     signOut,
+    refreshSession,
   };
 
   return (

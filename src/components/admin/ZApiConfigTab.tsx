@@ -1,18 +1,23 @@
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Loader2, Plus, Settings, Trash2, CheckCircle, XCircle, Smartphone } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { Plus, Edit, Trash2, Settings, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 
 interface ZApiConfig {
   id: string;
@@ -22,17 +27,14 @@ interface ZApiConfig {
   webhook_url: string | null;
   ativo: boolean;
   created_at: string;
-  empresa_nome?: string;
-}
-
-interface Empresa {
-  id: string;
-  nome: string;
+  empresas?: {
+    nome: string;
+    email: string;
+  };
 }
 
 export default function ZApiConfigTab() {
   const [configs, setConfigs] = useState<ZApiConfig[]>([]);
-  const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ZApiConfig | null>(null);
@@ -41,45 +43,27 @@ export default function ZApiConfigTab() {
     instance_id: '',
     token: '',
     webhook_url: '',
-    ativo: true
   });
   const { toast } = useToast();
 
   useEffect(() => {
-    loadData();
+    fetchConfigs();
   }, []);
 
-  const loadData = async () => {
+  const fetchConfigs = async () => {
     try {
-      setLoading(true);
-
-      // Carregar empresas
-      const { data: empresasData, error: empresasError } = await supabase
-        .from('empresas')
-        .select('id, nome')
-        .eq('ativo', true)
-        .order('nome');
-
-      if (empresasError) throw empresasError;
-
-      // Carregar configurações Z-API
-      const { data: configsData, error: configsError } = await supabase
+      const { data, error } = await supabase
         .from('zapi_config')
         .select(`
           *,
-          empresas (nome)
+          empresas (nome, email)
         `)
         .order('created_at', { ascending: false });
 
-      if (configsError) throw configsError;
-
-      setEmpresas(empresasData || []);
-      setConfigs(configsData?.map(config => ({
-        ...config,
-        empresa_nome: config.empresas?.nome
-      })) || []);
+      if (error) throw error;
+      setConfigs(data || []);
     } catch (error) {
-      console.error('Erro ao carregar dados:', error);
+      console.error('Erro ao buscar configurações Z-API:', error);
       toast({
         title: "Erro",
         description: "Erro ao carregar configurações Z-API",
@@ -90,30 +74,14 @@ export default function ZApiConfigTab() {
     }
   };
 
-  const handleSave = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
-      if (!formData.empresa_id || !formData.instance_id || !formData.token) {
-        toast({
-          title: "Campos obrigatórios",
-          description: "Preencha empresa, instance ID e token",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      const webhookUrl = formData.webhook_url || 
-        `https://obtpghqvrygzcukdaiej.supabase.co/functions/v1/whatsapp-webhook`;
-
       if (editingConfig) {
-        // Atualizar configuração existente
         const { error } = await supabase
           .from('zapi_config')
-          .update({
-            instance_id: formData.instance_id,
-            token: formData.token,
-            webhook_url: webhookUrl,
-            ativo: formData.ativo
-          })
+          .update(formData)
           .eq('id', editingConfig.id);
 
         if (error) throw error;
@@ -123,16 +91,9 @@ export default function ZApiConfigTab() {
           description: "Configuração Z-API atualizada com sucesso",
         });
       } else {
-        // Criar nova configuração
         const { error } = await supabase
           .from('zapi_config')
-          .insert({
-            empresa_id: formData.empresa_id,
-            instance_id: formData.instance_id,
-            token: formData.token,
-            webhook_url: webhookUrl,
-            ativo: formData.ativo
-          });
+          .insert([formData]);
 
         if (error) throw error;
 
@@ -144,13 +105,43 @@ export default function ZApiConfigTab() {
 
       setIsDialogOpen(false);
       setEditingConfig(null);
-      resetForm();
-      loadData();
+      setFormData({
+        empresa_id: '',
+        instance_id: '',
+        token: '',
+        webhook_url: '',
+      });
+      fetchConfigs();
     } catch (error) {
       console.error('Erro ao salvar configuração:', error);
       toast({
         title: "Erro",
         description: "Erro ao salvar configuração Z-API",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const toggleConfigStatus = async (config: ZApiConfig) => {
+    try {
+      const { error } = await supabase
+        .from('zapi_config')
+        .update({ ativo: !config.ativo })
+        .eq('id', config.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: `Configuração ${config.ativo ? 'desativada' : 'ativada'} com sucesso`,
+      });
+
+      fetchConfigs();
+    } catch (error) {
+      console.error('Erro ao alterar status:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao alterar status da configuração",
         variant: "destructive",
       });
     }
@@ -163,26 +154,27 @@ export default function ZApiConfigTab() {
       instance_id: config.instance_id,
       token: config.token,
       webhook_url: config.webhook_url || '',
-      ativo: config.ativo
     });
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (config: ZApiConfig) => {
+    if (!confirm('Tem certeza que deseja excluir esta configuração?')) return;
+
     try {
       const { error } = await supabase
         .from('zapi_config')
         .delete()
-        .eq('id', id);
+        .eq('id', config.id);
 
       if (error) throw error;
 
       toast({
         title: "Sucesso",
-        description: "Configuração Z-API removida com sucesso",
+        description: "Configuração Z-API excluída com sucesso",
       });
 
-      loadData();
+      fetchConfigs();
     } catch (error) {
       console.error('Erro ao excluir configuração:', error);
       toast({
@@ -193,250 +185,165 @@ export default function ZApiConfigTab() {
     }
   };
 
-  const toggleStatus = async (id: string, novoStatus: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('zapi_config')
-        .update({ ativo: novoStatus })
-        .eq('id', id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Sucesso",
-        description: `Configuração ${novoStatus ? 'ativada' : 'desativada'} com sucesso`,
-      });
-
-      loadData();
-    } catch (error) {
-      console.error('Erro ao alterar status:', error);
-      toast({
-        title: "Erro",
-        description: "Erro ao alterar status da configuração",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const resetForm = () => {
-    setFormData({
-      empresa_id: '',
-      instance_id: '',
-      token: '',
-      webhook_url: '',
-      ativo: true
-    });
-  };
-
-  const handleNewConfig = () => {
-    setEditingConfig(null);
-    resetForm();
-    setIsDialogOpen(true);
-  };
-
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <Loader2 className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <div className="text-center">Carregando configurações Z-API...</div>;
   }
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-medium">Configurações Z-API</h3>
+          <h3 className="text-lg font-semibold">Configurações Z-API</h3>
           <p className="text-sm text-gray-600">Gerencie as configurações Z-API de todas as empresas</p>
         </div>
+        
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={handleNewConfig}>
+            <Button onClick={() => {
+              setEditingConfig(null);
+              setFormData({
+                empresa_id: '',
+                instance_id: '',
+                token: '',
+                webhook_url: '',
+              });
+            }}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Configuração
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {editingConfig ? 'Editar' : 'Nova'} Configuração Z-API
+                {editingConfig ? 'Editar Configuração Z-API' : 'Nova Configuração Z-API'}
               </DialogTitle>
               <DialogDescription>
-                Configure as credenciais Z-API para uma empresa
+                Configure uma nova instância Z-API para uma empresa
               </DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="empresa">Empresa</Label>
-                <Select 
-                  value={formData.empresa_id} 
-                  onValueChange={(value) => setFormData({...formData, empresa_id: value})}
-                  disabled={!!editingConfig}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma empresa" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {empresas.map((empresa) => (
-                      <SelectItem key={empresa.id} value={empresa.id}>
-                        {empresa.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
+            
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="instance_id">Instance ID</Label>
                 <Input
                   id="instance_id"
                   value={formData.instance_id}
-                  onChange={(e) => setFormData({...formData, instance_id: e.target.value})}
-                  placeholder="ID da instância Z-API"
+                  onChange={(e) => setFormData(prev => ({ ...prev, instance_id: e.target.value }))}
+                  required
                 />
               </div>
-
+              
               <div>
                 <Label htmlFor="token">Token</Label>
                 <Input
                   id="token"
                   type="password"
                   value={formData.token}
-                  onChange={(e) => setFormData({...formData, token: e.target.value})}
-                  placeholder="Token Z-API"
+                  onChange={(e) => setFormData(prev => ({ ...prev, token: e.target.value }))}
+                  required
                 />
               </div>
-
+              
               <div>
                 <Label htmlFor="webhook_url">Webhook URL</Label>
                 <Input
                   id="webhook_url"
                   value={formData.webhook_url}
-                  onChange={(e) => setFormData({...formData, webhook_url: e.target.value})}
-                  placeholder="URL do webhook (opcional)"
+                  onChange={(e) => setFormData(prev => ({ ...prev, webhook_url: e.target.value }))}
+                  placeholder="https://seu-webhook.com/whatsapp"
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  Deixe vazio para usar a URL padrão do sistema
-                </p>
               </div>
-
-              <div className="flex items-center space-x-2">
-                <Switch
-                  id="ativo"
-                  checked={formData.ativo}
-                  onCheckedChange={(checked) => setFormData({...formData, ativo: checked})}
-                />
-                <Label htmlFor="ativo">Configuração ativa</Label>
-              </div>
-
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              
+              <div className="flex justify-end space-x-2">
+                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancelar
                 </Button>
-                <Button onClick={handleSave}>
+                <Button type="submit">
                   {editingConfig ? 'Atualizar' : 'Criar'}
                 </Button>
               </div>
-            </div>
+            </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      <Alert>
-        <Smartphone className="h-4 w-4" />
-        <AlertDescription>
-          <strong>Webhook padrão:</strong> https://obtpghqvrygzcukdaiej.supabase.co/functions/v1/whatsapp-webhook
-          <br />
-          Configure esta URL também no painel da Z-API para receber mensagens automaticamente.
-        </AlertDescription>
-      </Alert>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Configurações Existentes</CardTitle>
-          <CardDescription>
-            {configs.length} configuração(ões) encontrada(s)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {configs.length === 0 ? (
-            <div className="text-center py-8">
-              <p className="text-gray-500">Nenhuma configuração Z-API encontrada</p>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Empresa</TableHead>
-                  <TableHead>Instance ID</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Webhook</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead>Ações</TableHead>
+      {configs.length === 0 ? (
+        <Card>
+          <CardContent className="text-center py-8">
+            <Smartphone className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma configuração Z-API</h3>
+            <p className="text-gray-500 mb-4">Crie uma configuração Z-API para começar</p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Empresa</TableHead>
+                <TableHead>Instance ID</TableHead>
+                <TableHead>Webhook URL</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Data Criação</TableHead>
+                <TableHead>Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {configs.map((config) => (
+                <TableRow key={config.id}>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{config.empresas?.nome || 'N/A'}</div>
+                      <div className="text-sm text-gray-500">{config.empresas?.email || 'N/A'}</div>
+                    </div>
+                  </TableCell>
+                  <TableCell className="font-mono">{config.instance_id}</TableCell>
+                  <TableCell>
+                    {config.webhook_url ? (
+                      <span className="text-sm text-green-600">Configurado</span>
+                    ) : (
+                      <span className="text-sm text-gray-400">Não configurado</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={config.ativo ? "default" : "secondary"}>
+                      {config.ativo ? 'Ativo' : 'Inativo'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {new Date(config.created_at).toLocaleDateString('pt-BR')}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(config)}
+                        title="Editar configuração"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Switch
+                        checked={config.ativo}
+                        onCheckedChange={() => toggleConfigStatus(config)}
+                      />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(config)}
+                        className="text-red-600 hover:text-red-700"
+                        title="Excluir configuração"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {configs.map((config) => (
-                  <TableRow key={config.id}>
-                    <TableCell className="font-medium">
-                      {config.empresa_nome}
-                    </TableCell>
-                    <TableCell>{config.instance_id}</TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-2">
-                        <Switch
-                          checked={config.ativo}
-                          onCheckedChange={(checked) => toggleStatus(config.id, checked)}
-                          size="sm"
-                        />
-                        <Badge variant={config.ativo ? "default" : "secondary"}>
-                          {config.ativo ? (
-                            <>
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Ativo
-                            </>
-                          ) : (
-                            <>
-                              <XCircle className="h-3 w-3 mr-1" />
-                              Inativo
-                            </>
-                          )}
-                        </Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="text-xs">
-                        {config.webhook_url ? 'Configurado' : 'Não configurado'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      {new Date(config.created_at).toLocaleDateString('pt-BR')}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(config)}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDelete(config.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 }
