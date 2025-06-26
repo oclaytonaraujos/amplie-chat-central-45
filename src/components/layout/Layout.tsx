@@ -88,12 +88,7 @@ export function Layout({ children, title, description, icon }: LayoutProps) {
         }`}
         data-sidebar
       >
-        <Sidebar 
-          isMobile={isMobile}
-          isOpen={sidebarOpen}
-          onClose={() => setSidebarOpen(false)}
-          onCollapsedChange={setSidebarCollapsed}
-        />
+        <Sidebar />
       </div>
       
       {/* Main content with optimized touch and scroll */}
