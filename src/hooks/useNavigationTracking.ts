@@ -12,9 +12,12 @@ export function useNavigationTracking() {
 
   useEffect(() => {
     // Aguardar carregamento completo antes de tomar decisões de navegação
-    if (authLoading || roleLoading) return;
+    if (authLoading || roleLoading) {
+      console.log('Aguardando carregamento...', { authLoading, roleLoading });
+      return;
+    }
 
-    console.log('Navegação:', {
+    console.log('Navegação checada:', {
       path: location.pathname,
       user: user?.email,
       isSuperAdmin,
@@ -36,11 +39,21 @@ export function useNavigationTracking() {
       return;
     }
 
-    // Verificar acesso à página de super admin APENAS após carregamento completo
-    if (location.pathname === '/admin' && user && !isSuperAdmin) {
-      console.log('Acesso negado ao super admin, redirecionando para painel');
-      navigate('/painel', { replace: true });
-      return;
+    // Verificar acesso à página de super admin
+    if (location.pathname === '/admin') {
+      if (!user) {
+        console.log('Sem usuário para acessar admin, redirecionando para auth');
+        navigate('/auth', { replace: true });
+        return;
+      }
+      
+      if (!isSuperAdmin) {
+        console.log('Usuário não é super admin, redirecionando para painel');
+        navigate('/painel', { replace: true });
+        return;
+      }
+      
+      console.log('✅ Acesso autorizado ao admin para:', user.email);
     }
 
     // Redirecionar página inicial para painel

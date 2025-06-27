@@ -17,13 +17,16 @@ export default function SuperAdmin() {
   const { user, loading: authLoading } = useAuth();
   const { isSuperAdmin, loading: roleLoading } = useUserRole();
 
-  console.log('SuperAdmin - User:', user?.email);
-  console.log('SuperAdmin - isSuperAdmin:', isSuperAdmin);
-  console.log('SuperAdmin - authLoading:', authLoading);
-  console.log('SuperAdmin - roleLoading:', roleLoading);
+  console.log('SuperAdmin renderizado:', {
+    user: user?.email,
+    isSuperAdmin,
+    authLoading,
+    roleLoading
+  });
 
-  // Aguardar o carregamento completo antes de tomar decisões
+  // Mostrar loading enquanto verifica permissões
   if (authLoading || roleLoading) {
+    console.log('SuperAdmin - Aguardando carregamento...');
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -34,11 +37,17 @@ export default function SuperAdmin() {
     );
   }
 
-  // Só redirecionar após ter certeza de que não é super admin
+  // Verificar se é super admin após carregamento completo
   if (!user || !isSuperAdmin) {
-    console.log('Acesso negado - usuário:', user?.email, 'isSuperAdmin:', isSuperAdmin);
+    console.log('SuperAdmin - Acesso negado:', { 
+      hasUser: !!user, 
+      userEmail: user?.email,
+      isSuperAdmin 
+    });
     return <Navigate to="/painel" replace />;
   }
+
+  console.log('✅ SuperAdmin - Acesso autorizado para:', user.email);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">

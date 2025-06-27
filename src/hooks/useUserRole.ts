@@ -4,13 +4,19 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 
 export function useUserRole() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [role, setRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUserRole() {
+      // Aguardar até que a autenticação esteja completa
+      if (authLoading) {
+        return;
+      }
+
       if (!user) {
+        console.log('Usuário não autenticado, limpando role');
         setRole(null);
         setLoading(false);
         return;
@@ -27,10 +33,23 @@ export function useUserRole() {
 
         if (error) {
           console.error('Erro ao buscar cargo do usuário:', error);
+          
+          // Se não encontrou o perfil, aguardar um pouco e tentar novamente
+          if (error.code === 'PGRST116') {
+            console.log('Perfil não encontrado, tentando novamente em 1 segundo...');
+            setTimeout(fetchUserRole, 1000);
+            return;
+          }
+          
           setRole(null);
         } else {
           console.log('Cargo encontrado:', data?.cargo);
           setRole(data?.cargo || null);
+          
+          // Log especial para super admin
+          if (data?.cargo === 'super_admin') {
+            console.log('✅ Confirmado: Usuário é Super Admin -', user.email);
+          }
         }
       } catch (error) {
         console.error('Erro inesperado ao buscar cargo:', error);
@@ -41,11 +60,11 @@ export function useUserRole() {
     }
 
     fetchUserRole();
-  }, [user]);
+  }, [user, authLoading]);
 
   return { 
     role, 
-    loading,
+    loading: authLoading || loading,
     isSuperAdmin: role === 'super_admin',
     isAdmin: role === 'admin' || role === 'super_admin'
   };
