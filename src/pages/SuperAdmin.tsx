@@ -14,14 +14,16 @@ import RelatoriosEstatisticasCard from '@/components/admin/RelatoriosEstatistica
 import { useUserRole } from '@/hooks/useUserRole';
 
 export default function SuperAdmin() {
-  const { user } = useAuth();
-  const { isSuperAdmin, loading } = useUserRole();
+  const { user, loading: authLoading } = useAuth();
+  const { isSuperAdmin, loading: roleLoading } = useUserRole();
 
   console.log('SuperAdmin - User:', user?.email);
   console.log('SuperAdmin - isSuperAdmin:', isSuperAdmin);
-  console.log('SuperAdmin - loading:', loading);
+  console.log('SuperAdmin - authLoading:', authLoading);
+  console.log('SuperAdmin - roleLoading:', roleLoading);
 
-  if (loading) {
+  // Aguardar o carregamento completo antes de tomar decisões
+  if (authLoading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -32,8 +34,9 @@ export default function SuperAdmin() {
     );
   }
 
+  // Só redirecionar após ter certeza de que não é super admin
   if (!user || !isSuperAdmin) {
-    console.log('Acesso negado - redirecionando para painel');
+    console.log('Acesso negado - usuário:', user?.email, 'isSuperAdmin:', isSuperAdmin);
     return <Navigate to="/painel" replace />;
   }
 
