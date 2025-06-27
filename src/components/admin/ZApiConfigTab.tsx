@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit, Trash2, Settings, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -33,8 +34,15 @@ interface ZApiConfig {
   };
 }
 
+interface Empresa {
+  id: string;
+  nome: string;
+  email: string;
+}
+
 export default function ZApiConfigTab() {
   const [configs, setConfigs] = useState<ZApiConfig[]>([]);
+  const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingConfig, setEditingConfig] = useState<ZApiConfig | null>(null);
@@ -42,13 +50,39 @@ export default function ZApiConfigTab() {
     empresa_id: '',
     instance_id: '',
     token: '',
-    webhook_url: '',
+    webhook_url: 'https://obtpghqvrygzcukdaiej.supabase.co/functions/v1/whatsapp-webhook',
   });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchConfigs();
+    fetchEmpresas();
   }, []);
+
+  const fetchEmpresas = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('empresas')
+        .select('id, nome, email')
+        .eq('ativo', true)
+        .order('nome');
+
+      if (error) throw error;
+      setEmpresas(data || []);
+      
+      // Se só há uma empresa, selecionar automaticamente
+      if (data && data.length === 1) {
+        setFormData(prev => ({ ...prev, empresa_id: data[0].id }));
+      }
+    } catch (error) {
+      console.error('Erro ao buscar empresas:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao carregar empresas",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchConfigs = async () => {
     try {
@@ -77,11 +111,36 @@ export default function ZApiConfigTab() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Validar se empresa foi selecionada
+    if (!formData.empresa_id) {
+      toast({
+        title: "Erro",
+        description: "Selecione uma empresa",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validar campos obrigatórios
+    if (!formData.instance_id || !formData.token) {
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       if (editingConfig) {
         const { error } = await supabase
           .from('zapi_config')
-          .update(formData)
+          .update({
+            empresa_id: formData.empresa_id,
+            instance_id: formData.instance_id,
+            token: formData.token,
+            webhook_url: formData.webhook_url || null,
+          })
           .eq('id', editingConfig.id);
 
         if (error) throw error;
@@ -93,7 +152,13 @@ export default function ZApiConfigTab() {
       } else {
         const { error } = await supabase
           .from('zapi_config')
-          .insert([formData]);
+          .insert([{
+            empresa_id: formData.empresa_id,
+            instance_id: formData.instance_id,
+            token: formData.token,
+            webhook_url: formData.webhook_url || null,
+            ativo: true,
+          }]);
 
         if (error) throw error;
 
@@ -105,21 +170,25 @@ export default function ZApiConfigTab() {
 
       setIsDialogOpen(false);
       setEditingConfig(null);
-      setFormData({
-        empresa_id: '',
-        instance_id: '',
-        token: '',
-        webhook_url: '',
-      });
+      resetForm();
       fetchConfigs();
     } catch (error) {
       console.error('Erro ao salvar configuração:', error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar configuração Z-API",
+        description: `Erro ao salvar configuração Z-API: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
         variant: "destructive",
       });
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      empresa_id: empresas.length === 1 ? empresas[0].id : '',
+      instance_id: '',
+      token: '',
+      webhook_url: 'https://obtpghqvrygzcukdaiej.supabase.co/functions/v1/whatsapp-webhook',
+    });
   };
 
   const toggleConfigStatus = async (config: ZApiConfig) => {
@@ -153,7 +222,7 @@ export default function ZApiConfigTab() {
       empresa_id: config.empresa_id,
       instance_id: config.instance_id,
       token: config.token,
-      webhook_url: config.webhook_url || '',
+      webhook_url: config.webhook_url || 'https://obtpghqvrygzcukdaiej.supabase.co/functions/v1/whatsapp-webhook',
     });
     setIsDialogOpen(true);
   };
@@ -201,18 +270,13 @@ export default function ZApiConfigTab() {
           <DialogTrigger asChild>
             <Button onClick={() => {
               setEditingConfig(null);
-              setFormData({
-                empresa_id: '',
-                instance_id: '',
-                token: '',
-                webhook_url: '',
-              });
+              resetForm();
             }}>
               <Plus className="h-4 w-4 mr-2" />
               Nova Configuração
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>
                 {editingConfig ? 'Editar Configuração Z-API' : 'Nova Configuração Z-API'}
@@ -224,22 +288,44 @@ export default function ZApiConfigTab() {
             
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="instance_id">Instance ID</Label>
+                <Label htmlFor="empresa_id">Empresa *</Label>
+                <Select 
+                  value={formData.empresa_id} 
+                  onValueChange={(value) => setFormData(prev => ({ ...prev, empresa_id: value }))}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione uma empresa" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {empresas.map((empresa) => (
+                      <SelectItem key={empresa.id} value={empresa.id}>
+                        {empresa.nome}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="instance_id">Instance ID *</Label>
                 <Input
                   id="instance_id"
                   value={formData.instance_id}
                   onChange={(e) => setFormData(prev => ({ ...prev, instance_id: e.target.value }))}
+                  placeholder="Ex: 3C4..."
                   required
                 />
               </div>
               
               <div>
-                <Label htmlFor="token">Token</Label>
+                <Label htmlFor="token">Token *</Label>
                 <Input
                   id="token"
                   type="password"
                   value={formData.token}
                   onChange={(e) => setFormData(prev => ({ ...prev, token: e.target.value }))}
+                  placeholder="Seu token Z-API"
                   required
                 />
               </div>
@@ -250,11 +336,14 @@ export default function ZApiConfigTab() {
                   id="webhook_url"
                   value={formData.webhook_url}
                   onChange={(e) => setFormData(prev => ({ ...prev, webhook_url: e.target.value }))}
-                  placeholder="https://seu-webhook.com/whatsapp"
+                  placeholder="URL do webhook"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Configure esta mesma URL no painel da Z-API
+                </p>
               </div>
               
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
                   Cancelar
                 </Button>
@@ -297,7 +386,7 @@ export default function ZApiConfigTab() {
                       <div className="text-sm text-gray-500">{config.empresas?.email || 'N/A'}</div>
                     </div>
                   </TableCell>
-                  <TableCell className="font-mono">{config.instance_id}</TableCell>
+                  <TableCell className="font-mono text-sm">{config.instance_id}</TableCell>
                   <TableCell>
                     {config.webhook_url ? (
                       <span className="text-sm text-green-600">Configurado</span>
