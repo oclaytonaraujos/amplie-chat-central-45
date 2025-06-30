@@ -4,8 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Smartphone, Unplug } from 'lucide-react';
+import { Smartphone, Unplug, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { WhatsAppConnectionsReal } from '@/components/whatsapp/WhatsAppConnectionsReal';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface WhatsAppConnection {
   id: string;
@@ -23,6 +25,7 @@ interface WhatsAppConnection {
 export default function WhatsAppTab() {
   const [connections, setConnections] = useState<WhatsAppConnection[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showConnectionTest, setShowConnectionTest] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -102,14 +105,37 @@ export default function WhatsAppTab() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold">Conexões WhatsApp Ativas</h3>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <Smartphone className="h-4 w-4" />
-          {connections.length} conexões totais
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setShowConnectionTest(!showConnectionTest)}
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            {showConnectionTest ? 'Ocultar' : 'Mostrar'} Teste de Conexão
+          </Button>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <Smartphone className="h-4 w-4" />
+            {connections.length} conexões totais
+          </div>
         </div>
       </div>
+
+      {showConnectionTest && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Teste de Conexão Z-API</CardTitle>
+            <CardDescription>
+              Teste a conectividade com a Z-API e conecte seu WhatsApp
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <WhatsAppConnectionsReal />
+          </CardContent>
+        </Card>
+      )}
 
       <div className="border rounded-lg">
         <Table>
