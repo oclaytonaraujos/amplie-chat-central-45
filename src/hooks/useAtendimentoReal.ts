@@ -49,6 +49,9 @@ interface Mensagem {
   tipo_mensagem: string | null;
 }
 
+// URL do webhook do n8n para envio de mensagens
+const N8N_WEBHOOK_URL = 'https://n8n.seudominio.com/webhook/whatsapp-send'; // Substitua pela URL real do n8n
+
 export function useAtendimentoReal() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -63,7 +66,6 @@ export function useAtendimentoReal() {
     try {
       setLoading(true);
       
-      // Buscar empresa_id do usuário
       const { data: profile } = await supabase
         .from('profiles')
         .select('empresa_id')
@@ -135,8 +137,65 @@ export function useAtendimentoReal() {
     }
   };
 
-  // Enviar mensagem
-  const enviarMensagem = async (conversaId: string, conteudo: string) => {
+  // Upload de arquivo para o Supabase Storage
+  const uploadArquivo = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `whatsapp-attachments/${fileName}`;
+
+      console.log('Fazendo upload do arquivo:', file.name);
+
+      const { data, error } = await supabase.storage
+        .from('attachments')
+        .upload(filePath, file);
+
+      if (error) {
+        console.error('Erro no upload:', error);
+        return null;
+      }
+
+      // Obter URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('attachments')
+        .getPublicUrl(filePath);
+
+      console.log('Upload realizado com sucesso:', publicUrl);
+      return publicUrl;
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      return null;
+    }
+  };
+
+  // Enviar payload para o n8n
+  const enviarParaN8n = async (payload: any): Promise<boolean> => {
+    try {
+      console.log('Enviando payload para n8n:', payload);
+      
+      const response = await fetch(N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Erro HTTP: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Resposta do n8n:', result);
+      return true;
+    } catch (error) {
+      console.error('Erro ao enviar para n8n:', error);
+      return false;
+    }
+  };
+
+  // Enviar mensagem de texto
+  const enviarMensagem = async (conversaId: string, telefone: string, conteudo: string) => {
     if (!user) return false;
 
     try {
@@ -147,7 +206,7 @@ export function useAtendimentoReal() {
         .eq('id', user.id)
         .single();
 
-      // Inserir mensagem no banco
+      // Inserir mensagem no banco local
       const { data, error } = await supabase
         .from('mensagens')
         .insert({
@@ -163,20 +222,124 @@ export function useAtendimentoReal() {
 
       if (error) {
         console.error('Erro ao inserir mensagem:', error);
+        return false;
+      }
+
+      // Enviar para n8n via webhook
+      const payload = {
+        type: 'text',
+        phone: telefone.replace(/\D/g, ''), // Remove formatação
+        data: {
+          message: conteudo
+        }
+      };
+
+      const sucesso = await enviarParaN8n(payload);
+      
+      if (sucesso) {
+        // Recarregar mensagens para mostrar a nova mensagem
+        loadMensagensConversa(conversaId);
+      }
+
+      return sucesso;
+    } catch (error) {
+      console.error('Erro ao enviar mensagem:', error);
+      return false;
+    }
+  };
+
+  // Enviar mensagem com anexo
+  const enviarMensagemComAnexo = async (
+    conversaId: string, 
+    telefone: string, 
+    arquivo: File, 
+    legenda?: string
+  ) => {
+    if (!user) return false;
+
+    try {
+      // Upload do arquivo
+      const urlArquivo = await uploadArquivo(arquivo);
+      if (!urlArquivo) {
         toast({
-          title: "Erro ao enviar mensagem",
-          description: error.message,
+          title: "Erro no upload",
+          description: "Não foi possível fazer upload do arquivo",
           variant: "destructive",
         });
         return false;
       }
 
-      // TODO: Integrar com Z-API para enviar via WhatsApp
-      console.log('Mensagem inserida no banco:', data);
+      // Buscar dados do usuário
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('nome')
+        .eq('id', user.id)
+        .single();
+
+      // Determinar tipo de mensagem
+      const isImage = arquivo.type.startsWith('image/');
+      const tipoMensagem = isImage ? 'imagem' : 'documento';
+
+      // Inserir mensagem no banco local
+      const { data, error } = await supabase
+        .from('mensagens')
+        .insert({
+          conversa_id: conversaId,
+          conteudo: legenda || arquivo.name,
+          remetente_id: user.id,
+          remetente_nome: profile?.nome || 'Agente',
+          remetente_tipo: 'agente',
+          tipo_mensagem: tipoMensagem,
+          metadata: {
+            attachment: {
+              type: isImage ? 'image' : 'document',
+              url: urlArquivo,
+              fileName: arquivo.name,
+              mimeType: arquivo.type
+            }
+          }
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Erro ao inserir mensagem:', error);
+        return false;
+      }
+
+      // Criar payload para n8n
+      let payload: any;
+
+      if (isImage) {
+        payload = {
+          type: 'image',
+          phone: telefone.replace(/\D/g, ''),
+          data: {
+            imageUrl: urlArquivo,
+            caption: legenda || ''
+          }
+        };
+      } else {
+        payload = {
+          type: 'document',
+          phone: telefone.replace(/\D/g, ''),
+          data: {
+            documentUrl: urlArquivo,
+            filename: arquivo.name
+          }
+        };
+      }
+
+      const sucesso = await enviarParaN8n(payload);
       
-      return true;
+      if (sucesso) {
+        // Recarregar mensagens para mostrar a nova mensagem
+        loadMensagensConversa(conversaId);
+      }
+
+      return sucesso;
     } catch (error) {
-      console.error('Erro ao enviar mensagem:', error);
+      console.error('Erro ao enviar mensagem com anexo:', error);
       return false;
     }
   };
@@ -194,11 +357,6 @@ export function useAtendimentoReal() {
 
       if (error) {
         console.error('Erro ao atualizar status:', error);
-        toast({
-          title: "Erro ao atualizar status",
-          description: error.message,
-          variant: "destructive",
-        });
         return false;
       }
 
@@ -275,6 +433,7 @@ export function useAtendimentoReal() {
     mensagensConversa,
     loadMensagensConversa,
     enviarMensagem,
+    enviarMensagemComAnexo,
     atualizarStatusConversa,
     loadConversas
   };

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -8,6 +7,7 @@ import { Smartphone, Unplug, Settings } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { WhatsAppConnectionsReal } from '@/components/whatsapp/WhatsAppConnectionsReal';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { N8nConfigDialog } from './N8nConfigDialog';
 
 interface WhatsAppConnection {
   id: string;
@@ -26,6 +26,7 @@ export default function WhatsAppTab() {
   const [connections, setConnections] = useState<WhatsAppConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [showConnectionTest, setShowConnectionTest] = useState(false);
+  const [showN8nConfig, setShowN8nConfig] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -111,6 +112,13 @@ export default function WhatsAppTab() {
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
+            onClick={() => setShowN8nConfig(true)}
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Configurar n8n
+          </Button>
+          <Button
+            variant="outline"
             onClick={() => setShowConnectionTest(!showConnectionTest)}
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -136,6 +144,25 @@ export default function WhatsAppTab() {
           </CardContent>
         </Card>
       )}
+
+      {/* Alert sobre n8n */}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-blue-800 flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Nova Arquitetura com n8n
+          </CardTitle>
+          <CardDescription className="text-blue-700">
+            O sistema agora usa n8n como middleware para gerenciar mensagens do WhatsApp. 
+            Configure os workflows no n8n antes de usar o chat.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => setShowN8nConfig(true)} className="bg-blue-600 hover:bg-blue-700">
+            Configurar Integração n8n
+          </Button>
+        </CardContent>
+      </Card>
 
       <div className="border rounded-lg">
         <Table>
@@ -190,6 +217,11 @@ export default function WhatsAppTab() {
           </TableBody>
         </Table>
       </div>
+
+      <N8nConfigDialog 
+        open={showN8nConfig}
+        onOpenChange={setShowN8nConfig}
+      />
     </div>
   );
 }
