@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 const menuItems = [{
   title: 'Dashboard',
   icon: LayoutDashboard,
-  href: '/',
+  href: '/dashboard',
   color: 'text-blue-400'
 }, {
   title: 'Usuários',
