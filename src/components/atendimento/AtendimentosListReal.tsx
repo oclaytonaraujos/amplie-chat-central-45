@@ -1,198 +1,214 @@
 
-import { MessageSquare, User, Clock, ArrowRight } from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { AtendimentoCard } from './AtendimentoCard';
+import { Button } from '@/components/ui/button';
+import { MessageSquare, Clock, User, Tag } from 'lucide-react';
 import { useAtendimentoReal } from '@/hooks/useAtendimentoReal';
-import { Loader2 } from 'lucide-react';
 
-interface Atendimento {
+interface Conversa {
   id: string;
-  cliente: string;
-  telefone: string;
-  ultimaMensagem: string;
-  tempo: string;
-  setor: string;
-  agente?: string;
-  tags?: string[];
-  status: 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado';
-  transferencia?: {
-    de: string;
-    motivo: string;
-    dataTransferencia: string;
-  };
+  agente_id: string | null;
+  canal: string | null;
+  contato_id: string | null;
+  created_at: string | null;
+  empresa_id: string | null;
+  prioridade: string | null;
+  setor: string | null;
+  status: string | null;
+  tags: string[] | null;
+  updated_at: string | null;
+  contatos?: {
+    id: string;
+    nome: string;
+    telefone: string | null;
+    email: string | null;
+  } | null;
+  profiles?: {
+    id: string;
+    nome: string;
+    email: string;
+  } | null;
 }
 
 interface AtendimentosListRealProps {
-  onSelectAtendimento: (atendimento: Atendimento) => void;
-  selectedAtendimento?: Atendimento | null;
+  onSelectAtendimento: (conversa: Conversa) => void;
+  selectedAtendimento?: Conversa | null;
   isMobile?: boolean;
 }
 
 export function AtendimentosListReal({ 
   onSelectAtendimento, 
   selectedAtendimento,
-  isMobile = false
+  isMobile = false 
 }: AtendimentosListRealProps) {
   const { conversas, loading } = useAtendimentoReal();
 
-  // Transformar conversas do Supabase para o formato esperado
-  const atendimentos: Atendimento[] = conversas.map(conversa => ({
-    id: conversa.id,
-    cliente: conversa.contatos?.nome || 'Cliente sem nome',
-    telefone: conversa.contatos?.telefone || '',
-    ultimaMensagem: 'Última mensagem...',
-    tempo: new Date(conversa.updated_at || '').toLocaleTimeString('pt-BR', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    }),
-    setor: conversa.setor || 'Geral',
-    agente: conversa.profiles?.nome,
-    tags: conversa.tags || [],
-    status: conversa.status as 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado',
-  }));
+  const getStatusColor = (status: string | null) => {
+    switch (status) {
+      case 'ativo':
+        return 'bg-green-100 text-green-800';
+      case 'em-atendimento':
+        return 'bg-blue-100 text-blue-800';
+      case 'pendente':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'finalizado':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
-  // Filtrar por status
-  const atendimentosNovos = atendimentos.filter(a => a.status === 'ativo');
-  const atendimentosEmAndamento = atendimentos.filter(a => a.status === 'em-atendimento');
-  const atendimentosPendentes = atendimentos.filter(a => a.status === 'pendente');
+  const getStatusText = (status: string | null) => {
+    switch (status) {
+      case 'ativo':
+        return 'Ativo';
+      case 'em-atendimento':
+        return 'Em Atendimento';
+      case 'pendente':
+        return 'Pendente';
+      case 'finalizado':
+        return 'Finalizado';
+      default:
+        return 'Desconhecido';
+    }
+  };
 
-  const handleSelectAtendimento = (atendimento: Atendimento) => {
-    onSelectAtendimento(atendimento);
+  const getPriorityColor = (prioridade: string | null) => {
+    switch (prioridade) {
+      case 'alta':
+        return 'bg-red-100 text-red-800';
+      case 'media':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'baixa':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const formatarTempo = (dataString: string | null) => {
+    if (!dataString) return 'Agora';
+    
+    const agora = new Date();
+    const data = new Date(dataString);
+    const diffMs = agora.getTime() - data.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffMins < 1) return 'Agora';
+    if (diffMins < 60) return `${diffMins}min`;
+    if (diffHours < 24) return `${diffHours}h`;
+    return `${diffDays}d`;
   };
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center p-8">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-gray-600">Carregando atendimentos...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+          <p className="text-sm text-gray-500">Carregando conversas...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (conversas.length === 0) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-gray-600 mb-1">Nenhuma conversa encontrada</h3>
+          <p className="text-sm text-gray-500">As novas conversas aparecerão aqui</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Novos Atendimentos */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 bg-green-50">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-900 flex items-center">
-              <MessageSquare className="w-4 h-4 mr-2 text-green-500" />
-              Novos Atendimentos
-            </h3>
-            <Badge variant="secondary" className="bg-green-100 text-green-700">
-              {atendimentosNovos.length}
-            </Badge>
-          </div>
-        </div>
-        
-        <ScrollArea className="h-80">
-          <div className="p-4 space-y-3">
-            {atendimentosNovos.length > 0 ? (
-              atendimentosNovos.map((atendimento) => (
-                <div 
-                  key={atendimento.id}
-                  className={`cursor-pointer transition-all ${
-                    selectedAtendimento?.id === atendimento.id 
-                      ? 'ring-2 ring-green-500 ring-opacity-50' 
-                      : ''
-                  }`}
-                  onClick={() => handleSelectAtendimento(atendimento)}
-                >
-                  <AtendimentoCard {...atendimento} onClick={() => {}} />
+    <ScrollArea className="h-full">
+      <div className="space-y-2 p-2">
+        {conversas.map((conversa) => (
+          <div
+            key={conversa.id}
+            className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${
+              selectedAtendimento?.id === conversa.id
+                ? 'border-blue-500 bg-blue-50'
+                : 'border-gray-200 bg-white hover:border-gray-300'
+            }`}
+            onClick={() => onSelectAtendimento(conversa)}
+          >
+            {/* Header com nome do cliente e status */}
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center space-x-2 mb-1">
+                  <User className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                  <h3 className="font-medium text-gray-900 truncate">
+                    {conversa.contatos?.nome || 'Cliente Desconhecido'}
+                  </h3>
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">Nenhum novo atendimento</p>
+                
+                {conversa.contatos?.telefone && (
+                  <p className="text-sm text-gray-500 truncate">
+                    {conversa.contatos.telefone}
+                  </p>
+                )}
               </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
+              
+              <div className="flex flex-col items-end space-y-1">
+                <Badge className={getStatusColor(conversa.status)}>
+                  {getStatusText(conversa.status)}
+                </Badge>
+                <div className="flex items-center text-xs text-gray-500">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {formatarTempo(conversa.updated_at)}
+                </div>
+              </div>
+            </div>
 
-      {/* Atendimentos em Andamento */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 bg-blue-50">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-900 flex items-center">
-              <User className="w-4 h-4 mr-2 text-blue-500" />
-              Em Atendimento
-            </h3>
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-              {atendimentosEmAndamento.length}
-            </Badge>
-          </div>
-        </div>
-        
-        <ScrollArea className="h-80">
-          <div className="p-4 space-y-3">
-            {atendimentosEmAndamento.length > 0 ? (
-              atendimentosEmAndamento.map((atendimento) => (
-                <div 
-                  key={atendimento.id}
-                  className={`cursor-pointer transition-all ${
-                    selectedAtendimento?.id === atendimento.id 
-                      ? 'ring-2 ring-blue-500 ring-opacity-50' 
-                      : ''
-                  }`}
-                  onClick={() => handleSelectAtendimento(atendimento)}
-                >
-                  <AtendimentoCard {...atendimento} onClick={() => {}} />
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <User className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">Nenhum atendimento em andamento</p>
+            {/* Informações adicionais */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                {conversa.canal && (
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                    {conversa.canal.toUpperCase()}
+                  </span>
+                )}
+                
+                {conversa.prioridade && (
+                  <Badge variant="outline" className={getPriorityColor(conversa.prioridade)}>
+                    {conversa.prioridade.charAt(0).toUpperCase() + conversa.prioridade.slice(1)}
+                  </Badge>
+                )}
               </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
 
-      {/* Atendimentos Pendentes */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="p-4 border-b border-gray-200 bg-orange-50">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-gray-900 flex items-center">
-              <Clock className="w-4 h-4 mr-2 text-orange-500" />
-              Atendimentos Pendentes
-            </h3>
-            <Badge variant="secondary" className="bg-orange-100 text-orange-700">
-              {atendimentosPendentes.length}
-            </Badge>
-          </div>
-        </div>
-        
-        <ScrollArea className="h-80">
-          <div className="p-4 space-y-3">
-            {atendimentosPendentes.length > 0 ? (
-              atendimentosPendentes.map((atendimento) => (
-                <div 
-                  key={atendimento.id}
-                  className={`cursor-pointer transition-all ${
-                    selectedAtendimento?.id === atendimento.id 
-                      ? 'ring-2 ring-orange-500 ring-opacity-50' 
-                      : ''
-                  }`}
-                  onClick={() => handleSelectAtendimento(atendimento)}
-                >
-                  <AtendimentoCard {...atendimento} onClick={() => {}} />
+              {conversa.profiles && (
+                <div className="text-xs text-gray-500">
+                  Agente: {conversa.profiles.nome}
                 </div>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <Clock className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                <p className="text-sm">Nenhum atendimento pendente</p>
+              )}
+            </div>
+
+            {/* Tags */}
+            {conversa.tags && conversa.tags.length > 0 && (
+              <div className="flex items-center mt-2 space-x-1">
+                <Tag className="w-3 h-3 text-gray-400" />
+                <div className="flex flex-wrap gap-1">
+                  {conversa.tags.slice(0, 3).map((tag, index) => (
+                    <span key={index} className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                      {tag}
+                    </span>
+                  ))}
+                  {conversa.tags.length > 3 && (
+                    <span className="text-xs text-gray-500">+{conversa.tags.length - 3}</span>
+                  )}
+                </div>
               </div>
             )}
           </div>
-        </ScrollArea>
+        ))}
       </div>
-    </div>
+    </ScrollArea>
   );
 }

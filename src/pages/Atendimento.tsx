@@ -1,8 +1,9 @@
+
 import { useState } from 'react';
-import { MessageSquare, User, Plus, Filter } from 'lucide-react';
+import { MessageSquare, User, Plus } from 'lucide-react';
 import { FilterBar } from '@/components/atendimento/FilterBar';
-import { AtendimentosList } from '@/components/atendimento/AtendimentosList';
-import { ChatWhatsApp } from '@/components/atendimento/ChatWhatsApp';
+import { AtendimentosListReal } from '@/components/atendimento/AtendimentosListReal';
+import { ChatWhatsAppReal } from '@/components/atendimento/ChatWhatsAppReal';
 import { ClienteInfo } from '@/components/atendimento/ClienteInfo';
 import { ContactsList } from '@/components/atendimento/ContactsList';
 import { TransferDialog } from '@/components/atendimento/TransferDialog';
@@ -12,52 +13,34 @@ import { useContactCheck } from '@/hooks/useContactCheck';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useAtendimentoReal } from '@/hooks/useAtendimentoReal';
 
-// Updated interface to match Supabase data structure
-interface Atendimento {
-  id: string; // Changed from number to string
-  cliente: string;
-  telefone: string;
-  ultimaMensagem: string;
-  tempo: string;
-  setor: string;
-  agente?: string;
-  tags?: string[];
-  status: 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado'; // Updated status values
-  transferencia?: {
-    de: string;
-    motivo: string;
-    dataTransferencia: string;
-  };
+interface Conversa {
+  id: string;
+  agente_id: string | null;
+  canal: string | null;
+  contato_id: string | null;
+  created_at: string | null;
+  empresa_id: string | null;
+  prioridade: string | null;
+  setor: string | null;
+  status: string | null;
+  tags: string[] | null;
+  updated_at: string | null;
+  contatos?: {
+    id: string;
+    nome: string;
+    telefone: string | null;
+    email: string | null;
+  } | null;
+  profiles?: {
+    id: string;
+    nome: string;
+    email: string;
+  } | null;
 }
 
-// Configuração simulada do limite de mensagens (normalmente viria do Painel)
-const LIMITE_MENSAGENS_ABERTAS = 5; // Configurável pelo administrador
-
-const mensagensExemplo = [
-  { id: '1', texto: 'Olá! Preciso de ajuda com meu pedido #12345', autor: 'cliente' as const, tempo: '14:30' },
-  { id: '2', texto: 'Olá João! Claro, vou verificar seu pedido. Um momento por favor.', autor: 'agente' as const, tempo: '14:31', status: 'lido' as const },
-  { id: '3', texto: 'Estou vendo aqui no sistema que seu pedido está em separação no estoque e deve ser enviado hoje ainda.', autor: 'agente' as const, tempo: '14:32', status: 'lido' as const },
-  { id: '4', texto: 'Perfeito! Muito obrigado pelo atendimento rápido.', autor: 'cliente' as const, tempo: '14:33' },
-  { id: '5', texto: 'Você consegue me passar o código de rastreamento?', autor: 'cliente' as const, tempo: '14:34' },
-  { id: '6', texto: 'Claro! Assim que o pedido for despachado, o código de rastreamento será enviado automaticamente para o seu email e também para o seu WhatsApp.', autor: 'agente' as const, tempo: '14:35', status: 'lido' as const }
-];
-
-const clienteExemplo = {
-  id: '1', // Changed to string
-  nome: 'João Silva',
-  telefone: '+55 11 99999-9999',
-  email: 'joao.silva@email.com',
-  dataCadastro: '15/03/2023',
-  tags: ['Cliente Fiel', 'Premium'],
-  historico: [
-    { id: '1', data: '10/05/2023', assunto: 'Problema com entrega', status: 'Resolvido' }, // Changed ids to string
-    { id: '2', data: '23/06/2023', assunto: 'Troca de produto', status: 'Resolvido' },
-    { id: '3', data: '05/09/2023', assunto: 'Dúvida sobre garantia', status: 'Resolvido' }
-  ]
-};
-
-// Dados de contatos mockados
+// Dados de contatos mockados para nova conversa
 const contatosMockInicial = [
   {
     id: 1,
@@ -93,13 +76,14 @@ const contatosMockInicial = [
 ];
 
 export default function Atendimento() {
-  const [selectedAtendimento, setSelectedAtendimento] = useState<Atendimento | null>(null);
+  const [selectedAtendimento, setSelectedAtendimento] = useState<Conversa | null>(null);
   const [showChat, setShowChat] = useState(false);
   const [showContacts, setShowContacts] = useState(false);
   const [showTransferDialog, setShowTransferDialog] = useState(false);
-  const [contatos, setContatos] = useState(contatosMockInicial); // Estado local dos contatos
+  const [contatos, setContatos] = useState(contatosMockInicial);
   const isMobile = useIsMobile();
   const { toast } = useToast();
+  const { atualizarStatusConversa } = useAtendimentoReal();
 
   // Hook para gerenciar verificação e salvamento de contatos
   const {
@@ -114,8 +98,8 @@ export default function Atendimento() {
     handleContactSaved
   } = useContactCheck();
 
-  const handleSelectAtendimento = (atendimento: Atendimento) => {
-    setSelectedAtendimento(atendimento);
+  const handleSelectAtendimento = (conversa: Conversa) => {
+    setSelectedAtendimento(conversa);
     setShowContacts(false);
     if (isMobile) {
       setShowChat(true);
@@ -138,25 +122,41 @@ export default function Atendimento() {
     setShowTransferDialog(true);
   };
 
-  const handleFinalizar = () => {
+  const handleFinalizar = async () => {
     if (!selectedAtendimento) return;
 
-    // Agente e setor atuais (normalmente viriam do contexto de autenticação)
+    // Criar um objeto compatível com o hook de verificação de contatos
+    const atendimentoParaVerificacao = {
+      id: selectedAtendimento.id,
+      cliente: selectedAtendimento.contatos?.nome || 'Cliente Desconhecido',
+      telefone: selectedAtendimento.contatos?.telefone || '',
+      ultimaMensagem: '',
+      tempo: '',
+      setor: selectedAtendimento.setor || '',
+      status: selectedAtendimento.status as 'ativo' | 'em-atendimento' | 'pendente' | 'finalizado'
+    };
+
+    // Agente atual (normalmente viria do contexto de autenticação)
     const agenteAtual = 'Ana Silva';
     const setorAtual = 'Suporte';
 
     // Usa o hook para verificar se deve salvar contato
     handleFinalizarWithContactCheck(
-      selectedAtendimento,
+      atendimentoParaVerificacao,
       contatos,
       agenteAtual,
       setorAtual,
-      () => {
-        console.log('Finalizar atendimento');
+      async () => {
+        // Atualizar status da conversa para finalizado
+        await atualizarStatusConversa(selectedAtendimento.id, 'finalizado');
         setSelectedAtendimento(null);
         if (isMobile) {
           setShowChat(false);
         }
+        toast({
+          title: "Atendimento finalizado",
+          description: "O atendimento foi finalizado com sucesso.",
+        });
       }
     );
   };
@@ -169,31 +169,47 @@ export default function Atendimento() {
   };
 
   const handleSelectContact = (contato: typeof contatos[0]) => {
-    // Criar novo atendimento baseado no contato selecionado
-    const novoAtendimento: Atendimento = {
-      id: `novo-${Date.now()}`, // Generate a unique string ID
-      cliente: contato.nome,
-      telefone: contato.telefone,
-      ultimaMensagem: 'Nova conversa iniciada',
-      tempo: 'agora',
+    // Simular criação de nova conversa
+    const novaConversa: Conversa = {
+      id: `novo-${Date.now()}`,
+      contato_id: contato.id.toString(),
+      agente_id: null,
+      canal: 'whatsapp',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      empresa_id: null,
+      prioridade: 'normal',
       setor: 'Suporte',
+      status: 'ativo',
       tags: [],
-      status: 'ativo' // Use the correct status value
+      contatos: {
+        id: contato.id.toString(),
+        nome: contato.nome,
+        telefone: contato.telefone,
+        email: contato.email || null
+      }
     };
     
-    setSelectedAtendimento(novoAtendimento);
+    setSelectedAtendimento(novaConversa);
     setShowContacts(false);
     if (isMobile) {
       setShowChat(true);
     }
   };
 
-  const handleConfirmTransfer = (agente: string, motivo: string) => {
+  const handleConfirmTransfer = async (agente: string, motivo: string) => {
+    if (!selectedAtendimento) return;
+
     console.log('Transferir para:', agente, 'Motivo:', motivo);
+    
+    // Atualizar status para pendente (aguardando novo agente)
+    await atualizarStatusConversa(selectedAtendimento.id, 'pendente');
+    
     toast({
       title: "Atendimento transferido",
       description: `Atendimento transferido para ${agente} com sucesso.`,
     });
+    
     setShowTransferDialog(false);
     setSelectedAtendimento(null);
     if (isMobile) {
@@ -209,6 +225,17 @@ export default function Atendimento() {
       description: `${novoContato.nome} foi adicionado aos contatos com sucesso.`
     });
   };
+
+  // Cliente simulado para informações detalhadas
+  const clienteInfo = selectedAtendimento?.contatos ? {
+    id: selectedAtendimento.contatos.id,
+    nome: selectedAtendimento.contatos.nome,
+    telefone: selectedAtendimento.contatos.telefone || '',
+    email: selectedAtendimento.contatos.email || '',
+    dataCadastro: '15/03/2023',
+    tags: selectedAtendimento.tags || [],
+    historico: []
+  } : null;
 
   // Layout mobile: mostra lista, contatos ou chat baseado no estado
   if (isMobile) {
@@ -229,7 +256,7 @@ export default function Atendimento() {
               </Button>
             </div>
             <div className="flex-1 overflow-hidden">
-              <AtendimentosList 
+              <AtendimentosListReal 
                 onSelectAtendimento={handleSelectAtendimento}
                 selectedAtendimento={selectedAtendimento}
                 isMobile={isMobile}
@@ -246,14 +273,10 @@ export default function Atendimento() {
         ) : selectedAtendimento ? (
           // Mostra chat em tela cheia
           <div className="h-full">
-            <ChatWhatsApp 
+            <ChatWhatsAppReal 
               conversaId={selectedAtendimento.id}
-              cliente={{
-                id: selectedAtendimento.id,
-                nome: selectedAtendimento.cliente,
-                telefone: selectedAtendimento.telefone,
-                status: 'online'
-              }}
+              nomeCliente={selectedAtendimento.contatos?.nome || 'Cliente Desconhecido'}
+              telefoneCliente={selectedAtendimento.contatos?.telefone || ''}
               onReturnToList={handleReturnToList}
               onSairConversa={handleSairConversa}
               onTransferir={handleTransferir}
@@ -262,14 +285,13 @@ export default function Atendimento() {
           </div>
         ) : null}
 
-        {/* Dialog de transferência */}
+        {/* Dialogs */}
         <TransferDialog
           open={showTransferDialog}
           onOpenChange={setShowTransferDialog}
           onConfirm={handleConfirmTransfer}
         />
 
-        {/* Dialog de confirmação para salvar contato */}
         <ConfirmSaveContactDialog
           open={showConfirmDialog}
           onOpenChange={setShowConfirmDialog}
@@ -279,7 +301,6 @@ export default function Atendimento() {
           clienteTelefone={pendingContact?.telefone || ''}
         />
 
-        {/* Dialog para criar novo contato com dados pré-preenchidos */}
         <NovoContatoDialog
           open={showNovoContatoDialog}
           onOpenChange={setShowNovoContatoDialog}
@@ -320,7 +341,7 @@ export default function Atendimento() {
                 onBack={() => setShowContacts(false)}
               />
             ) : (
-              <AtendimentosList 
+              <AtendimentosListReal 
                 onSelectAtendimento={handleSelectAtendimento}
                 selectedAtendimento={selectedAtendimento}
               />
@@ -333,14 +354,10 @@ export default function Atendimento() {
           {/* Chat do WhatsApp - ocupa 2/3 da altura */}
           <div className="row-span-2">
             {selectedAtendimento ? (
-              <ChatWhatsApp 
+              <ChatWhatsAppReal 
                 conversaId={selectedAtendimento.id}
-                cliente={{
-                  id: selectedAtendimento.id,
-                  nome: selectedAtendimento.cliente,
-                  telefone: selectedAtendimento.telefone,
-                  status: 'online'
-                }}
+                nomeCliente={selectedAtendimento.contatos?.nome || 'Cliente Desconhecido'}
+                telefoneCliente={selectedAtendimento.contatos?.telefone || ''}
                 onSairConversa={handleSairConversa}
                 onTransferir={handleTransferir}
                 onFinalizar={handleFinalizar}
@@ -358,10 +375,10 @@ export default function Atendimento() {
           
           {/* Informações do cliente - ocupa 1/3 da altura */}
           <div className="row-span-1">
-            {selectedAtendimento ? (
+            {selectedAtendimento && clienteInfo ? (
               <ClienteInfo 
-                cliente={clienteExemplo} 
-                transferencia={selectedAtendimento.transferencia}
+                cliente={clienteInfo} 
+                transferencia={undefined}
               />
             ) : (
               <div className="flex items-center justify-center h-full bg-white rounded-xl border border-dashed border-gray-300">
@@ -375,14 +392,13 @@ export default function Atendimento() {
         </div>
       </div>
 
-      {/* Dialog de transferência */}
+      {/* Dialogs */}
       <TransferDialog
         open={showTransferDialog}
         onOpenChange={setShowTransferDialog}
         onConfirm={handleConfirmTransfer}
       />
 
-      {/* Dialog de confirmação para salvar contato */}
       <ConfirmSaveContactDialog
         open={showConfirmDialog}
         onOpenChange={setShowConfirmDialog}
@@ -392,7 +408,6 @@ export default function Atendimento() {
         clienteTelefone={pendingContact?.telefone || ''}
       />
 
-      {/* Dialog para criar novo contato com dados pré-preenchidos */}
       <NovoContatoDialog
         open={showNovoContatoDialog}
         onOpenChange={setShowNovoContatoDialog}

@@ -1,11 +1,12 @@
 
 import { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Smile, Phone, MoreVertical, Image, FileText, X } from 'lucide-react';
+import { Send, Paperclip, Smile, Phone, MoreVertical, Image, FileText, X, ArrowLeft, UserX, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAtendimentoReal } from '@/hooks/useAtendimentoReal';
 import { useToast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +18,10 @@ interface ChatWhatsAppRealProps {
   conversaId: string;
   nomeCliente: string;
   telefoneCliente: string;
+  onReturnToList?: () => void;
+  onSairConversa?: () => void;
+  onTransferir?: () => void;
+  onFinalizar?: () => void;
 }
 
 interface Mensagem {
@@ -32,7 +37,11 @@ interface Mensagem {
 export function ChatWhatsAppReal({ 
   conversaId, 
   nomeCliente, 
-  telefoneCliente 
+  telefoneCliente,
+  onReturnToList,
+  onSairConversa,
+  onTransferir,
+  onFinalizar
 }: ChatWhatsAppRealProps) {
   const [novaMensagem, setNovaMensagem] = useState('');
   const [enviando, setEnviando] = useState(false);
@@ -42,6 +51,7 @@ export function ChatWhatsAppReal({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   
   const { 
     mensagensConversa, 
@@ -215,6 +225,12 @@ export function ChatWhatsAppReal({
       {/* Header do Chat */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
         <div className="flex items-center space-x-3">
+          {isMobile && onReturnToList && (
+            <Button variant="ghost" size="sm" onClick={onReturnToList}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          )}
+          
           <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-green-600 rounded-full flex items-center justify-center">
             <span className="text-white font-medium text-sm">
               {nomeCliente.charAt(0).toUpperCase()}
@@ -230,9 +246,34 @@ export function ChatWhatsAppReal({
           <Button variant="ghost" size="sm">
             <Phone className="w-4 h-4" />
           </Button>
-          <Button variant="ghost" size="sm">
-            <MoreVertical className="w-4 h-4" />
-          </Button>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <MoreVertical className="w-4 h-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onTransferir && (
+                <DropdownMenuItem onClick={onTransferir}>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Transferir
+                </DropdownMenuItem>
+              )}
+              {onSairConversa && (
+                <DropdownMenuItem onClick={onSairConversa}>
+                  <UserX className="w-4 h-4 mr-2" />
+                  Sair da conversa
+                </DropdownMenuItem>
+              )}
+              {onFinalizar && (
+                <DropdownMenuItem onClick={onFinalizar}>
+                  <X className="w-4 h-4 mr-2" />
+                  Finalizar atendimento
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 
