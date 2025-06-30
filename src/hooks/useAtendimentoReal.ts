@@ -50,7 +50,8 @@ interface Mensagem {
 }
 
 // URL do webhook do n8n para envio de mensagens
-const N8N_WEBHOOK_URL = 'https://n8n.seudominio.com/webhook/whatsapp-send'; // Substitua pela URL real do n8n
+// IMPORTANTE: Substitua esta URL pela URL gerada pelo workflow de envio do n8n
+const N8N_WEBHOOK_URL = 'https://SEU-N8N.app.n8n.cloud/webhook/whatsapp-send'; // Substitua pela URL real do n8n
 
 export function useAtendimentoReal() {
   const { user } = useAuth();
