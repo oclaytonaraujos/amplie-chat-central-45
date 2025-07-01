@@ -30,6 +30,113 @@ interface ChatbotEnginePayload {
   currentState?: ChatbotState;
 }
 
+// Função para integração com OpenAI
+async function analyzeWithAI(userMessage: string, context: Record<string, any>) {
+  const openaiApiKey = Deno.env.get('OPENAI_API_KEY');
+  
+  if (!openaiApiKey) {
+    console.log('OpenAI API key not configured, skipping AI analysis');
+    return null;
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openaiApiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: `Você é um assistente de análise de intenções para chatbot. Analise a mensagem do usuário e retorne um JSON com:
+            {
+              "intent": "product_inquiry|support_request|complaint|greeting|other",
+              "confidence": 0.9,
+              "extracted_info": {
+                "product_mentioned": "nome do produto se mencionado",
+                "urgency_level": "low|medium|high",
+                "emotion": "positive|neutral|negative"
+              },
+              "suggested_response": "resposta sugerida personalizada"
+            }
+            
+            Contexto atual: ${JSON.stringify(context)}`
+          },
+          {
+            role: 'user',
+            content: userMessage
+          }
+        ],
+        temperature: 0.3,
+      }),
+    });
+
+    const data = await response.json();
+    return JSON.parse(data.choices[0].message.content);
+  } catch (error) {
+    console.error('Erro na análise de IA:', error);
+    return null;
+  }
+}
+
+// Função para consultar banco de dados externo (produtos/serviços)
+async function queryExternalDB(query: string, type: 'product' | 'service' = 'product') {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+  const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+  try {
+    // Simular consulta em tabela de produtos (você pode ajustar conforme sua estrutura)
+    const { data, error } = await supabase
+      .from('produtos') // Assumindo que existe uma tabela produtos
+      .select('*')
+      .ilike('nome', `%${query}%`)
+      .limit(5);
+
+    if (error) {
+      console.error('Erro na consulta DB:', error);
+      return [];
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error('Erro na consulta externa:', error);
+    return [];
+  }
+}
+
+// Função para integrações externas (CRM, notificações)
+async function triggerExternalIntegration(type: 'crm' | 'notification', data: Record<string, any>) {
+  try {
+    const webhookUrl = Deno.env.get(`${type.toUpperCase()}_WEBHOOK_URL`);
+    
+    if (!webhookUrl) {
+      console.log(`${type} webhook not configured`);
+      return false;
+    }
+
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        type: type,
+        data: data,
+        timestamp: new Date().toISOString(),
+      }),
+    });
+
+    return response.ok;
+  } catch (error) {
+    console.error(`Erro na integração ${type}:`, error);
+    return false;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -51,7 +158,6 @@ serve(async (req) => {
     // Obter ou criar estado do chatbot
     let currentState = payload.currentState
     if (!currentState) {
-      // Criar novo estado
       const { data: newState, error: createError } = await supabase
         .from('chatbot_state')
         .insert({
@@ -73,16 +179,42 @@ serve(async (req) => {
     let responseMessages: any[] = []
     let shouldTransferToHuman = false
 
+    // Análise com IA (se configurada)
+    const aiAnalysis = await analyzeWithAI(message.text.message, context)
+    if (aiAnalysis) {
+      console.log('Análise de IA:', aiAnalysis)
+      
+      // Armazenar insights da IA no contexto
+      context.ai_insights = aiAnalysis
+      
+      // Se a IA detectar alta urgência, transferir imediatamente
+      if (aiAnalysis.extracted_info?.urgency_level === 'high') {
+        shouldTransferToHuman = true
+        context.transfer_reason = 'Alta urgência detectada pela IA'
+      }
+    }
+
     // Roteador Principal baseado no current_stage
     switch (currentState.current_stage) {
       case 'start':
-        responseMessages.push({
-          type: 'text',
-          phone: telefone,
-          data: {
-            message: `Olá ${userName}! 👋\n\nSou o assistente virtual da nossa empresa. Como posso ajudá-lo hoje?\n\n1️⃣ Informações sobre produtos\n2️⃣ Suporte técnico\n3️⃣ Falar com atendente\n4️⃣ Horário de funcionamento\n\nDigite o número da opção desejada:`
-          }
-        })
+        // Usar resposta da IA se disponível
+        if (aiAnalysis?.suggested_response && aiAnalysis.confidence > 0.7) {
+          responseMessages.push({
+            type: 'text',
+            phone: telefone,
+            data: {
+              message: aiAnalysis.suggested_response
+            }
+          })
+        } else {
+          responseMessages.push({
+            type: 'text',
+            phone: telefone,
+            data: {
+              message: `Olá ${userName}! 👋\n\nSou o assistente virtual da nossa empresa. Como posso ajudá-lo hoje?\n\n1️⃣ Informações sobre produtos\n2️⃣ Suporte técnico\n3️⃣ Falar com atendente\n4️⃣ Horário de funcionamento\n\nDigite o número da opção desejada:`
+            }
+          })
+        }
         nextStage = 'awaiting_option'
         break
 
@@ -125,26 +257,62 @@ serve(async (req) => {
           })
           nextStage = 'after_hours_info'
         } else {
-          responseMessages.push({
-            type: 'text',
-            phone: telefone,
-            data: {
-              message: '❌ Opção inválida. Por favor, digite apenas o número da opção desejada:\n\n1️⃣ Informações sobre produtos\n2️⃣ Suporte técnico\n3️⃣ Falar com atendente\n4️⃣ Horário de funcionamento'
-            }
-          })
-          // Manter no mesmo estágio
+          // Tentar interpretar com IA
+          if (aiAnalysis?.intent === 'product_inquiry') {
+            nextStage = 'collecting_name_products'
+            responseMessages.push({
+              type: 'text',
+              phone: telefone,
+              data: {
+                message: '📋 Entendi que você tem interesse em nossos produtos! Qual é o seu nome completo?'
+              }
+            })
+          } else if (aiAnalysis?.intent === 'support_request') {
+            nextStage = 'collecting_name_support'
+            responseMessages.push({
+              type: 'text',
+              phone: telefone,
+              data: {
+                message: '🛠️ Vou ajudá-lo com o suporte. Primeiro, qual é o seu nome completo?'
+              }
+            })
+          } else {
+            responseMessages.push({
+              type: 'text',
+              phone: telefone,
+              data: {
+                message: '❌ Opção inválida. Por favor, digite apenas o número da opção desejada:\n\n1️⃣ Informações sobre produtos\n2️⃣ Suporte técnico\n3️⃣ Falar com atendente\n4️⃣ Horário de funcionamento'
+              }
+            })
+          }
         }
         break
 
       case 'collecting_name_products':
         context.name = userMessage
-        responseMessages.push({
-          type: 'text',
-          phone: telefone,
-          data: {
-            message: `Prazer em conhecê-lo, ${userMessage}! 😊\n\nAgora me conte, qual tipo de produto você tem interesse?\n\n🔍 Digite sua dúvida ou interesse específico:`
-          }
-        })
+        
+        // Consultar produtos relacionados se o usuário mencionou algo específico
+        const productQuery = aiAnalysis?.extracted_info?.product_mentioned || userMessage
+        const products = await queryExternalDB(productQuery, 'product')
+        
+        if (products.length > 0) {
+          const productList = products.map((p: any) => `• ${p.nome} - ${p.preco || 'Consulte'}`).join('\n')
+          responseMessages.push({
+            type: 'text',
+            phone: telefone,
+            data: {
+              message: `Prazer em conhecê-lo, ${userMessage}! 😊\n\nEncontrei alguns produtos que podem interessar:\n\n${productList}\n\n💬 Gostaria de saber mais sobre algum produto específico?`
+            }
+          })
+        } else {
+          responseMessages.push({
+            type: 'text',
+            phone: telefone,
+            data: {
+              message: `Prazer em conhecê-lo, ${userMessage}! 😊\n\nAgora me conte, qual tipo de produto você tem interesse?\n\n🔍 Digite sua dúvida ou interesse específico:`
+            }
+          })
+        }
         nextStage = 'collecting_product_interest'
         break
 
@@ -162,6 +330,15 @@ serve(async (req) => {
 
       case 'collecting_product_interest':
         context.product_interest = userMessage
+        
+        // Integração com CRM
+        await triggerExternalIntegration('crm', {
+          phone: telefone,
+          name: context.name,
+          interest: userMessage,
+          stage: 'product_inquiry'
+        })
+        
         responseMessages.push({
           type: 'text',
           phone: telefone,
@@ -176,6 +353,16 @@ serve(async (req) => {
 
       case 'collecting_support_issue':
         context.support_issue = userMessage
+        
+        // Notificar equipe de suporte
+        await triggerExternalIntegration('notification', {
+          type: 'support_request',
+          phone: telefone,
+          name: context.name,
+          issue: userMessage,
+          urgency: aiAnalysis?.extracted_info?.urgency_level || 'medium'
+        })
+        
         responseMessages.push({
           type: 'text',
           phone: telefone,
@@ -220,16 +407,26 @@ serve(async (req) => {
         break
 
       default:
-        // Fallback para estágios não reconhecidos
-        responseMessages.push({
-          type: 'text',
-          phone: telefone,
-          data: {
-            message: '🤔 Parece que algo deu errado. Vou conectá-lo com um atendente para melhor ajudá-lo.'
-          }
-        })
-        shouldTransferToHuman = true
-        context.transfer_reason = 'Erro no fluxo do chatbot'
+        // Fallback - usar IA para tentar entender
+        if (aiAnalysis?.suggested_response) {
+          responseMessages.push({
+            type: 'text',
+            phone: telefone,
+            data: {
+              message: aiAnalysis.suggested_response
+            }
+          })
+        } else {
+          responseMessages.push({
+            type: 'text',
+            phone: telefone,
+            data: {
+              message: '🤔 Parece que algo deu errado. Vou conectá-lo com um atendente para melhor ajudá-lo.'
+            }
+          })
+          shouldTransferToHuman = true
+          context.transfer_reason = 'Erro no fluxo do chatbot'
+        }
         break
     }
 
@@ -251,7 +448,6 @@ serve(async (req) => {
     }
 
     if (shouldTransferToHuman) {
-      // Transferir para atendimento humano
       console.log('Transferindo para atendimento humano...')
       
       // Chamar webhook do Amplie Chat com contexto
@@ -263,13 +459,14 @@ serve(async (req) => {
           from: message.from,
           to: message.to,
           text: {
-            message: `[TRANSFERÊNCIA DO CHATBOT]\n\nCliente: ${context.name || userName}\nTelefone: ${telefone}\nMotivo: ${context.transfer_reason}\nDepartamento: ${context.department || 'Geral'}\n\nContexto da conversa:\n${JSON.stringify(context, null, 2)}`
+            message: `[TRANSFERÊNCIA DO CHATBOT]\n\nCliente: ${context.name || userName}\nTelefone: ${telefone}\nMotivo: ${context.transfer_reason}\nDepartamento: ${context.department || 'Geral'}\n\nContexto da conversa:\n${JSON.stringify(context, null, 2)}\n\nAnálise de IA: ${JSON.stringify(aiAnalysis, null, 2)}`
           },
           timestamp: Date.now(),
           fromMe: false,
           senderName: userName,
           pushName: userName,
-          chatbotContext: context
+          chatbotContext: context,
+          aiInsights: aiAnalysis
         }
       }
 
@@ -308,7 +505,8 @@ serve(async (req) => {
       stage: nextStage,
       context: context,
       transferred: shouldTransferToHuman,
-      responses_sent: responseMessages.length
+      responses_sent: responseMessages.length,
+      ai_analysis: aiAnalysis
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,

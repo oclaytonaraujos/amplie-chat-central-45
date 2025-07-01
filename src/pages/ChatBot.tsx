@@ -1,13 +1,15 @@
 
 import { useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ChatbotForm } from '@/components/chatbot/ChatbotForm';
 import { ChatbotTable } from '@/components/chatbot/ChatbotTable';
 import { EmptyState } from '@/components/chatbot/EmptyState';
+import { ChatbotStateManager } from '@/components/admin/ChatbotStateManager';
+import { ChatbotAnalytics } from '@/components/admin/ChatbotAnalytics';
 import { useChatbotFlows, ChatbotFlow } from '@/hooks/useChatbotFlows';
-import { toast } from 'sonner';
 
 export default function ChatBot() {
   const { flows, loading, deleteFlow, toggleFlowStatus, duplicateFlow } = useChatbotFlows();
@@ -76,17 +78,82 @@ export default function ChatBot() {
         </Button>
       </div>
 
-      {flows.length === 0 ? (
-        <EmptyState onCreateNew={handleCreateNew} />
-      ) : (
-        <ChatbotTable
-          chatbots={flows}
-          onEdit={handleEdit}
-          onDuplicate={handleDuplicate}
-          onToggleStatus={handleToggleStatus}
-          onDelete={handleDelete}
-        />
-      )}
+      <Tabs defaultValue="fluxos" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="fluxos">Fluxos</TabsTrigger>
+          <TabsTrigger value="estados">Estados Ativos</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="configuracoes">Configurações</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="fluxos" className="space-y-4">
+          {flows.length === 0 ? (
+            <EmptyState onCreateNew={handleCreateNew} />
+          ) : (
+            <ChatbotTable
+              chatbots={flows}
+              onEdit={handleEdit}
+              onDuplicate={handleDuplicate}
+              onToggleStatus={handleToggleStatus}
+              onDelete={handleDelete}
+            />
+          )}
+        </TabsContent>
+
+        <TabsContent value="estados">
+          <ChatbotStateManager />
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <ChatbotAnalytics />
+        </TabsContent>
+
+        <TabsContent value="configuracoes" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Integrações</h3>
+              <div className="space-y-2">
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium">OpenAI (IA)</h4>
+                  <p className="text-sm text-gray-600">Configure a chave da API para análise inteligente</p>
+                  <p className="text-xs text-gray-500 mt-1">Status: {Deno?.env?.get?.('OPENAI_API_KEY') ? '✅ Configurado' : '❌ Não configurado'}</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium">CRM Integration</h4>
+                  <p className="text-sm text-gray-600">Conecte com HubSpot, Salesforce ou Pipedrive</p>
+                  <p className="text-xs text-gray-500 mt-1">Status: ❌ Não configurado</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium">Notificações</h4>
+                  <p className="text-sm text-gray-600">Slack, Discord ou Email para alertas</p>
+                  <p className="text-xs text-gray-500 mt-1">Status: ❌ Não configurado</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Configurações Avançadas</h3>
+              <div className="space-y-2">
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium">Tempo de Resposta</h4>
+                  <p className="text-sm text-gray-600">Tempo máximo de espera por resposta</p>
+                  <p className="text-xs text-gray-500 mt-1">Atual: 5 minutos</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium">Limpeza Automática</h4>
+                  <p className="text-sm text-gray-600">Remove estados inativos automaticamente</p>
+                  <p className="text-xs text-gray-500 mt-1">Atual: 24 horas</p>
+                </div>
+                <div className="p-4 border rounded-lg">
+                  <h4 className="font-medium">Fallback Humano</h4>
+                  <p className="text-sm text-gray-600">Transferir para humano após X tentativas</p>
+                  <p className="text-xs text-gray-500 mt-1">Atual: 3 tentativas</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={showForm} onOpenChange={setShowForm}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
