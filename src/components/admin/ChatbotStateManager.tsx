@@ -8,12 +8,13 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Trash2, RefreshCw, Search, User, Clock } from 'lucide-react';
+import type { Json } from '@/integrations/supabase/types';
 
 interface ChatbotState {
   id: string;
   contact_phone: string;
   current_stage: string;
-  context: Record<string, any>;
+  context: Json;
   created_at: string;
   updated_at: string;
 }
@@ -138,6 +139,15 @@ export function ChatbotStateManager() {
     }
   };
 
+  const getContextValue = (context: Json, key: string): string => {
+    if (!context || typeof context !== 'object' || context === null) {
+      return 'Não informado';
+    }
+    
+    const contextObj = context as Record<string, any>;
+    return contextObj[key] || 'Não informado';
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -203,7 +213,7 @@ export function ChatbotStateManager() {
                   
                   <div className="text-sm text-gray-600 space-y-1">
                     <p>
-                      <strong>Nome:</strong> {state.context?.name || 'Não informado'}
+                      <strong>Nome:</strong> {getContextValue(state.context, 'name')}
                     </p>
                     <p>
                       <strong>Criado:</strong> {formatDate(state.created_at)}
@@ -211,14 +221,14 @@ export function ChatbotStateManager() {
                     <p>
                       <strong>Atualizado:</strong> {formatDate(state.updated_at)}
                     </p>
-                    {state.context?.product_interest && (
+                    {getContextValue(state.context, 'product_interest') !== 'Não informado' && (
                       <p>
-                        <strong>Interesse:</strong> {state.context.product_interest}
+                        <strong>Interesse:</strong> {getContextValue(state.context, 'product_interest')}
                       </p>
                     )}
-                    {state.context?.support_issue && (
+                    {getContextValue(state.context, 'support_issue') !== 'Não informado' && (
                       <p>
-                        <strong>Problema:</strong> {state.context.support_issue}
+                        <strong>Problema:</strong> {getContextValue(state.context, 'support_issue')}
                       </p>
                     )}
                   </div>
