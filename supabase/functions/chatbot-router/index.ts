@@ -157,11 +157,32 @@ serve(async (req) => {
         queueMessageId 
       });
 
+      // Trigger queue processor immediately for faster response
+      try {
+        fetch(`${supabaseUrl}/functions/v1/chatbot-queue-processor`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'X-Correlation-ID': correlationId
+          },
+          body: JSON.stringify({ trigger: 'router' })
+        }).catch(() => {
+          // Ignore errors from queue processor trigger - it will be picked up by scheduled runs
+        });
+      } catch (error) {
+        // Ignore trigger errors - queue processor will handle messages on its next run
+        await logger.debug('Queue processor trigger failed, will be handled by scheduler', telefone, undefined, {
+          error: error.message
+        });
+      }
+
       return new Response(JSON.stringify({
         success: true,
         message: 'Message enqueued for chatbot processing',
         correlationId,
-        queueMessageId
+        queueMessageId,
+        status: 'queued'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 202, // Accepted for processing
@@ -191,7 +212,8 @@ serve(async (req) => {
         success: true,
         message: 'Routed to human support',
         correlationId,
-        result: humanResult
+        result: humanResult,
+        status: 'human_support'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
