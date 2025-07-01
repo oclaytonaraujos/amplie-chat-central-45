@@ -186,6 +186,33 @@ export type Database = {
           },
         ]
       }
+      chatbot_state: {
+        Row: {
+          contact_phone: string
+          context: Json | null
+          created_at: string | null
+          current_stage: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          contact_phone: string
+          context?: Json | null
+          created_at?: string | null
+          current_stage?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          contact_phone?: string
+          context?: Json | null
+          created_at?: string | null
+          current_stage?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       chatbots: {
         Row: {
           created_at: string | null
