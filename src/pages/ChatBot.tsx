@@ -116,7 +116,7 @@ export default function ChatBot() {
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-medium">OpenAI (IA)</h4>
                   <p className="text-sm text-gray-600">Configure a chave da API para análise inteligente</p>
-                  <p className="text-xs text-gray-500 mt-1">Status: {Deno?.env?.get?.('OPENAI_API_KEY') ? '✅ Configurado' : '❌ Não configurado'}</p>
+                  <p className="text-xs text-gray-500 mt-1">Status: ❓ Configure via Edge Functions</p>
                 </div>
                 <div className="p-4 border rounded-lg">
                   <h4 className="font-medium">CRM Integration</h4>
