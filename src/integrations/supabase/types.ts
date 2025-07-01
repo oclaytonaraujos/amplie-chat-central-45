@@ -50,6 +50,42 @@ export type Database = {
           },
         ]
       }
+      chatbot_logs: {
+        Row: {
+          contact_phone: string | null
+          correlation_id: string
+          created_at: string | null
+          current_stage: string | null
+          function_name: string
+          id: string
+          level: string
+          message: string
+          metadata: Json | null
+        }
+        Insert: {
+          contact_phone?: string | null
+          correlation_id: string
+          created_at?: string | null
+          current_stage?: string | null
+          function_name: string
+          id?: string
+          level?: string
+          message: string
+          metadata?: Json | null
+        }
+        Update: {
+          contact_phone?: string | null
+          correlation_id?: string
+          created_at?: string | null
+          current_stage?: string | null
+          function_name?: string
+          id?: string
+          level?: string
+          message?: string
+          metadata?: Json | null
+        }
+        Relationships: []
+      }
       chatbot_nodes: {
         Row: {
           created_at: string | null
@@ -190,25 +226,37 @@ export type Database = {
         Row: {
           contact_phone: string
           context: Json | null
+          correlation_id: string | null
           created_at: string | null
           current_stage: string
           id: string
+          last_message_id: string | null
+          nlp_confidence: number | null
+          nlp_intent: string | null
           updated_at: string | null
         }
         Insert: {
           contact_phone: string
           context?: Json | null
+          correlation_id?: string | null
           created_at?: string | null
           current_stage?: string
           id?: string
+          last_message_id?: string | null
+          nlp_confidence?: number | null
+          nlp_intent?: string | null
           updated_at?: string | null
         }
         Update: {
           contact_phone?: string
           context?: Json | null
+          correlation_id?: string | null
           created_at?: string | null
           current_stage?: string
           id?: string
+          last_message_id?: string | null
+          nlp_confidence?: number | null
+          nlp_intent?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -570,6 +618,101 @@ export type Database = {
           },
         ]
       }
+      message_queue: {
+        Row: {
+          correlation_id: string
+          created_at: string | null
+          error_message: string | null
+          id: string
+          max_retries: number | null
+          message_type: string
+          metadata: Json | null
+          payload: Json
+          priority: number | null
+          processed_at: string | null
+          retry_count: number | null
+          scheduled_at: string | null
+          status: string
+        }
+        Insert: {
+          correlation_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          max_retries?: number | null
+          message_type?: string
+          metadata?: Json | null
+          payload: Json
+          priority?: number | null
+          processed_at?: string | null
+          retry_count?: number | null
+          scheduled_at?: string | null
+          status?: string
+        }
+        Update: {
+          correlation_id?: string
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          max_retries?: number | null
+          message_type?: string
+          metadata?: Json | null
+          payload?: Json
+          priority?: number | null
+          processed_at?: string | null
+          retry_count?: number | null
+          scheduled_at?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      nlp_intents: {
+        Row: {
+          active: boolean | null
+          confidence_threshold: number | null
+          created_at: string | null
+          empresa_id: string
+          id: string
+          intent_name: string
+          parameters: Json | null
+          target_stage: string
+          training_phrases: string[] | null
+          updated_at: string | null
+        }
+        Insert: {
+          active?: boolean | null
+          confidence_threshold?: number | null
+          created_at?: string | null
+          empresa_id: string
+          id?: string
+          intent_name: string
+          parameters?: Json | null
+          target_stage: string
+          training_phrases?: string[] | null
+          updated_at?: string | null
+        }
+        Update: {
+          active?: boolean | null
+          confidence_threshold?: number | null
+          created_at?: string | null
+          empresa_id?: string
+          id?: string
+          intent_name?: string
+          parameters?: Json | null
+          target_stage?: string
+          training_phrases?: string[] | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nlp_intents_empresa_id_fkey"
+            columns: ["empresa_id"]
+            isOneToOne: false
+            referencedRelation: "empresas"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       planos: {
         Row: {
           ativo: boolean | null
@@ -910,6 +1053,10 @@ export type Database = {
         Args: { profile_id: string }
         Returns: boolean
       }
+      cleanup_old_queue_messages: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       create_super_admin: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -917,6 +1064,16 @@ export type Database = {
       create_super_admin_profile: {
         Args: Record<PropertyKey, never>
         Returns: undefined
+      }
+      get_next_queue_message: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          correlation_id: string
+          message_type: string
+          payload: Json
+          retry_count: number
+        }[]
       }
       is_super_admin: {
         Args: Record<PropertyKey, never>

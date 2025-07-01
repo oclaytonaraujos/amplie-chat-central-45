@@ -1,0 +1,139 @@
+
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { createLogger } from '../_shared/logger.ts'
+import { MessageQueue } from '../_shared/queue.ts'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
+
+  const correlationId = crypto.randomUUID();
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseServiceKey);
+  const logger = createLogger(supabase, correlationId, 'chatbot-queue-processor');
+
+  try {
+    await logger.info('Queue processor started');
+
+    const messageQueue = new MessageQueue(supabase, logger);
+    const processedMessages = [];
+    const maxMessages = 10; // Process up to 10 messages per invocation
+    
+    for (let i = 0; i < maxMessages; i++) {
+      const queuedMessage = await messageQueue.dequeue();
+      if (!queuedMessage) {
+        break; // No more messages to process
+      }
+
+      const messageCorrelationId = queuedMessage.correlation_id;
+      const messageLogger = createLogger(supabase, messageCorrelationId, 'chatbot-queue-processor');
+
+      try {
+        await messageLogger.info('Processing queued message', undefined, undefined, {
+          messageId: queuedMessage.id,
+          messageType: queuedMessage.message_type,
+          retryCount: queuedMessage.retry_count
+        });
+
+        // Call the chatbot engine to process the message
+        const engineResponse = await fetch(`${supabaseUrl}/functions/v1/chatbot-engine`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'X-Correlation-ID': messageCorrelationId
+          },
+          body: JSON.stringify(queuedMessage.payload)
+        });
+
+        if (engineResponse.ok) {
+          const engineResult = await engineResponse.json();
+          await messageQueue.markCompleted(queuedMessage.id);
+          
+          await messageLogger.info('Message processed successfully', undefined, undefined, {
+            messageId: queuedMessage.id,
+            result: engineResult
+          });
+
+          processedMessages.push({
+            id: queuedMessage.id,
+            status: 'completed',
+            result: engineResult
+          });
+        } else {
+          const errorText = await engineResponse.text();
+          const shouldRetry = queuedMessage.retry_count < queuedMessage.max_retries;
+          
+          await messageQueue.markFailed(queuedMessage.id, errorText, shouldRetry);
+          
+          await messageLogger.error('Message processing failed', undefined, undefined, {
+            messageId: queuedMessage.id,
+            error: errorText,
+            shouldRetry,
+            retryCount: queuedMessage.retry_count
+          });
+
+          processedMessages.push({
+            id: queuedMessage.id,
+            status: shouldRetry ? 'retrying' : 'failed',
+            error: errorText
+          });
+        }
+      } catch (error) {
+        const shouldRetry = queuedMessage.retry_count < queuedMessage.max_retries;
+        await messageQueue.markFailed(queuedMessage.id, error.message, shouldRetry);
+        
+        await messageLogger.error('Unexpected error processing message', undefined, undefined, {
+          messageId: queuedMessage.id,
+          error: error.message,
+          shouldRetry,
+          retryCount: queuedMessage.retry_count
+        });
+
+        processedMessages.push({
+          id: queuedMessage.id,
+          status: shouldRetry ? 'retrying' : 'failed',
+          error: error.message
+        });
+      }
+    }
+
+    await logger.info('Queue processing completed', undefined, undefined, {
+      processedCount: processedMessages.length,
+      results: processedMessages
+    });
+
+    return new Response(JSON.stringify({
+      success: true,
+      processedCount: processedMessages.length,
+      results: processedMessages,
+      correlationId
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    });
+
+  } catch (error) {
+    await logger.error('Queue processor error', undefined, undefined, {
+      error: error.message,
+      stack: error.stack
+    });
+    
+    return new Response(JSON.stringify({ 
+      success: false, 
+      error: 'Queue processor error',
+      correlationId 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    });
+  }
+})
