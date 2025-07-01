@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Navigate } from 'react-router-dom';
@@ -12,6 +11,8 @@ import UsuariosTab from '@/components/admin/UsuariosTab';
 import ZApiConfigTab from '@/components/admin/ZApiConfigTab';
 import RelatoriosEstatisticasCard from '@/components/admin/RelatoriosEstatisticasCard';
 import { useUserRole } from '@/hooks/useUserRole';
+import Layout from '@/components/Layout';
+import QueueMonitoring from '@/components/admin/QueueMonitoring';
 
 export default function SuperAdmin() {
   const { user, loading: authLoading } = useAuth();
@@ -50,47 +51,18 @@ export default function SuperAdmin() {
   console.log('✅ SuperAdmin - Acesso autorizado para:', user.email);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Painel Super Administrador</h1>
-          <p className="text-gray-600 mt-2">Gerencie todas as empresas, usuários e configurações da plataforma</p>
-          <div className="mt-2 text-sm text-green-600">
-            Acesso autorizado para: {user.email}
-          </div>
-        </div>
-
-        {/* Estatísticas gerais */}
-        <div className="mb-8">
-          <RelatoriosEstatisticasCard />
-        </div>
-
+    <Layout>
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-8">Painel Super Admin</h1>
+        
         <Tabs defaultValue="empresas" className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="empresas" className="flex items-center gap-2">
-              <Building2 className="h-4 w-4" />
-              Empresas
-            </TabsTrigger>
-            <TabsTrigger value="usuarios" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Usuários
-            </TabsTrigger>
-            <TabsTrigger value="planos" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Planos
-            </TabsTrigger>
-            <TabsTrigger value="whatsapp" className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4" />
-              WhatsApp
-            </TabsTrigger>
-            <TabsTrigger value="zapi" className="flex items-center gap-2">
-              <Smartphone className="h-4 w-4" />
-              Z-API
-            </TabsTrigger>
-            <TabsTrigger value="relatorios" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Relatórios
-            </TabsTrigger>
+            <TabsTrigger value="empresas">Empresas</TabsTrigger>
+            <TabsTrigger value="usuarios">Usuários</TabsTrigger>
+            <TabsTrigger value="planos">Planos</TabsTrigger>
+            <TabsTrigger value="whatsapp">WhatsApp</TabsTrigger>
+            <TabsTrigger value="estatisticas">Estatísticas</TabsTrigger>
+            <TabsTrigger value="filas">Filas</TabsTrigger>
           </TabsList>
 
           <TabsContent value="empresas">
@@ -163,23 +135,25 @@ export default function SuperAdmin() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="relatorios">
+          <TabsContent value="estatisticas">
             <Card>
               <CardHeader>
-                <CardTitle>Relatórios e Análises</CardTitle>
+                <CardTitle>Estatísticas Gerais</CardTitle>
                 <CardDescription>
                   Visualize relatórios detalhados da plataforma
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8">
-                  <p className="text-gray-500">Relatórios detalhados em desenvolvimento</p>
-                </div>
+                <RelatoriosEstatisticasCard />
               </CardContent>
             </Card>
           </TabsContent>
+
+          <TabsContent value="filas">
+            <QueueMonitoring />
+          </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </Layout>
   );
 }

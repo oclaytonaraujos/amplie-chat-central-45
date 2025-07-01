@@ -1046,7 +1046,17 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      queue_monitoring: {
+        Row: {
+          avg_age_seconds: number | null
+          avg_retries: number | null
+          count: number | null
+          newest_message: string | null
+          oldest_message: string | null
+          status: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_access_profile: {
@@ -1074,6 +1084,20 @@ export type Database = {
           payload: Json
           retry_count: number
         }[]
+      }
+      get_queue_status: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          total_pending: number
+          total_processing: number
+          total_failed: number
+          oldest_pending_age: unknown
+          failed_with_retries: number
+        }[]
+      }
+      invoke_chatbot_queue_processor: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
       }
       is_super_admin: {
         Args: Record<PropertyKey, never>

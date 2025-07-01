@@ -21,11 +21,24 @@ serve(async (req) => {
   const logger = createLogger(supabase, correlationId, 'chatbot-queue-processor');
 
   try {
-    await logger.info('Queue processor started');
+    let triggerSource = 'unknown';
+    
+    // Tentar obter informações sobre o trigger
+    try {
+      const body = await req.json();
+      triggerSource = body?.trigger || 'unknown';
+    } catch {
+      triggerSource = 'no-body';
+    }
+
+    await logger.info('Queue processor started', undefined, undefined, {
+      triggerSource,
+      correlationId
+    });
 
     const messageQueue = new MessageQueue(supabase, logger);
     const processedMessages = [];
-    const maxMessages = 10; // Process up to 10 messages per invocation
+    const maxMessages = triggerSource === 'scheduler' ? 5 : 10; // Processar menos mensagens quando chamado pelo scheduler
     
     for (let i = 0; i < maxMessages; i++) {
       const queuedMessage = await messageQueue.dequeue();
@@ -40,7 +53,8 @@ serve(async (req) => {
         await messageLogger.info('Processing queued message', undefined, undefined, {
           messageId: queuedMessage.id,
           messageType: queuedMessage.message_type,
-          retryCount: queuedMessage.retry_count
+          retryCount: queuedMessage.retry_count,
+          triggerSource
         });
 
         // Call the chatbot engine to process the message
@@ -108,14 +122,17 @@ serve(async (req) => {
 
     await logger.info('Queue processing completed', undefined, undefined, {
       processedCount: processedMessages.length,
-      results: processedMessages
+      results: processedMessages,
+      triggerSource,
+      maxMessages
     });
 
     return new Response(JSON.stringify({
       success: true,
       processedCount: processedMessages.length,
       results: processedMessages,
-      correlationId
+      correlationId,
+      triggerSource
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
